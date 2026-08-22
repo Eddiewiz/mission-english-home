@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 225">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff9b55"/><stop offset="1" stop-color="#ffd57c"/></linearGradient></defs>
+<rect x="2.5" y="2.5" width="315" height="220" rx="24" fill="url(#sky)" stroke="#143a69" stroke-width="5"/>
+
+<circle cx="160" cy="122" r="38" fill="#ffd33d" stroke="#ef8b20" stroke-width="5"/>
+<rect x="0" y="140" width="320" height="50" fill="#25344f"/>
+<g fill="#172338"><rect x="28" y="111" width="32" height="35"/><rect x="68" y="96" width="38" height="50"/><rect x="118" y="119" width="31" height="27"/><rect x="180" y="101" width="41" height="45"/><rect x="234" y="116" width="34" height="30"/></g>
+
+<rect x="18" y="164" width="284" height="45" rx="16" fill="#ffffff" fill-opacity=".92" stroke="#173a66" stroke-width="2"/>
+<text x="160" y="194" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#102b55">Good evening!</text>
+</svg>

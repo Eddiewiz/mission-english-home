@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1f6feb" />
+  <title>Mission English Home</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="mission-english-home-icon-192.png" sizes="192x192" type="image/png" />
+  <link rel="apple-touch-icon" href="mission-english-home-icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Mission English Home" data-action="go-home">
+      <img src="mission-english-home-logo.png" alt="" class="brand-icon home-brand-logo" />
+      <span>
+        <strong>MISSION ENGLISH HOME</strong>
+        <small>by Teacher Eddie</small>
+      </span>
+    </a>
+    <div class="status-area">
+      <span id="networkStatus" class="status-pill">Comprobando conexión…</span>
+      <span class="version-pill">Home v1.5.9</span>
+    </div>
+  </header>
+
+  <main id="app" class="app-shell"></main>
+
+  <footer>
+    <span>Powered by <strong>WizPro</strong></span>
+    <button id="installButton" class="link-button" hidden>Instalar aplicación</button>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

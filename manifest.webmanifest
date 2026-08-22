@@ -1,0 +1,23 @@
+{
+  "name": "Mission English Home v1.5.9",
+  "short_name": "Mission Home",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f8fc",
+  "theme_color": "#1f6feb",
+  "description": "Mission English Home — versión hogar de Mission English by Teacher Eddie. Powered by WizPro.",
+  "icons": [
+    {
+      "src": "mission-english-home-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "mission-english-home-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

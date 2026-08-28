@@ -2316,3 +2316,103 @@ body{background:#edf5fb}
   .home-dashboard-nav>button{font-size:.6rem!important}
   .nav-home-logo-crop,.nav-home-logo-crop img,.nav-icon-img{width:27px!important;height:27px!important}
 }
+
+/* v1.6.12 — DEFINITIVE MOBILE HOME LAYOUT
+   One mobile layout system for portrait + landscape phones/tablets.
+   This block intentionally overrides the accumulated legacy responsive rules above. */
+@media (max-width:1024px){
+  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important;scroll-behavior:auto}
+  .app-shell,.home-dashboard,.home-dashboard-top,.home-dashboard-nav,.missions-panel,.home-discovery,.dashboard-footer-note{
+    width:auto!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+
+  /* Keep every Tab Bar visual present in both orientations and in active/inactive states. */
+  .home-dashboard-nav{
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    height:72px!important;min-height:72px!important;overflow:visible!important;
+  }
+  .home-dashboard-nav>button{
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+    min-width:0!important;height:58px!important;padding:.25rem .12rem!important;gap:.08rem!important;
+    font-size:.66rem!important;line-height:1.02!important;overflow:visible!important
+  }
+  .home-dashboard-nav>button>span{display:inline-flex!important;visibility:visible!important;opacity:1!important}
+  .home-dashboard-nav .nav-icon{display:inline-grid!important;visibility:visible!important;opacity:1!important;font-size:1.5rem!important;margin:0!important}
+  .home-dashboard-nav img,.nav-home-logo-crop,.nav-icon-img{
+    display:block!important;visibility:visible!important;opacity:1!important;filter:none!important
+  }
+  .nav-home-logo-crop{width:30px!important;height:30px!important;overflow:visible!important}
+  .nav-home-logo-crop img,.nav-icon-img{width:30px!important;height:30px!important;object-fit:contain!important;position:static!important}
+
+  /* Explore is a simple vertical document section on mobile; no desktop grid/flex competition. */
+  .home-discovery{
+    display:block!important;position:relative!important;height:auto!important;max-height:none!important;
+    overflow:visible!important;overflow-anchor:none!important;margin:0 6px!important;padding:.65rem .72rem .8rem!important
+  }
+  .home-discovery>h3{
+    display:flex!important;grid-column:auto!important;grid-row:auto!important;width:100%!important;
+    margin:0 0 .55rem!important;font-size:1rem!important;align-items:center!important
+  }
+  .home-discovery>.dashboard-extra-grid{
+    display:grid!important;grid-column:auto!important;grid-row:auto!important;width:100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.48rem!important;margin:0!important
+  }
+  .home-discovery>.explore-detail{
+    display:block!important;position:relative!important;grid-column:auto!important;grid-row:auto!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;max-height:none!important;
+    overflow:visible!important;box-sizing:border-box!important;margin:.65rem 0 0!important;contain:none!important
+  }
+  .home-discovery>.explore-detail[hidden]{display:none!important}
+  .explore-launcher{width:100%!important;min-width:0!important;min-height:84px!important;height:auto!important;overflow:hidden!important;padding:.5rem!important;gap:.5rem!important}
+  .explore-launcher img{width:44px!important;height:44px!important;flex:0 0 44px!important}
+  .explore-launcher span{min-width:0!important}.explore-launcher strong{font-size:.9rem!important}.explore-launcher small{font-size:.72rem!important}
+  .explore-detail,.explore-detail *{max-width:100%;box-sizing:border-box}
+
+  /* Missions is never converted into an inner scrolling viewport on mobile. */
+  .missions-panel{height:auto!important;max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important;scrollbar-gutter:auto!important}
+}
+
+/* Portrait phones: two compact header rows. */
+@media (max-width:760px) and (orientation:portrait){
+  .home-dashboard-top{
+    display:grid!important;position:relative!important;height:auto!important;min-height:126px!important;padding:7px 8px 9px!important;
+    grid-template-columns:120px minmax(0,1fr)!important;grid-template-rows:66px auto!important;gap:6px!important;align-items:center!important
+  }
+  .dashboard-brand{position:relative!important;left:auto!important;top:auto!important;transform:none!important;grid-column:1!important;grid-row:1!important;width:116px!important;height:auto!important;justify-self:start!important}
+  .dashboard-brand img{display:block!important;width:116px!important;height:auto!important;transform:none!important}
+  .student-profile-summary{grid-column:2!important;grid-row:1!important;justify-self:end!important;align-self:center!important;max-width:100%!important;gap:.34rem!important}
+  .student-avatar-placeholder{width:42px!important;height:42px!important;flex:0 0 42px!important}.student-avatar-emoji{font-size:2.4rem!important}
+  .student-profile-summary strong{font-size:.84rem!important;line-height:1.04!important}.student-profile-summary span{font-size:.7rem!important;line-height:1.05!important}
+  .homework-mini-wrap{grid-column:1!important;grid-row:2!important;justify-self:start!important;margin:0!important}
+  .home-dashboard-top>.account-menu{grid-column:2!important;grid-row:2!important;justify-self:end!important;min-width:0!important}
+  .account-summary{width:auto!important;max-width:165px!important;min-width:0!important;font-size:.68rem!important;line-height:1.06!important;padding:.42rem .48rem!important}
+}
+
+/* Landscape phones: everything stays in ONE header row, so profile/tester controls can never fall below the logo. */
+@media (max-width:1024px) and (orientation:landscape){
+  .home-dashboard-top{
+    display:grid!important;position:relative!important;height:78px!important;min-height:78px!important;padding:4px 8px!important;
+    grid-template-columns:126px auto minmax(145px,1fr) auto!important;grid-template-rows:70px!important;
+    gap:7px!important;align-items:center!important;overflow:visible!important
+  }
+  .dashboard-brand{position:relative!important;left:auto!important;top:auto!important;transform:none!important;grid-column:1!important;grid-row:1!important;width:120px!important;height:auto!important;justify-self:start!important}
+  .dashboard-brand img{display:block!important;width:120px!important;height:auto!important;transform:none!important}
+  .homework-mini-wrap{grid-column:2!important;grid-row:1!important;justify-self:start!important;margin:0!important}
+  .student-profile-summary{grid-column:3!important;grid-row:1!important;justify-self:center!important;align-self:center!important;max-width:100%!important;gap:.35rem!important}
+  .student-avatar-placeholder{width:42px!important;height:42px!important;flex:0 0 42px!important}.student-avatar-emoji{font-size:2.4rem!important}
+  .student-profile-summary strong{font-size:.82rem!important;line-height:1.03!important}.student-profile-summary span{font-size:.69rem!important;line-height:1.03!important}
+  .home-dashboard-top>.account-menu{grid-column:4!important;grid-row:1!important;justify-self:end!important;min-width:0!important}
+  .account-summary{width:auto!important;min-width:0!important;max-width:170px!important;font-size:.67rem!important;line-height:1.05!important;padding:.42rem .48rem!important}
+  .home-discovery>.dashboard-extra-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:.35rem!important}
+  .explore-launcher{min-height:70px!important;padding:.35rem!important;gap:.3rem!important}.explore-launcher img{width:34px!important;height:34px!important;flex-basis:34px!important}
+  .explore-launcher strong{font-size:.75rem!important}.explore-launcher small{font-size:.6rem!important}
+}
+
+@media (max-width:390px) and (orientation:portrait){
+  .home-dashboard-top{grid-template-columns:104px minmax(0,1fr)!important}
+  .dashboard-brand,.dashboard-brand img{width:100px!important}
+  .student-avatar-placeholder{width:38px!important;height:38px!important;flex-basis:38px!important}.student-avatar-emoji{font-size:2.15rem!important}
+  .student-profile-summary strong{font-size:.76rem!important}.student-profile-summary span{font-size:.64rem!important}
+  .home-dashboard-nav>button{font-size:.59rem!important}.nav-home-logo-crop,.nav-home-logo-crop img,.nav-icon-img{width:27px!important;height:27px!important}
+  .home-discovery>.dashboard-extra-grid{grid-template-columns:1fr 1fr!important}
+}

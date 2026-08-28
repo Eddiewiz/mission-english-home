@@ -1,0 +1,10 @@
+Mission English Home v1.6.12 — Mobile definitive fix
+
+- Unifies mobile behavior through 1024 px so landscape phones no longer fall back to desktop/tablet rules.
+- Portrait header uses two compact rows; landscape header uses one row so profile and controls never drop below the logo.
+- Forces Home, Missions and Explore & Practice tab icons/labels to remain visible in active and inactive states.
+- Rebuilds Explore & Practice mobile layout as a normal document-flow section.
+- Opening Listening, Quick Vote, Practice, Short Videos or Kahoots preserves the current mobile viewport instead of jumping into Missions.
+- Missions is never an inner scrolling viewport on mobile.
+- Tarea popover mobile-safe positioning now also covers landscape phones/tablets up to 1024 px.
+- No student storage/progress reset.

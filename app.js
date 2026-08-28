@@ -98,7 +98,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.11 — mobile header, tabs and Explore & Practice fix";
+const CONTENT_VERSION = "Mission English Home v1.6.12 — definitive mobile layout and Explore & Practice stability fix";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -2894,7 +2894,7 @@ function bindEvents() {
         event.currentTarget.setAttribute("aria-expanded",String(!panel.hidden));
         panel.classList.remove("mobile-safe-popover");
         panel.style.removeProperty("top");
-        if(!panel.hidden && window.matchMedia("(max-width:760px)").matches){
+        if(!panel.hidden && window.matchMedia("(max-width:1024px)").matches){
           panel.classList.add("mobile-safe-popover");
           const triggerRect=event.currentTarget.getBoundingClientRect();
           const desiredTop=Math.max(10,Math.min(triggerRect.bottom+8,window.innerHeight-panel.offsetHeight-12));
@@ -2912,11 +2912,18 @@ function bindEvents() {
       document.querySelectorAll(".home-dashboard-nav > button").forEach(b=>b.classList.toggle("active",b.dataset.action==="dashboard-explore"));
       const panel=document.getElementById("explorePanel");
       if(panel){
-        if(!window.matchMedia("(max-width:760px)").matches) panel.scrollIntoView({behavior:"smooth",block:"end"});
+        const mobileHome=window.matchMedia("(max-width:1024px)").matches;
+        /* On phones/tablets use one deliberate navigation only. Do not combine it with
+           focus or layout scrolls, because mobile browsers can otherwise jump back into Missions. */
         panel.classList.remove("explore-focus");
-        void panel.offsetWidth;
-        panel.classList.add("explore-focus");
-        setTimeout(()=>panel.classList.remove("explore-focus"),900);
+        if(mobileHome){
+          requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"start"}));
+        }else{
+          panel.scrollIntoView({behavior:"smooth",block:"end"});
+          void panel.offsetWidth;
+          panel.classList.add("explore-focus");
+          setTimeout(()=>panel.classList.remove("explore-focus"),900);
+        }
         setTimeout(()=>panel.querySelector(".explore-launcher")?.focus({preventScroll:true}),250);
       }
       return;
@@ -2928,22 +2935,20 @@ function bindEvents() {
     }
     if (action === "toggle-explore-panel") {
       const id=event.currentTarget.dataset.panel;
-      const phone=window.matchMedia("(max-width:760px)").matches;
+      const mobileHome=window.matchMedia("(max-width:1024px)").matches;
+      const keepY=window.scrollY;
       document.querySelectorAll(".explore-detail").forEach(el=>{ if(el.id!==id) el.hidden=true; });
       const panel=document.getElementById(id);
       if(panel){
         panel.hidden=!panel.hidden;
         if(!panel.hidden){
-          if(phone){
-            /* Keep Explore & Practice itself visible after the detail expands.
-               This also defeats mobile browser scroll anchoring that used to jump back into Missions. */
-            requestAnimationFrame(()=>{
-              const explore=document.getElementById("explorePanel");
-              if(explore){
-                const y=explore.getBoundingClientRect().top + window.scrollY - 8;
-                window.scrollTo({top:Math.max(0,y),behavior:"instant"});
-              }
-            });
+          if(mobileHome){
+            /* Expanding content below the launcher must not move the page on a phone.
+               Restore the exact pre-click viewport after layout/scroll anchoring settles. */
+            event.currentTarget.focus({preventScroll:true});
+            requestAnimationFrame(()=>requestAnimationFrame(()=>{
+              window.scrollTo({top:keepY,left:0,behavior:"auto"});
+            }));
           }else{
             panel.scrollIntoView({behavior:"smooth",block:"nearest"});
           }

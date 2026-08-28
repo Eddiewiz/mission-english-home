@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.10";
+const HOME_RELEASE_VERSION = "v1.6.11";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
@@ -40,7 +40,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.8";
+const APP_VERSION = "Home v1.6.11";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -98,7 +98,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.10 — mobile phone layout hotfix";
+const CONTENT_VERSION = "Mission English Home v1.6.11 — mobile header, tabs and Explore & Practice fix";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -2928,12 +2928,25 @@ function bindEvents() {
     }
     if (action === "toggle-explore-panel") {
       const id=event.currentTarget.dataset.panel;
+      const phone=window.matchMedia("(max-width:760px)").matches;
       document.querySelectorAll(".explore-detail").forEach(el=>{ if(el.id!==id) el.hidden=true; });
       const panel=document.getElementById(id);
       if(panel){
         panel.hidden=!panel.hidden;
-        if(!panel.hidden && !window.matchMedia("(max-width:760px)").matches){
-          panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+        if(!panel.hidden){
+          if(phone){
+            /* Keep Explore & Practice itself visible after the detail expands.
+               This also defeats mobile browser scroll anchoring that used to jump back into Missions. */
+            requestAnimationFrame(()=>{
+              const explore=document.getElementById("explorePanel");
+              if(explore){
+                const y=explore.getBoundingClientRect().top + window.scrollY - 8;
+                window.scrollTo({top:Math.max(0,y),behavior:"instant"});
+              }
+            });
+          }else{
+            panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+          }
         }
       }
       return;

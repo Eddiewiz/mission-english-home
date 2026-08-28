@@ -2216,3 +2216,103 @@ body{background:#edf5fb}
   .explore-launcher{min-height:82px!important;padding:.5rem!important;gap:.5rem!important}
   .explore-launcher img{width:42px!important;height:42px!important}
 }
+
+
+/* v1.6.11 — PHONE HEADER / NAV / EXPLORE FOLLOW-UP
+   Fixes the remaining real-device issues found after v1.6.10. */
+@media (max-width:760px){
+  /* Header: logo and student identity share the first row instead of stacking.
+     Tarea and account actions use the second row. */
+  .home-dashboard-top{
+    min-height:132px!important;
+    height:auto!important;
+    padding:8px 9px 10px!important;
+    grid-template-columns:132px minmax(0,1fr)!important;
+    grid-template-rows:70px auto!important;
+    column-gap:7px!important;
+    row-gap:7px!important;
+    align-items:center!important;
+  }
+  .dashboard-brand{
+    position:relative!important;
+    left:auto!important;right:auto!important;top:auto!important;
+    transform:none!important;
+    grid-column:1!important;grid-row:1!important;
+    width:126px!important;height:auto!important;
+    justify-self:start!important;align-self:center!important;
+  }
+  .dashboard-brand img{width:126px!important;height:auto!important;transform:none!important}
+  .student-profile-summary{
+    grid-column:2!important;grid-row:1!important;
+    justify-self:end!important;align-self:center!important;
+    width:auto!important;max-width:100%!important;
+    gap:.38rem!important;text-align:left!important;
+  }
+  .student-avatar-placeholder{width:44px!important;height:44px!important;flex:0 0 44px!important}
+  .student-avatar-emoji{font-size:2.55rem!important}
+  .student-profile-summary strong{font-size:.86rem!important;line-height:1.05!important}
+  .student-profile-summary span{font-size:.72rem!important;line-height:1.05!important}
+  .student-profile-summary .grade-cap{font-size:1.35em!important}
+  .homework-mini-wrap{
+    grid-column:1!important;grid-row:2!important;
+    justify-self:start!important;align-self:center!important;margin:0!important
+  }
+  .home-dashboard-top>.account-menu{
+    grid-column:2!important;grid-row:2!important;
+    justify-self:end!important;align-self:center!important;min-width:0!important
+  }
+  .account-summary{max-width:175px!important;font-size:.72rem!important;padding:.46rem .5rem!important;line-height:1.08!important}
+
+  /* Mobile Tab Bar: explicitly restore all three icons and labels.
+     Earlier responsive rules hid child spans, leaving apparently blank tabs. */
+  .home-dashboard-nav{
+    height:76px!important;min-height:76px!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    align-items:start!important;overflow:visible!important;
+  }
+  .home-dashboard-nav>button{
+    min-width:0!important;height:58px!important;
+    padding:.28rem .15rem .2rem!important;
+    display:flex!important;flex-direction:column!important;
+    align-items:center!important;justify-content:center!important;
+    gap:.12rem!important;font-size:.66rem!important;line-height:1.02!important;
+    overflow:visible!important;
+  }
+  .home-dashboard-nav>button>span{display:inline-flex!important}
+  .home-dashboard-nav .nav-icon{display:inline-grid!important;font-size:1.55rem!important;margin:0!important}
+  .nav-home-logo-crop{display:inline-block!important;width:30px!important;height:30px!important;flex:0 0 30px!important}
+  .nav-home-logo-crop img{display:block!important;width:30px!important;height:30px!important;position:static!important;object-fit:contain!important}
+  .nav-icon-img{display:block!important;width:30px!important;height:30px!important;flex:0 0 30px!important}
+  .mission-language-switch{
+    top:auto!important;bottom:2px!important;right:50%!important;
+    transform:translateX(50%)!important;
+    padding:1px 4px!important;font-size:.58rem!important;border-radius:7px!important;
+  }
+
+  /* Opening a detail must never collapse/restrict Missions or clip Explore. */
+  .home-dashboard:has(.explore-detail:not([hidden])) .missions-panel{
+    max-height:none!important;height:auto!important;overflow:visible!important;
+  }
+  .home-discovery{
+    overflow:visible!important;height:auto!important;max-height:none!important;
+    overflow-anchor:none!important;
+  }
+  .home-discovery>.explore-detail{
+    display:block!important;position:relative!important;
+    height:auto!important;max-height:none!important;overflow:visible!important;
+    margin-top:.55rem!important;
+  }
+  .home-discovery>.explore-detail[hidden]{display:none!important}
+}
+
+@media (max-width:390px){
+  .home-dashboard-top{grid-template-columns:112px minmax(0,1fr)!important}
+  .dashboard-brand,.dashboard-brand img{width:108px!important}
+  .student-avatar-placeholder{width:40px!important;height:40px!important;flex-basis:40px!important}
+  .student-avatar-emoji{font-size:2.25rem!important}
+  .student-profile-summary strong{font-size:.8rem!important}
+  .student-profile-summary span{font-size:.68rem!important}
+  .account-summary{max-width:155px!important;font-size:.66rem!important}
+  .home-dashboard-nav>button{font-size:.6rem!important}
+  .nav-home-logo-crop,.nav-home-logo-crop img,.nav-icon-img{width:27px!important;height:27px!important}
+}

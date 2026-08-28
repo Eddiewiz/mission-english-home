@@ -1,0 +1,10 @@
+Mission English Home v1.6.11
+
+Mobile follow-up fixes:
+- Header no longer places the student greeting/grade below the logo; logo and student identity share the first row.
+- Home, Missions and Explore & Practice tabs explicitly show their icons/labels on phones.
+- Explore & Practice details no longer shrink/restrict Missions on mobile.
+- Opening Listening, Quick Vote, Practice, Short Videos or Kahoots keeps Explore & Practice in view and shows the detail below it.
+- Service-worker cache bumped for immediate GitHub Pages refresh.
+
+Desktop approved layout is left unchanged.

@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.9";
+const HOME_RELEASE_VERSION = "v1.6.10";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
@@ -98,7 +98,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.8 — tester Quick Vote isolation fix";
+const CONTENT_VERSION = "Mission English Home v1.6.10 — mobile phone layout hotfix";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -2892,6 +2892,14 @@ function bindEvents() {
       if(panel){
         panel.hidden=!panel.hidden;
         event.currentTarget.setAttribute("aria-expanded",String(!panel.hidden));
+        panel.classList.remove("mobile-safe-popover");
+        panel.style.removeProperty("top");
+        if(!panel.hidden && window.matchMedia("(max-width:760px)").matches){
+          panel.classList.add("mobile-safe-popover");
+          const triggerRect=event.currentTarget.getBoundingClientRect();
+          const desiredTop=Math.max(10,Math.min(triggerRect.bottom+8,window.innerHeight-panel.offsetHeight-12));
+          panel.style.top=`${desiredTop}px`;
+        }
       }
       return;
     }
@@ -2904,7 +2912,7 @@ function bindEvents() {
       document.querySelectorAll(".home-dashboard-nav > button").forEach(b=>b.classList.toggle("active",b.dataset.action==="dashboard-explore"));
       const panel=document.getElementById("explorePanel");
       if(panel){
-        panel.scrollIntoView({behavior:"smooth",block:"end"});
+        if(!window.matchMedia("(max-width:760px)").matches) panel.scrollIntoView({behavior:"smooth",block:"end"});
         panel.classList.remove("explore-focus");
         void panel.offsetWidth;
         panel.classList.add("explore-focus");
@@ -2921,7 +2929,13 @@ function bindEvents() {
     if (action === "toggle-explore-panel") {
       const id=event.currentTarget.dataset.panel;
       document.querySelectorAll(".explore-detail").forEach(el=>{ if(el.id!==id) el.hidden=true; });
-      const panel=document.getElementById(id); if(panel){panel.hidden=!panel.hidden; if(!panel.hidden) panel.scrollIntoView({behavior:"smooth",block:"nearest"});}
+      const panel=document.getElementById(id);
+      if(panel){
+        panel.hidden=!panel.hidden;
+        if(!panel.hidden && !window.matchMedia("(max-width:760px)").matches){
+          panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+        }
+      }
       return;
     }
     if (action === "poll-vote") { submitQuickVote(event.currentTarget.dataset.choice || ""); return; }

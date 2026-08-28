@@ -1,0 +1,14 @@
+Mission English Home v1.6.10 — Mobile phone layout hotfix
+Date: 2026-08-28
+
+Changes:
+- Mobile header no longer forces the desktop four-column layout.
+- On phones, logo, Tarea/account controls, and student profile are arranged in a compact two-row responsive header.
+- Tarea popover is constrained to the visible phone viewport and cannot open off the left edge.
+- Explore & Practice panels remain in normal mobile flow; opening Listening/Quick Vote/Practice/Short Videos/Kahoots no longer forces scrollIntoView on phones.
+- Added mobile overflow guards so Explore & Practice/details cannot widen or horizontally shift the page.
+- Desktop/tablet approved layout is intentionally unchanged.
+- Student/tester local state namespace is intentionally preserved (no student progress reset).
+
+Deferred (not changed in this hotfix):
+- Tester homework popup currently also appears when testers select Grades 4 or 5. Real-student access is currently Grade 6 only; this will be corrected separately.

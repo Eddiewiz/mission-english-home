@@ -2132,3 +2132,87 @@ body{background:#edf5fb}
   font-weight:800!important;
   cursor:pointer!important;
 }
+
+
+/* v1.6.10 — MOBILE PHONE LAYOUT HOTFIX
+   Keeps the approved desktop/tablet design untouched. */
+@media (max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden!important}
+  .app-shell,.home-dashboard,.missions-panel,.home-discovery{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+
+  /* Phone header: logo gets its own visual band; actions/profile no longer compete in four columns. */
+  .home-dashboard-top{
+    height:auto!important;
+    min-height:205px!important;
+    padding:94px 10px 10px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+    column-gap:8px!important;
+    row-gap:8px!important;
+    align-items:center!important;
+  }
+  .dashboard-brand{
+    left:50%!important;right:auto!important;top:4px!important;
+    transform:translateX(-50%)!important;
+    width:168px!important;height:auto!important;
+  }
+  .dashboard-brand img{width:100%!important;height:auto!important}
+  .homework-mini-wrap{
+    grid-column:1!important;grid-row:1!important;
+    justify-self:start!important;margin:0!important;min-width:0!important
+  }
+  .home-dashboard-top>.account-menu{
+    grid-column:2!important;grid-row:1!important;
+    justify-self:end!important;min-width:0!important
+  }
+  .account-summary{
+    width:auto!important;min-width:0!important;max-width:165px!important;
+    padding:.55rem .62rem!important;font-size:.78rem!important;
+    white-space:normal!important;line-height:1.15!important
+  }
+  .student-profile-summary{
+    grid-column:1/-1!important;grid-row:2!important;
+    justify-self:center!important;min-width:0!important;
+    gap:.55rem!important;text-align:left!important
+  }
+  .student-avatar-placeholder{width:54px!important;height:54px!important;flex:0 0 54px!important}
+  .student-avatar-emoji{font-size:3.15rem!important}
+  .student-profile-summary strong{font-size:1rem!important;line-height:1.08!important}
+  .student-profile-summary span{font-size:.86rem!important;line-height:1.1!important;margin-top:.1rem!important}
+
+  /* Tarea panel is positioned by JS inside the viewport on phones. */
+  .homework-popover.mobile-safe-popover{
+    position:fixed!important;
+    left:12px!important;right:12px!important;
+    width:auto!important;max-width:none!important;
+    margin:0!important;transform:none!important;
+    max-height:calc(100vh - 24px)!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+  }
+
+  /* Explore & Practice must remain in normal document flow and never widen the viewport. */
+  .home-discovery{overflow:hidden!important}
+  .home-discovery>h3,.home-discovery>.dashboard-extra-grid,.home-discovery>.explore-detail{
+    min-width:0!important;max-width:100%!important;width:100%!important;box-sizing:border-box!important
+  }
+  .home-discovery>.dashboard-extra-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .explore-launcher{min-width:0!important;width:100%!important;overflow:hidden!important}
+  .explore-launcher img{width:48px!important;height:48px!important}
+  .explore-launcher strong{font-size:.9rem!important}
+  .explore-launcher small{font-size:.72rem!important}
+  .explore-detail{overflow:hidden!important}
+  .explore-detail-head{min-width:0!important;flex-wrap:wrap!important}
+  .audio-controls,.poll-buttons{max-width:100%!important}
+}
+
+@media (max-width:430px){
+  .home-dashboard-top{min-height:212px!important;padding-left:8px!important;padding-right:8px!important}
+  .dashboard-brand{width:158px!important}
+  .homework-mini-trigger{font-size:.78rem!important;padding:.38rem .55rem!important}
+  .account-summary{max-width:145px!important;font-size:.72rem!important;padding:.48rem .5rem!important}
+  .home-discovery>.dashboard-extra-grid{grid-template-columns:1fr 1fr!important;gap:.4rem!important}
+  .explore-launcher{min-height:82px!important;padding:.5rem!important;gap:.5rem!important}
+  .explore-launcher img{width:42px!important;height:42px!important}
+}

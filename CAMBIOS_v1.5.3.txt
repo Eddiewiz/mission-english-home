@@ -1,0 +1,7 @@
+Mission English Home v1.5.3
+- Portada: nubes y arboleda tomadas del diseño de referencia aprobado; se eliminan los árboles de círculos CSS.
+- Audio: Useful English usa audio local offline y mantiene 1x / 0.75x; speech synthesis queda como respaldo.
+- Desktop: nuevo MissionEnglishHome.ico basado en el logo Home para diferenciarlo de Classroom.
+- Identificación: Nombre + Apodo en una línea; Apellido + Colegio/Institución en la siguiente; Grado debajo.
+- Greetings: cuatro escenas visuales para Good morning, Good afternoon, Good evening y Good night.
+- El resto de las misiones se conserva.

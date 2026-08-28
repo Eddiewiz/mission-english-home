@@ -1,0 +1,9 @@
+Mission English Home v1.5.8
+
+Práctica diferenciada:
+1. Recordar: Colors se presentan uno por uno con tarjeta de color + audio. Numbers presenta 1 a 10 EN ORDEN con cantidad + audio.
+2. Reconocer: audio y dos opciones visuales. En Numbers todos los puntos son idénticos y neutros. Si falla, escucha otra vez y vuelve a intentar.
+3. Practicar: conserva la práctica final creada en v1.5.7.
+
+Numbers queda limitado a 1–10 en esta primera etapa.
+Las Missions normales no fueron modificadas.

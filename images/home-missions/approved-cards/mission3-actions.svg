@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430">
+<rect width="1000" height="430" rx="28" fill="#eef6fc"/>
+<style>.t{font:600 28px Arial;fill:#173f72}.s{stroke:#173f72;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;fill:none}.a{stroke:#ef6b22;stroke-width:10;stroke-linecap:round;fill:none}.p{fill:#fff;stroke:#c9d9e8;stroke-width:4}</style>
+<g transform="translate(15 15)">
+<rect class="p" x="0" y="0" width="230" height="185" rx="20"/><text class="t" x="55" y="35">Listen</text><path class="s" d="M105 65c45-35 86 8 54 48-15 19-35 8-35 42M125 92c20-12 35 4 22 20"/>
+<rect class="p" x="245" y="0" width="230" height="185" rx="20"/><text class="t" x="310" y="35">Look</text><ellipse class="s" cx="330" cy="105" rx="52" ry="31"/><circle cx="330" cy="105" r="13" fill="#173f72"/><path class="a" d="M390 105h55"/><path fill="#ef6b22" d="M445 105l-22-14v28z"/><rect x="450" y="78" width="15" height="54" fill="#173f72"/>
+<rect class="p" x="490" y="0" width="230" height="185" rx="20"/><text class="t" x="548" y="35">Stand up</text><circle cx="585" cy="78" r="20" fill="#173f72"/><path class="s" d="M585 100v45m0-25l-30 20m30-20l28 20m-28 5l-28 32m28-32l28 32"/><path class="a" d="M665 150V80"/><path fill="#ef6b22" d="M665 62l-14 24h28z"/><path class="s" d="M520 155h60M520 155v25M580 155v25"/>
+<rect class="p" x="735" y="0" width="230" height="185" rx="20"/><text class="t" x="805" y="35">Sit down</text><circle cx="810" cy="78" r="20" fill="#173f72"/><path class="s" d="M810 100v40m0-18l-25 20m25-20l25 20m-25-2l-23 25m23-25l25 6"/><path class="s" d="M860 115v50m0-18h55m0-32v65"/><path class="a" d="M840 75v62"/><path fill="#ef6b22" d="M840 154l-14-24h28z"/>
+<rect class="p" x="0" y="200" width="230" height="185" rx="20"/><text class="t" x="75" y="235">Copy</text><path class="s" d="M70 330l70-70 35 35-70 70-45 10z"/>
+<rect class="p" x="245" y="200" width="230" height="185" rx="20"/><text class="t" x="315" y="235">Stop</text><path class="s" d="M330 350v-70m0 0v-35m0 35l-28-38m28 38l0-48m0 48l25-40m-25 40l50-20v90c0 35-30 52-58 38z"/>
+<rect class="p" x="490" y="200" width="230" height="185" rx="20"/><text class="t" x="555" y="235">Let's go!</text><path class="a" d="M540 315h120"/><path fill="#ef6b22" d="M675 315l-32-20v40z"/>
+<rect class="p" x="735" y="200" width="230" height="185" rx="20"/><text class="t" x="800" y="235">Silence</text><circle cx="835" cy="295" r="45" fill="#f4c39e" stroke="#173f72" stroke-width="4"/><path class="s" d="M815 285h8m24 0h8M820 318q15 8 30 0"/><path class="a" d="M875 260v100"/>
+</g></svg>

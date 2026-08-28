@@ -1,0 +1,15 @@
+Mission English Home v1.3
+
+- Misiones 1–10 alineadas con Classroom en tema, título y explicación central.
+- Ejercicios de Home diferentes a los de Classroom.
+- Pantalla "LEÉ ESTO PRIMERO" y confirmación de lectura antes de cada ejercicio.
+- Practice for you / Práctica para vos usa el diagnóstico disponible para sugerir refuerzos.
+- Useful English inicial: "Can I go to the toilet, please?" con pronunciación del dispositivo como solución temporal.
+- Quick Vote inicial: "What's your favorite color?"; el voto se registra como evento.
+- Espacios preparados para videos cortos y Mission English Assistant.
+- Confirmación de identidad al volver a Home si el dispositivo ya tenía un alumno guardado.
+- Registra salidas/inactividad durante una misión.
+- Respeta permisos de misiones enviados por Mission English World.
+- Misión 9: Numbers 11–20. Misión 10: repaso 6–9.
+- Cada quinta misión funciona como repaso/integración.
+- Corrección del apellido Acuña Cabral, Paz.

@@ -1,0 +1,9 @@
+Mission English Home v1.4.0 — base online
+
+- Recorrido movido al lateral derecho, como en Classroom.
+- En pantallas pequeñas el recorrido se adapta y pasa a una barra compacta.
+- Home ya no muestra el aviso de vigilancia al cambiar temporalmente de pestaña; el trabajo en casa sigue siendo flexible.
+- Se mantiene el registro técnico de salida para diagnóstico, sin interrumpir al alumno.
+- Texto de Home actualizado: el alumno puede elegir y repetir misiones cuando quiera.
+- Práctica recomendada explica primero que los refuerzos aparecerán cuando hagan falta.
+- Eliminado del paquete el Apps Script antiguo de Home; esta versión usa el backend central Mission English World.

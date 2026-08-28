@@ -1,0 +1,14 @@
+Mission English Home v1.5.13 — interfaz consolidada pre-GitHub
+
+- Nueva interfaz profesional para Home, conservando fondo blanco en Missions y celeste suave en navegación y Explorar y Practicar.
+- Logo Home superpuesto visualmente sobre la parte superior del panel.
+- Perfil de alumno preparado para futuros avatares personalizables; sin sistema de puntos ni accesorios competitivos.
+- Misiones primero; Explorar y Practicar debajo.
+- Explorar y Practicar: Listening, Quick Vote, Practice, Short Videos y Kahoots.
+- Mission English Assistant retirado de la interfaz activa mientras continúa en desarrollo.
+- Kahoots queda visible como sección preparada para contenido habilitado por el teacher.
+- Consejo de Greetings colocado dentro de la Mission, después de la explicación visual.
+- Sin porcentaje general visible por defecto.
+- Powered by WizPro recuperado en el pie interno.
+- Se mantiene el bloqueo central por Mission; la selección exacta depende del teacher. Las futuras Missions 11–15 podrán iniciar bloqueadas.
+- No se actualiza GitHub con esta versión hasta completar pruebas locales.

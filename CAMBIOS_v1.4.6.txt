@@ -1,0 +1,5 @@
+Mission English Home v1.4.6
+- Short Videos reproduce clips subidos a Google Drive.
+- Solo aparecen videos aprobados y activados.
+- Los clips permanecen dentro de Mission English.
+- Assistant permanece En construcción.

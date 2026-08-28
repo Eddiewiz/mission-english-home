@@ -1,0 +1,12 @@
+Mission English Home v1.5.7 — Práctica diferenciada
+
+- Se agrega Practice / Práctica como actividad opcional, separada de las Missions y de sus puntajes.
+- Colors: usa únicamente los 11 colores ya presentes en Mission 6.
+- Numbers: usa únicamente 1–20, ya presentes en Missions 7 y 9.
+- Dos caminos: audio → imagen y palabra escrita → imagen.
+- Colors usa superficies de color sin objetos contables.
+- Numbers usa grupos de puntos idénticos y del mismo color neutro, evitando confundir número con color u objeto.
+- Cada sesión usa 6 ejercicios aleatorios.
+- Al acertar, se escucha la palabra y aparece escrita como refuerzo.
+- Un error no revela inmediatamente la respuesta: invita a volver a escuchar e intentar.
+- La práctica no modifica las Missions normales ni su puntaje.

@@ -1,0 +1,12 @@
+Mission English Home v1.5.14 — APPROVED UI PRE-GITHUB
+
+- Reconstruye el dashboard tomando como referencia directa la interfaz aprobada.
+- Reduce y reposiciona el logo para que HOME sobresalga sin invadir el título Misiones.
+- Unifica Cambiar estudiante / Cerrar sesión en un único control visual con menú funcional.
+- Home vuelve realmente a la pantalla inicial.
+- Tarjetas de Misiones: número a la izquierda, colores variables, título a la derecha, imagen temática y franja inferior de estado.
+- Explorar y Practicar vuelve a cinco botones compactos: Listening, Quick Vote, Practice, Short Videos y Kahoots.
+- Los controles extensos de esas herramientas se abren debajo y no deforman los botones.
+- Powered by WizPro queda centrado en el pie y la versión a la derecha.
+- Se mantiene el porcentaje de progreso general oculto.
+- Mission English Assistant no se muestra mientras continúe en desarrollo.

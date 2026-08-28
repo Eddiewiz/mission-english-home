@@ -1,0 +1,30 @@
+Mission English Home v1.5.9
+
+Corrección de Práctica diferenciada:
+
+NUMBERS
+Paso 1:
+- Una pantalla por número.
+- 1 punto + parlante, luego 2 puntos + parlante, etc.
+- Avanza en orden del 1 al 10.
+- No muestra la palabra escrita durante esta etapa.
+
+Paso 2:
+- Se trabajan los 10 números, cada uno una vez.
+- El orden se mezcla para que la posición no dé la respuesta.
+- Se escucha el número.
+- Aparecen solamente dos cantidades representadas por puntos neutros.
+- El alumno elige una.
+- Si falla, escucha otra vez y vuelve a intentar.
+
+Paso 3:
+- Se conserva la práctica original creada en v1.5.7.
+- Numbers queda limitado a 1–10 en esta primera etapa.
+
+COLORS
+- Sigue la misma estructura de tres pasos.
+- Paso 1: un color por pantalla + parlante.
+- Paso 2: se trabaja cada color una vez con dos opciones visuales.
+- Paso 3: práctica original.
+
+Las Missions normales no fueron modificadas.

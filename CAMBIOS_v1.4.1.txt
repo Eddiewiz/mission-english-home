@@ -1,0 +1,18 @@
+Mission English Home v1.4.1
+
+CAMBIOS PRINCIPALES
+- Introducción especial la primera vez que cada alumno entra a Home.
+- Se destaca que Home no funciona exactamente igual que Classroom y que es importante leer.
+- Acceso simplificado: nombre o apodo + grado; apellido solo si hace falta distinguir alumnos.
+- El colegio queda recordado en el dispositivo.
+- Encabezado del mapa: saludo a la izquierda; colegio y “4.º/5.º/6.º grado” a la derecha.
+- Practice for you combina refuerzos provenientes de Classroom y Home.
+- Las misiones abren siempre desde arriba.
+- “Volver al mapa de misiones” ahora es un botón claro.
+- Audio con controles simples 1× y 0.75×.
+- Quick Vote incluye traducción y una pregunta más natural sobre las elecciones de compañeros.
+- Short videos muestra traducción en 4.º y 5.º, pero no en 6.º.
+- Mission English Assistant ahora ofrece una interacción guiada básica por temas.
+- Se reemplazó “Cambiar datos” del mapa por “Salir de Mission English Home”.
+- Home no muestra avisos de vigilancia cuando el alumno sale momentáneamente de la aplicación.
+- Se conserva el Recorrido lateral derecho de v1.4.0.

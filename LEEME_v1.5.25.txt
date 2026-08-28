@@ -1,0 +1,10 @@
+MISSION ENGLISH HOME v1.5.25 — PATCH ONLY
+
+Reemplazar únicamente:
+- app.js
+- service-worker.js
+
+Cambios:
+- Se retiran temporalmente TODAS las imágenes dentro de los ejercicios/preguntas de Home.
+- Se conservan Mission Cards, Observa, Greetings y demás imágenes de contenido aprobadas.
+- Greetings aclara Hello (formal/neutral) vs Hi (informal).

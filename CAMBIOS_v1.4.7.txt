@@ -1,0 +1,7 @@
+Mission English Home v1.4.7
+
+FIX CRÍTICO SHORT VIDEOS
+- Home ahora identifica explícitamente su origen como Home al consultar Mission English World.
+- Home conserva y carga el campo homeVideos recibido del backend.
+- Los videos aprobados + activos ya pueden llegar al alumno.
+- No requiere cambios adicionales en Code.gs v4.6.

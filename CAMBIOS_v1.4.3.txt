@@ -1,0 +1,5 @@
+Mission English Home v1.4.3
+- Is this you? incluye traducción.
+- Assistant interactivo.
+- Short Videos incorpora el clip de 21 segundos.
+- Indicación visible para salir al terminar.

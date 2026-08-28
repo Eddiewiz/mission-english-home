@@ -1,0 +1,20 @@
+MISSION ENGLISH HOME v1.5.21 — PATCH ONLY
+Base esperada: v1.5.20 ya instalada.
+
+Reemplazar / copiar solamente estos archivos en la carpeta raíz de Mission English Home:
+- app.js
+- service-worker.js
+- Cloudy.mp4
+- parts-head-face-card.jpg
+- parts-body-card.jpg
+
+Cambios incluidos:
+- Kahoot Months of the Year (Mission 12) agregado.
+- Texto de vencimiento: “Estos juegos vencen el sábado 5 de septiembre al mediodía.”
+- Quick Vote: corregido el evento de click para que llame al envío real del voto.
+- Short Videos: agregado Cloudy.mp4 como video local de Weather · Mission 8.
+- Mission cards Parts of the Head and Face / Parts of the Body: imágenes con personajes de la familia visual Mission English, en lugar de gráficos básicos.
+- Versión visible: v1.5.21.
+
+No reemplazar index.html ni styles.css para este patch.
+No se modifica GitHub con este ZIP.

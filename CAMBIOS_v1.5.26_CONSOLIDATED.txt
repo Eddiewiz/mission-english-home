@@ -1,0 +1,12 @@
+MISSION ENGLISH HOME v1.5.26 — CONSOLIDATED WEB-READY
+
+This is a FULL consolidated build, not a patch. It consolidates the working Home line through v1.5.25 so it can be uploaded/assigned without reconstructing many patches.
+
+Preserved:
+- Current Mission cards and approved content visuals.
+- Missions by grade and locks.
+- Explore & Practice / Quick Vote / Kahoots / Short Videos structure.
+- Greetings formal/informal clarification.
+- Exercise-question images remain temporarily disabled, as requested; they will later be rebuilt in the MEC-quality visual style.
+
+No Dashboard redesign has been applied yet. Dashboard is the next UI phase.

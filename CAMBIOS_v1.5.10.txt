@@ -1,0 +1,10 @@
+Mission English Home v1.5.10
+
+- Se reemplaza el icono clickeable/instalable de Mission English Home.
+- Se usa la imagen aprobada: globo azul/blanco con casa en la esquina inferior derecha.
+- No se rediseñó el icono; se adaptó el fondo exterior a transparencia para uso como app.
+- Se generan iconos PWA 192x192 y 512x512.
+- Se incluye MissionEnglishHome.ico para acceso directo de Windows.
+- El manifest usa purpose "any" para evitar recortes innecesarios de la casa.
+- Se actualiza el cache del service worker para forzar la renovación del icono.
+- No se modifican Missions, resultados ni lógica de Home.

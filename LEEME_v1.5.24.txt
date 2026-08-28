@@ -1,0 +1,25 @@
+MISSION ENGLISH HOME — PATCH v1.5.24
+
+Este ZIP contiene SOLO los archivos modificados. Copiar su contenido dentro de la carpeta de la última versión funcional de Mission English Home, conservando las mismas rutas y aceptando reemplazar los archivos existentes.
+
+Archivos:
+- app.js
+- styles.css
+- service-worker.js
+- images/ui/rocket.svg
+- images/ui/home-tab-house.png
+- images/home-missions/approved-cards/m9-numbers-11-20-dashboard.jpg
+
+Cambios principales:
+- El icono Home vuelve a cargarse desde la ruta correcta images/ui/home-tab-house.png.
+- Cohete reemplazado por la variante original de punta marcada y borde fino oscuro.
+- Mission 3 / Observa vuelve al formato visual anterior (emoji/gesto + traducciones), eliminando los stick figures agregados.
+- Mission 4 / Observa: se elimina el bloque repetido de restroom-office-library-kitchen debajo de la imagen; la imagen compuesta se conserva y se muestra más compacta y uniforme.
+- Mission 7 y Mission 9 dejan de compartir la misma Mission Card: Mission 9 incorpora una tarjeta visual propia para Numbers 11–20.
+- Mission 15 desarrollada:
+  * 4.º/5.º: repaso de Days, Months, Parts of the Head and Face y Parts of the Body.
+  * 6.º: repaso de Days, Months, Classroom Objects y Verb To Be · It, con 6 preguntas totales e incluye OR question.
+- Apoyo visual en algunos ejercicios de cada Mission desarrollada: al menos una consigna por Mission utiliza imagen, sin poner imagen en todas las preguntas.
+- Versión visible actualizada a Home v1.5.24.
+
+No reemplazar index.html ni otros archivos que no estén en este ZIP.

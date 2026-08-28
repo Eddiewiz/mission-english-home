@@ -1,0 +1,8 @@
+Mission English Home v1.5.0 — Identidad Web
+
+- Integra el logo aprobado de Mission English Home.
+- El logo aparece de forma destacada en la pantalla inicial.
+- El header utiliza la misma identidad Home.
+- Manifest/PWA actualizado con icono Home.
+- Se conserva intacta la lógica, navegación, misiones, identificación y sincronización de v1.4.7.
+- Short Videos queda pendiente para una etapa posterior.

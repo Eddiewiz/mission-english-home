@@ -1,0 +1,16 @@
+Mission English Home v1.6.6 — FINAL HOMEWORK RELEASE
+
+Base: v1.6.0 FULL consolidated + approved patches v1.6.1 through v1.6.5.
+
+Included:
+- Homework reminder and highlighted Tarea button.
+- Deadline: Tuesday September 1, 2026 — 12:00 PM (noon).
+- Quick Vote backend tracking.
+- Listening activity tracking.
+- Practice activity tracking (practice_opened / completion where applicable).
+- Short Video activity tracking.
+- Cloudy wording: “Un momento gracioso de un teacher”.
+- New v1.6.6 Home release marker/local state namespace so students begin with fresh local Home state after deployment.
+
+IMPORTANT:
+The local reset does not delete historical Home test rows already stored in the central Google Sheets backend. Those must be reset separately before the public release if a completely clean teacher-side history is required.

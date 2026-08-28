@@ -1,0 +1,20 @@
+MISSION ENGLISH HOME v1.5.23 — PATCH ONLY
+
+Copiar estos archivos sobre la última versión funcional, respetando las mismas carpetas:
+- app.js
+- styles.css
+- service-worker.js
+- images/ui/home-tab-house.png
+- images/ui/rocket.svg
+- todos los archivos incluidos en images/home-missions/approved-cards/
+
+No reemplazar index.html ni el resto del proyecto.
+
+Cambios principales:
+- Ajustes finales de Missions 1, 2, 3, 4, 7, 8, 9, 10, 11 y 12.
+- 6.º grado: 6 preguntas totales, incluyendo OR question y una pregunta adicional.
+- Mission Cards usan imágenes de estilo uniforme basado en el dashboard aprobado.
+- Review cards 11–14 y 16–19 indican visualmente los temas repasados.
+- Casa limpia en la pestaña Home.
+- Cohete original terminado en punta.
+- Kahoots: 4 por fila en escritorio.

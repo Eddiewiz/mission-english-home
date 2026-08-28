@@ -1,0 +1,11 @@
+Mission English Home v1.5.5 — versión consolidada
+
+- Quick Vote: seis opciones: Blue, Red, Green, Yellow, Purple y Orange.
+- Todas las palabras de colores tienen exactamente el mismo color de texto y el mismo fondo.
+- Cada persona solo puede votar una vez.
+- Tras votar, el alumno ve únicamente “Tu voto fue registrado: [Color]”.
+- No se muestran resultados parciales a los alumnos.
+- Useful English conserva la voz natural del navegador.
+- Se explica 0.75× Lento y cómo volver a 1× Normal.
+- Se conservan el flujo de primera vez, identificación, Greetings y el icono Home basado en MEC + casa de v1.5.4.
+- Modo Tester no se activa todavía para evitar contaminar registros reales; por ahora se mantiene la opción de usar un alumno de prueba existente.

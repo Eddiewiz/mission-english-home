@@ -1,0 +1,8 @@
+Mission English Home v1.6.4 — Practice tracking correction
+
+- Adds practice_opened when a student starts Guided Practice or differentiated Practice.
+- Adds practice_completed when the Guided Practice recognition stage is completed.
+- Keeps the existing practice_completed event for the differentiated final activity.
+- Short Videos wording changed to “Watch, enjoy and learn / Mirá, disfrutá y aprendé”.
+- Cloudy is described as a funny Teacher Eddie moment connected with Weather / Mission 8, rather than only as a formal learning video.
+- No fresh student reset in this audit patch, so Ruth can continue being used for the verification test.

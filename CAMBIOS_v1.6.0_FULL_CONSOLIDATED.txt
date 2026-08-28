@@ -1,0 +1,26 @@
+MISSION ENGLISH HOME v1.6.0 — FULL CONSOLIDATED WEB READY
+
+Base:
+- Mission English Home v1.5.26 complete package.
+
+Applied over the base:
+- Final approved Home changes through v1.6.0.
+- Current app.js, styles.css, index.html and service worker.
+- Approved Mission English Home logo.
+- Classroom Objects image assets added after v1.5.26.
+- Practice Extras functional/visual corrections.
+- Listening 0.75 instruction.
+- First-entry Tarea visual accent.
+- v1.6.0 fresh-release local Home state reset/versioning.
+
+Important:
+- This FULL package preserves all untouched files from v1.5.26, including:
+  CREAR ACCESO DIRECTO - HOME.bat
+  MissionEnglishHome.ico
+  Cloudy.mp4
+  documentation
+  historical change/readme files
+  approved mission/greetings/home images
+  and the remaining auxiliary assets.
+
+This ZIP is intended to replace the previous folder as the complete v1.6.0 package.

@@ -1,0 +1,15 @@
+Mission English Home v1.5.12 — final pre-GitHub
+
+- Mantiene todas las Missions primero en la página principal.
+- Debajo se conserva la sección Explore & Practice.
+- Orden confirmado de Explore & Practice, de izquierda a derecha: Listening → Quick Vote → Practice → Short videos → Mission English Assistant.
+- Se mantiene Cambiar estudiante y Cerrar sesión.
+- Se mantienen Missions sin controles de audio; el audio queda en Listening y prácticas específicas.
+- Se mantienen imágenes propias de Home y variantes visuales de 6.º grado.
+- Se mantienen dos preguntas adicionales y orden diferente para 6.º grado.
+- Se mantiene Practice for you con recomendaciones basadas en resultados.
+- Se mantienen los bloqueos centrales de Missions ya existentes.
+- El frontend conserva soporte preparado para bloqueos de Listening y Practice; el backend actual todavía no entrega missionPermissions.sections, por lo que ese control central de secciones queda pendiente de integración.
+- Se amplía el precache PWA para incluir las imágenes actuales de Home Missions, incluidas las variantes de 6.º y las imágenes de amanecer/atardecer.
+- No se agregan todavía las cinco Missions futuras bloqueadas.
+- No actualizar GitHub hasta terminar la prueba local de esta versión.

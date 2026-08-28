@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="430" viewBox="0 0 720 430">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8ed7ff"/><stop offset="1" stop-color="#ffe5a3"/></linearGradient></defs>
+<rect width="720" height="430" rx="24" fill="url(#sky)"/><path d="M0 310 Q180 250 360 305 T720 300 V430 H0Z" fill="#5f9f55"/>
+<circle cx="360" cy="305" r="74" fill="#ffd84d"/><g stroke="#f3ad21" stroke-width="10" stroke-linecap="round"><path d="M360 195v-45M280 220l-32-32M440 220l32-32M250 285h-45M470 285h45"/></g>
+<path d="M575 290V145" stroke="#173b5e" stroke-width="16" stroke-linecap="round"/><path d="M525 195l50-55 50 55" fill="none" stroke="#173b5e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="36" y="58" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#173b5e">Good morning</text></svg>

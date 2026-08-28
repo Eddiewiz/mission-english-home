@@ -1,0 +1,24 @@
+MISSION ENGLISH HOME v1.6.0 — CONSOLIDATED WEB READY
+
+Final pending items completed:
+- Visible release version updated to v1.6.0.
+- First-entry Tarea button gets a soft but clear visual pulse/highlight.
+- The Tarea accent stops after the student opens it.
+- Fresh-release reset: prior local test students do not inherit avatar, Mission progress,
+  Quick Vote state, Listening/Video/Practice activity, homework completion, or prior Home activity.
+- Reset is scoped to Mission English Home-related browser storage rather than clearing unrelated browser data.
+- Session state is also cleared on the first v1.6.0 load.
+- All approved changes through v1.5.50 are consolidated.
+- Service-worker version/cache is bumped when present to reduce stale web assets.
+
+Homework:
+- Mission 2 Greetings required.
+- Mission 13 Classroom Objects required.
+- Quick Vote required.
+- Listening required.
+- Short Video required.
+- Deadline / Fecha límite: Tuesday, September 1, 2026 at 8:00 AM.
+- Mission 4 remains available as optional.
+- Other normal Grade 6 Missions remain locked for this assignment.
+
+This is the COMPLETE consolidated ZIP intended for the next web deployment.

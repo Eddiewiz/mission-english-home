@@ -1,0 +1,8 @@
+Mission English Home v1.4.4
+
+- La indicación de cómo salir aparece al principio del mapa, resaltada.
+- Mission English Assistant vuelve a “En construcción”.
+- Short Videos ya no usa un enlace fijo.
+- Los videos ahora los define el teacher desde Mission English World.
+- Solo se usan URLs de reproducción embebida para que el video abra dentro de Mission English.
+- El teacher puede habilitar videos por grado/división.

@@ -1,0 +1,4 @@
+Mission English Home v1.4.5
+- YouTube normal/Shorts, Vimeo y MP4 directos se reproducen internamente cuando son compatibles.
+- Fuentes incompatibles no mandan al alumno fuera de Mission English.
+- Assistant permanece En construcción.

@@ -1,0 +1,14 @@
+Mission English Home v1.5.15 — APPROVED UI IMPLEMENTATION PRE-GITHUB
+
+- Implementa la maqueta visual aprobada como interfaz del Home real.
+- Conserva las 10 Missions reales y su contenido.
+- Tarjetas uniformes con número a la izquierda, imagen temática y estado inferior.
+- Estados: Comenzar / Continuar / Practicar otra vez / Bloqueada.
+- El puntaje no aparece en la página general de Missions.
+- El progreso general permanece oculto.
+- Greetings mantiene su explicación visual y consejo dentro de la Mission, no en la página principal.
+- Explorar y Practicar: Listening, Quick Vote, Practice, Short Videos y Kahoots.
+- Short Videos usa naranja; Kahoots usa K! violeta sin símbolos de premio.
+- Footer: Mission: Learn English everyday. / Powered by WizPro / versión.
+- Se preservan borradores locales para permitir Continuar una Mission iniciada.
+- GitHub todavía no actualizado.

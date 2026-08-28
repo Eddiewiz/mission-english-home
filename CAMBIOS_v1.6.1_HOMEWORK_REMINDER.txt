@@ -1,0 +1,8 @@
+MISSION ENGLISH HOME v1.6.1
+
+- Corrige el botón real de Tarea: ahora cambia a amarillo/dorado y tiene un brillo/pulso suave mientras hay tarea asignada.
+- Agrega un popup automático al ingresar a Missions cuando el alumno tiene una nueva tarea asignada.
+- El popup recuerda la fecha límite y explica que, al cerrarlo, la tarea siempre se puede volver a abrir desde 📋 Tarea en la parte superior.
+- El popup se muestra una vez por alumno y por asignación. Si cambia la tarea o su deadline, vuelve a mostrarse automáticamente.
+- Los testers no reciben el popup.
+- Service worker actualizado a v1.6.1.

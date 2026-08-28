@@ -1,0 +1,17 @@
+MISSION ENGLISH HOME v1.5.20 — PATCH ONLY
+
+Reemplazar solamente:
+- app.js
+- styles.css
+- service-worker.js
+
+Cambios principales:
+- Kahoots: fecha de cierre corregida al sábado 5 de septiembre al mediodía.
+- Quick Vote se identifica como encuesta semanal en Home. El recordatorio al teacher debe integrarse en ESL Teacher Manager, no en la app del alumno.
+- Parts of the Head and Face y Parts of the Body quedan desbloqueadas por defecto para prueba en todos los grados; siguen respetando missionPermissions para que el teacher pueda bloquearlas cuando exista/esté activa la interfaz docente.
+- Parts of the Body actualizado con el vocabulario acordado, repaso de Head/Face, back→backpack, knee, foot→feet y diagrama con flechas.
+- Mission 4 agrega restroom/toilet, office, library y kitchen con apoyo visual.
+- Mission cards reciben fondos temáticos diferenciados para evitar el celeste repetido y mantener una estética visual similar a Weather & Temperature.
+- Versión visible: v1.5.20.
+
+No reemplazar index.html ni otros recursos.

@@ -1,0 +1,12 @@
+Mission English Home v1.5.6 — Approved UI
+
+- La pantalla de inicio real usa la última composición visual aprobada como una sola imagen limpia.
+  Se eliminan de la portada las capas separadas de nubes, árboles y paisaje que generaban superposiciones.
+- Los botones Iniciar sesión y ¿Primera vez? siguen siendo funcionales mediante áreas clickeables accesibles.
+- Quick Vote mantiene seis opciones: Blue, Red, Green, Yellow, Purple y Orange.
+- Todos los nombres de colores usan exactamente el mismo color de texto y el mismo fondo.
+- Cada persona solo puede votar una vez y solo ve la confirmación de su propio voto.
+- Useful English conserva voz natural y explicación de 0.75x / 1x.
+- Greetings usa las cuatro escenas visuales de la última maqueta aprobada.
+- Se conserva el icono de Home basado en la identidad MEC con la casa.
+- Se conserva la identificación Nombre/Apodo y Apellido/Colegio en filas horizontales.

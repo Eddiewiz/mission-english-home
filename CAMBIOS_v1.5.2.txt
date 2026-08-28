@@ -1,0 +1,9 @@
+Mission English Home v1.5.2
+
+- Portada ajustada al diseño de referencia: arboleda a ambos lados que sube en diagonal hacia afuera.
+- ¿PRIMERA VEZ? abre primero una página explicativa sobre qué es Mission English Home, pensada también para las familias.
+- Después de esa explicación continúa la identificación y la introducción del alumno.
+- Nuevo icono PWA/Home Screen en formato cuadrado usando el logo aprobado de Mission English Home.
+- Se agrega icono 192x192 y se actualiza el 512x512.
+- El logo del header funciona también como acceso clickeable para volver a la portada.
+- No se modificaron las misiones ni Short Videos.

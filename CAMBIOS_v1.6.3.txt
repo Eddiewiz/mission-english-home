@@ -1,0 +1,7 @@
+Mission English Home v1.6.3 — Activity Tracking Audit Patch
+- Listening: sends activityEvent listening_played when Play is used, including playback speed.
+- Practice: sends activityEvent practice_completed when a differentiated practice is completed, including type/mode/result in detail.
+- Short Videos: sends activityEvent short_video_opened for packaged and teacher videos.
+- Quick Vote remains on its dedicated quickVote backend path / Quick Votes sheet.
+- Backend change is not required for these activityEvent records: current backend already stores them in Eventos.
+- Keeps v1.6.2 noon deadline and fresh local reset.

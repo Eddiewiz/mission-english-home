@@ -1,0 +1,5 @@
+Mission English Home v1.6.5
+
+- Short Videos: Cloudy ahora se describe como “Un momento gracioso de un teacher”.
+- Se conserva el tracking de Practice confirmado en v1.6.4.
+- Sin otros cambios funcionales.

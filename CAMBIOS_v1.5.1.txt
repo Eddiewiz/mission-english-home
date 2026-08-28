@@ -1,0 +1,8 @@
+Mission English Home v1.5.1
+
+- Nueva portada web inspirada en el diseño aprobado: cielo, paisaje, logo central y acceso simple.
+- Botón ENTRAR / START.
+- Botón ¿PRIMERA VEZ? que fuerza la introducción después de identificar al alumno.
+- Se conserva la introducción existente y toda la lógica de misiones.
+- Favicon actualizado para usar la identidad Home.
+- Cache/PWA actualizado a v1.5.1.

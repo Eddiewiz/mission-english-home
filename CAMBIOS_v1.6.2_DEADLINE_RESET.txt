@@ -1,0 +1,4 @@
+Mission English Home v1.6.2
+- Deadline de Tarea cambiado a martes 1 de septiembre, 12:00 PM (mediodía).
+- Nuevo namespace/release de almacenamiento local para que todos los alumnos comiencen nuevamente con actividad Home en 0 al cargar esta versión por primera vez.
+- No modifica el backend ni borra registros históricos del Google Sheet.

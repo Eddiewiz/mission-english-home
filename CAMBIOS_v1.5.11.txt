@@ -1,0 +1,15 @@
+Mission English Home v1.5.11 — consolidada antes de GitHub
+
+- Cambiar estudiante y Cerrar sesión visibles en Home.
+- Listening (Escuchar y practicar) aparece antes de Practice.
+- Useful English pasa a llamarse Listening.
+- Missions sin controles de audio; el audio queda en Listening y prácticas específicas.
+- Mission 2: Good morning con amanecer + flecha ascendente; Good evening con atardecer + flecha descendente.
+- Todas las Missions actuales reciben una imagen propia de Home.
+- 6.º grado recibe imágenes de estilo más maduro.
+- 6.º grado recibe dos preguntas adicionales por Mission y un orden diferente.
+- Practice for you conserva recomendaciones basadas en resultados.
+- Los bloqueos de Missions siguen usando missionPermissions.
+- Se deja preparado el bloqueo central de secciones Listening y Practice mediante missionPermissions.sections.
+- Se conserva el icono Home aprobado con la casa.
+- No se agregan todavía las cinco Missions futuras bloqueadas.

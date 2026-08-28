@@ -1,12 +1,130 @@
 
-const APP_VERSION = "Home v1.5.9";
-const CONTENT_VERSION = "Mission English Home v1.5.0 — Identidad web Home";
-const STORAGE_KEY = "mission_english_home_state_v13";
-const QUEUE_KEY = "mission_english_home_results_queue_v11";
-const CONFIG_KEY = "mission_english_home_config_v11";
-const LOCAL_PROGRESS_KEY = "mission_english_home_local_progress_v13";
-const HOME_INTRO_SEEN_KEY = "mission_english_home_intro_seen_v1";
-const HOME_SCHOOL_KEY = "mission_english_home_school";
+const HOME_RELEASE_VERSION = "v1.6.9";
+
+function homeworkReminderKey_(){
+  const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
+  const assignment=`${HOME_ASSIGNMENT.deadlineLabel}|${HOME_ASSIGNMENT.requiredMissionIds.join(",")}|${HOME_ASSIGNMENT.requireQuickVote}|${HOME_ASSIGNMENT.requireListening}|${HOME_ASSIGNMENT.requireVideo}`;
+  let hash=0;
+  for(let i=0;i<assignment.length;i++) hash=((hash<<5)-hash+assignment.charCodeAt(i))|0;
+  return `mission_english_home_homework_reminder_${sid}_${Math.abs(hash)}`;
+}
+function homeworkReminderApplies_(){
+  return !!(HOME_ASSIGNMENT.enabled && homeGradeAllowed_());
+}
+function homeworkReminderNeedsPopup_(){
+  if(!homeworkReminderApplies_()) return false;
+  try{return localStorage.getItem(homeworkReminderKey_())!=="closed";}catch{return true;}
+}
+function closeHomeworkReminder_(){
+  try{localStorage.setItem(homeworkReminderKey_(),"closed");}catch{}
+}
+
+(function prepareFreshHomeRelease_(){
+  try{
+    const marker="mission_english_home_release_marker";
+    if(localStorage.getItem(marker)===HOME_RELEASE_VERSION) return;
+    const prefixes=[
+      "mission_english","missionEnglish","mission-english",
+      "home_student","homeStudent","quickVote","quick_vote",
+      "guidedPractice","guided_practice"
+    ];
+    Object.keys(localStorage).forEach(key=>{
+      const lower=String(key).toLowerCase();
+      if(prefixes.some(p=>lower.includes(p.toLowerCase())) && key!==marker){
+        localStorage.removeItem(key);
+      }
+    });
+    sessionStorage.clear();
+    localStorage.setItem(marker,HOME_RELEASE_VERSION);
+  }catch{}
+})();
+
+
+const APP_VERSION = "Home v1.6.8";
+
+/* Home v1.6.0 — first take-home rollout.
+   Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
+const HOME_ASSIGNMENT = {
+  enabled: true,
+  allowedGrades: ["6"],
+  title: "📌 Tarea de Mission English Home · 6.º grado",
+  requiredMissionIds: ["m2","classroom-objects-g6-v1"],
+  requireQuickVote: true,
+  requireListening: true,
+  requireVideo: true,
+  deadlineLabel: "Martes 1.º de septiembre · 12:00 PM (mediodía)"
+};
+const HOME_MISSIONS_LANGUAGE_KEY = "mission_english_home_missions_language_v1__v1.6.0";
+function missionsPageLanguage_(){
+  try{
+    const saved=String(localStorage.getItem(HOME_MISSIONS_LANGUAGE_KEY)||"").toLowerCase();
+    return saved==="es" ? "es" : "en";
+  }catch{return "en";}
+}
+function missionsText_(en,es){ return missionsPageLanguage_()==="es" ? es : en; }
+function setMissionsPageLanguage_(lang){
+  try{ localStorage.setItem(HOME_MISSIONS_LANGUAGE_KEY, lang==="es" ? "es" : "en"); }catch{}
+}
+const HOME_TESTER_PIN_HASHES = [
+  "71dfaa6e56a7bc85ee7e637421afd86f53a74b4623e33dc6f82af973ecc9975b", // METHOME26 · Tester 1 · no backend tracking
+  "425aa0c1f69a2c8f9b70d76b26eff43d53895dfddb13b3ab8b330804959d4bfb", // METHOME27 · Tester 2 · backend tracking
+  "d723db1445ae53f4f4bbd07efe4db50d6a7005ee15bf98c6d58b3a68aab39c66"  // METHOME28 · Tester 3 · backend tracking
+];
+let homeTesterAuthorized = false;
+let homeTesterAuthorizedIndex = -1;
+async function testerPinIndex_(value){
+  const bytes=new TextEncoder().encode(String(value||"").trim().toUpperCase());
+  const digest=await crypto.subtle.digest("SHA-256",bytes);
+  const hex=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  return HOME_TESTER_PIN_HASHES.indexOf(hex);
+}
+const HOME_TESTERS = [
+  {id:"TESTER-HOME-01",officialName:"Tester Home 1",displayName:"Tester Home 1",nickname:"Tester 1",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:false},
+  {id:"TESTER-HOME-02",officialName:"Tester Home 2",displayName:"Tester Home 2",nickname:"Tester 2",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true},
+  {id:"TESTER-HOME-03",officialName:"Tester Home 3",displayName:"Tester Home 3",nickname:"Tester 3",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true}
+];
+function testerBackendTrackingEnabled_(){ return !isHomeTester_() || state.student?.recordBackend===true; }
+function isHomeTester_(){ return !!state.student?.isTester || String(state.student?.id||"").startsWith("TESTER-HOME-"); }
+function homeGradeAllowed_(){ return isHomeTester_() || HOME_ASSIGNMENT.allowedGrades.includes(String(state.student?.grade||"").trim()); }
+function homeworkPanelHtml_(){
+  if(!HOME_ASSIGNMENT.enabled || !homeGradeAllowed_()) return "";
+  const catalog=studentMissionCatalog_();
+  const selected=HOME_ASSIGNMENT.requiredMissionIds.map(id=>catalog.find(m=>m.id===id)).filter(Boolean);
+  const missions=selected.length ? selected.map(m=>`<li><strong>Mission ${m.number}</strong> · ${escapeHtml(m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,""))}</li>`).join("") : `<li><strong>2 Missions obligatorias</strong> · el teacher las indicará.</li>`;
+  return `<section class="home-assignment-card">
+    <div class="assignment-title">${HOME_ASSIGNMENT.title}</div>
+    <div class="assignment-deadline">⏰ ${escapeHtml(HOME_ASSIGNMENT.deadlineLabel)}</div>
+    <ul>${missions}${HOME_ASSIGNMENT.requireQuickVote?"<li>📣 Completar <strong>Quick Vote</strong>.</li>":""}${HOME_ASSIGNMENT.requireListening?"<li>🎧 Escuchar el <strong>Listening</strong>.</li>":""}${HOME_ASSIGNMENT.requireVideo?"<li>🎬 Ver el <strong>Short Video</strong>.</li>":""}</ul>
+  </section>`;
+}
+
+const CONTENT_VERSION = "Mission English Home v1.6.8 — tester Quick Vote isolation fix";
+const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
+const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
+const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
+const LOCAL_PROGRESS_KEY = "mission_english_home_local_progress_v13__v1.6.0";
+const MISSION_DRAFTS_KEY = "mission_english_home_drafts_v1__v1.6.0";
+const HOME_INTRO_SEEN_KEY = "mission_english_home_intro_seen_v1__v1.6.0";
+const HOME_SCHOOL_KEY = "mission_english_home_school__v1.6.0";
+const HOME_AVATAR_KEY = "mission_english_home_avatar_v1__v1.6.0";
+const HOME_AVATARS = ["🐯","🦊","🐼","🐨","🐧","🦁","🐸","🐵","🐙","🦋","🐬","🦜","⭐","🌈","🚀","⚽","🎸","🎨"];
+function avatarStorageId_(student=state.student){
+  return String(student?.id || [student?.firstName||"",student?.nickname||"",student?.lastName||"",student?.grade||""].join("|"));
+}
+function savedAvatar_(student=state.student){
+  try{
+    const all=JSON.parse(localStorage.getItem(HOME_AVATAR_KEY)||"{}");
+    return all[avatarStorageId_(student)] || "";
+  }catch{return "";}
+}
+function saveAvatar_(emoji,student=state.student){
+  try{
+    const all=JSON.parse(localStorage.getItem(HOME_AVATAR_KEY)||"{}");
+    all[avatarStorageId_(student)] = String(emoji||"");
+    localStorage.setItem(HOME_AVATAR_KEY,JSON.stringify(all));
+  }catch{}
+}
+
 let homeAudioRate = 1;
 let preferredEnglishVoice = null;
 
@@ -69,7 +187,7 @@ const missions = [
     "sections": [
       {
         "title": "📖 Aprende",
-        "html": "<p>Hoy vamos a recordar cómo escribimos la fecha.</p>\n        <p>En inglés siempre escribimos la fecha de esta forma:</p>\n        <div class=\"notice\"><strong>Today is Monday, June 29th.</strong></div>\n        <p>Primero escribimos el día de la semana. Después el mes. Y por último el número del día.</p>\n        <p>Si necesitas ayuda, puedes consultar tu carpeta.</p>"
+        "html": "<p>Hoy vamos a recordar cómo escribimos la fecha.</p>\n        <p>En inglés en general escribimos la fecha de esta forma:</p>\n        <div class=\"notice\"><strong>Today is Monday, June 29th.</strong></div>\n        <p>Primero escribimos el día de la semana. Después el mes. Y por último el número del día.</p>\n        <p>Si necesitas ayuda, puedes consultar tu carpeta.</p>"
       },
       {
         "title": "👀 Observa",
@@ -101,11 +219,11 @@ const missions = [
         "points": 1,
         "text": "En “Today is Wednesday, September 9th”, ¿qué aparece después de Wednesday?",
         "options": [
-          "September",
-          "9th",
-          "Today"
+          "Mes",
+          "Número",
+          "Día"
         ],
-        "correct": "September"
+        "correct": "Mes"
       },
       {
         "id": "h1q3",
@@ -125,7 +243,7 @@ const missions = [
         "topic": "Date sentence",
         "review": "escribir la fecha",
         "points": 1,
-        "text": "Completa: Today ___ Monday.",
+        "text": "Completa en el recuadro de abajo con la palabra faltante: Today ___ Monday.",
         "type": "text",
         "accepted": [
           "is"
@@ -159,11 +277,11 @@ const missions = [
     "sections": [
       {
         "title": "📖 Aprende",
-        "html": "<p>Hoy vamos a recordar cómo saludamos y nos despedimos en inglés.</p>\n        <p>Algunos saludos se usan cuando llegamos. Otros se usan cuando nos vamos. Saber cuál usar en cada momento nos ayuda a comunicarnos mejor.</p>"
+        "html": "<p>Hoy vamos a recordar cómo saludamos y nos despedimos en inglés. Acuérdate que hay saludos formales e informales. Si no te acuerdas, consulta en tu carpeta.</p><div class=\"greeting-groups\"><div><strong>👋 Cuando llego · When I arrive</strong><span>Hello!</span><span>Hi!</span><span>Good morning!</span><span>Good afternoon!</span><span>Good evening!</span></div><div><strong>👋 Cuando me voy · When I leave</strong><span>Goodbye!</span><span>Bye!</span><span>Bye-bye!</span><span>See you!</span><span>See you later!</span><span>Good night!</span></div></div><div class=\"greetings-farewell-meanings\"><strong>👋 Despedidas (cuando te vas):</strong><span><b>Goodbye!</b> → Adiós.</span><span><b>Bye!</b> → Chau.</span><span><b>See you!</b> → Nos vemos.</span><span><b>Good night!</b> → Buenas noches (al despedirte o antes de dormir).</span></div><div class=\"classroom-greeting\"><strong>🏫 Saludo estándar del aula</strong><p><b>Teacher:</b> Hello. How are you?<br><b>Student:</b> Fine. Thank you. And you?<br><b>Teacher:</b> Fine. Thanks.</p></div><div class=\"mission-context-tip\"><strong>💡 Formal e informal:</strong> <strong>Hello</strong> es un saludo más formal o neutral. <strong>Hi</strong> es informal y se usa mucho entre personas que ya conocemos. <strong>Good morning, Good afternoon</strong> y <strong>Good evening</strong> pueden usarse como saludos formales o respetuosos según la situación.</div><p><strong>Fuera del aula también podés variar el saludo:</strong> Hi, how are you? · Good afternoon. · Good afternoon. How are you?</p><p><strong>Otras respuestas posibles:</strong> Excellent! · Fantastic! · Great! · Very good! · Good!</p>"
       },
       {
         "title": "👀 Observa",
-        "html": "<p><strong>Miramos primero el momento del día:</strong></p>\n        <div class=\"greeting-visual-grid\">\n          <figure><img src=\"images/approved/good-morning.jpg\" alt=\"Good morning\"><figcaption>por la mañana</figcaption></figure>\n          <figure><img src=\"images/approved/good-afternoon.jpg\" alt=\"Good afternoon\"><figcaption>por la tarde</figcaption></figure>\n          <figure><img src=\"images/approved/good-evening.jpg\" alt=\"Good evening\"><figcaption>cuando llegás por la tarde-noche</figcaption></figure>\n          <figure><img src=\"images/approved/good-night.jpg\" alt=\"Good night\"><figcaption>cuando te despedís / antes de dormir</figcaption></figure>\n        </div>\n        <p><strong>Saludos (cuando llegas):</strong></p>\n        <p>Hello! → Hola.<br>Hi! → Hola.<br>Good morning! → Buenos días.<br>Good afternoon! → Buenas tardes.<br>Good evening! → Buenas tardes / Buenas noches (al llegar).</p>\n        <p><strong>Despedidas (cuando te vas):</strong></p>\n        <p>Goodbye! → Adiós.<br>Bye! → Chau.<br>See you! → Nos vemos.<br>Good night! → Buenas noches (al despedirte o antes de dormir).</p>"
+        "html": "<img class=\"greetings-observe-image\" src=\"images/home-missions/approved-cards/m2-greetings.jpg\" alt=\"Good morning, good afternoon, good evening and good night\"><div class=\"greetings-recap-row\"><span><strong>Good morning</strong><small>Buenos días</small></span><span><strong>Good afternoon</strong><small>Buenas tardes</small></span><span><strong>Good evening</strong><small>Buenas tardes/noches al saludar</small></span><span><strong>Good night</strong><small>Buenas noches al despedirse</small></span></div>"
       },
       {
         "title": "🌟 ¿Sabías que...?",
@@ -254,7 +372,7 @@ const missions = [
       },
       {
         "title": "👀 Observa",
-        "html": "<p><strong>Listen</strong> → Escucha.<br>\n        <strong>Look</strong> → Mira.<br>\n        <strong>Stand up</strong> → Ponte de pie.<br>\n        <strong>Sit down</strong> → Siéntate.<br>\n        <strong>Copy</strong> → Copia.<br>\n        <strong>Stop</strong> → Detente.<br>\n        <strong>Let's go!</strong> → ¡Vamos!<br>\n        <strong>Silence, please.</strong> → Silencio, por favor.</p>"
+        "html": "<div class=\"classroom-observe-icons\"><span><b>Escuchá</b><i>👂</i></span><span><b>Mirá</b><i>👁️</i></span><span><b>Parate</b><i>🧍</i></span><span><b>Sentate</b><i>🪑</i></span><span><b>Copiá</b><i>✍️</i></span><span><b>Detenete</b><i>✋</i></span><span><b>¡Vamos!</b><i>👉</i></span><span><b>Silencio</b><i>🤫</i></span></div><div class=\"classroom-translation-list\"><p><strong>Listen</strong> = Escuchá · <strong>Look</strong> = Mirá · <strong>Stand up</strong> = Parate · <strong>Sit down</strong> = Sentate</p><p><strong>Copy</strong> = Copiá · <strong>Stop</strong> = Detenete · <strong>Let\'s go!</strong> = ¡Vamos! · <strong>Silence, please.</strong> = Silencio, por favor.</p></div>"
       },
       {
         "title": "🌟 ¿Sabías que...?",
@@ -345,11 +463,11 @@ const missions = [
       },
       {
         "title": "👀 Observa",
-        "html": "<div class=\"notice\"><strong>🙋 Excuse me. Can I go to the restroom / toilet, please?</strong></div>\n        <p>👍 <strong>Yes, you can.</strong> → Sí, puedes.<br>\n        ✋ <strong>No, please wait.</strong> → No, por favor espera.</p>"
+        "html": "<div class=\"notice\"><strong>🙋 Excuse me. Can I go to the restroom / toilet, please?</strong></div>\n        <img class=\"school-places-image\" src=\"images/home-missions/approved-cards/m4-permission-dashboard.jpg\" alt=\"Restroom, office, library and kitchen at school\">\n        <p>Podés usar la misma estructura con distintos lugares de la escuela: <strong>Can I go to the office / library / kitchen, please?</strong></p>\n        <p>👍 <strong>Yes, you can.</strong> → Sí, puedes. También podés responder simplemente <strong>Yes.</strong><br>\n        ✋ <strong>No, please wait.</strong> → No, por favor espera. También podés responder simplemente <strong>No.</strong></p>"
       },
       {
         "title": "🌟 ¿Sabías que...?",
-        "html": "<p>En inglés, decir <strong>please</strong> hace que un pedido sea más amable y respetuoso.</p>"
+        "html": "<p>En inglés, decir <strong>please</strong> hace que un pedido sea más amable y respetuoso. Por ejemplo: Can I go to the library, <strong>please</strong>?</p>"
       }
     ],
     "questions": [
@@ -397,7 +515,7 @@ const missions = [
         "topic": "Bathroom vocabulary",
         "review": "restroom / toilet",
         "points": 1,
-        "text": "Completa: Can I go to the ________, please?",
+        "text": "Completa: Can I go to the ________, please? 🚻",
         "type": "text",
         "accepted": [
           "restroom",
@@ -604,7 +722,7 @@ const missions = [
     "sections": [
       {
         "title": "📖 Recordemos",
-        "html": "<div class=\"number-strip\"><span>1 · one</span><span>2 · two</span><span>3 · three</span><span>4 · four</span><span>5 · five</span><span>6 · six</span><span>7 · seven</span><span>8 · eight</span><span>9 · nine</span><span>10 · ten</span></div>"
+        "html": "<div class=\"number-strip\"><span>1 · one</span><span>2 · two</span><span>3 · three</span><span>4 · four</span><span>5 · five</span><span>6 · six</span><span>7 · seven</span><span>8 · eight</span><span>9 · nine</span><span>10 · ten</span></div><div class=\"mission-context-tip\"><strong>💡 Importante:</strong> recordá cómo se deletrea cada número. <strong>Eight (8)</strong> suele ser el más difícil.</div>"
       },
       {
         "title": "👀 Observa",
@@ -792,7 +910,7 @@ const missions = [
       },
       {
         "title": "👀 Observa",
-        "html": "<p>Del <strong>13 al 19</strong>, muchas palabras terminan en <strong>-teen</strong>. El número <strong>20</strong> se escribe <strong>twenty</strong>.</p>"
+        "html": "<p>Del <strong>13 al 19</strong>, la mayoría de las palabras terminan en <strong>-teen</strong>. El número <strong>20</strong> se escribe <strong>twenty</strong>.</p><p>En muchos números terminados en <strong>-teen</strong>, podés reconocer el número base y agregar <strong>teen</strong>: <strong>seven + teen = seventeen</strong>, <strong>nine + teen = nineteen</strong>.</p>"
       }
     ],
     "questions": [
@@ -953,9 +1071,151 @@ const missions = [
       }
     ],
     "closing": "🎉 ¡Repaso completado! Ahora Home puede ayudarte a reforzar exactamente lo que necesites practicar."
+  },
+  {
+    "id": "days-of-week-v1",
+    "number": 11,
+    "contentKey": "days-of-week",
+    "revision": 1,
+    "icon": "📆",
+    "title": "MISIÓN 11 – Days of the Week",
+    "intro": "Vamos a aprender los días de la semana y a reconocer una pista que te ayuda a recordarlos.",
+    "sections": [
+      {
+        "title": "📖 Aprende",
+        "html": '<p>Primero mirá los siete días en inglés:</p><div class="week-days-grid"><span>MON<span>DAY</span></span><span>TUES<span>DAY</span></span><span>WEDNES<span>DAY</span></span><span>THURS<span>DAY</span></span><span>FRI<span>DAY</span></span><span>SATUR<span>DAY</span></span><span>SUN<span>DAY</span></span></div><p>Ahora comparalos con el español:</p><div class="week-days-meaning-grid"><span><strong>Monday</strong> = lunes</span><span><strong>Tuesday</strong> = martes</span><span><strong>Wednesday</strong> = miércoles</span><span><strong>Thursday</strong> = jueves</span><span><strong>Friday</strong> = viernes</span><span><strong>Saturday</strong> = sábado</span><span><strong>Sunday</strong> = domingo</span></div><div class="mission-context-tip"><strong>💡 Una pista importante:</strong> todos los días terminan con <strong>DAY</strong>. <strong>Choose the ending shared by every day of the week.</strong> = <em>Elegí la terminación que comparten todos los días de la semana.</em></div>'
+      },
+      {
+        "title": "👀 Observa",
+        "html": "<p>Si reconocés <strong>DAY</strong> al final, ya sabés que probablemente estás mirando el nombre de un día de la semana.</p><p><strong>Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.</strong></p><div class=\"mission-context-tip\"><strong>💡 Curiosidad:</strong> en inglés, los días de la semana se escriben <strong>SIEMPRE</strong> con la primera letra en mayúscula.</div>"
+      }
+    ],
+    "questions": [
+      {"id":"h11q1","topic":"Day ending","review":"DAY","points":1,"text":"Choose the ending shared by every day of the week. <span class=\"small\">(Elegí la terminación que comparten todos los días de la semana.)</span>","options":["DAY","MONTH","WEEK"],"correct":"DAY"},
+      {"id":"h11q2","topic":"Monday","review":"Monday","points":1,"text":"Which word means lunes? <span class=\"small\">(¿Qué palabra significa lunes?)</span>","options":["Monday","January","Blue"],"correct":"Monday"},
+      {"id":"h11q3","topic":"Friday","review":"Friday","points":1,"text":"Which day means viernes? <span class=\"small\">(¿Qué día significa viernes?)</span>","options":["Friday","June","Ten"],"correct":"Friday"},
+      {"id":"h11q4","topic":"Weekend","review":"Saturday and Sunday","points":1,"text":"Which option contains two days of the week? <span class=\"small\">(¿Qué opción contiene dos días de la semana?)</span>","options":["Saturday and Sunday","March and April","Red and green"],"correct":"Saturday and Sunday"},
+      {"id":"h11q5","topic":"Days order","review":"days of the week","points":1,"text":"Which day comes after Wednesday? <span class=\"small\">(¿Qué día viene después de Wednesday / miércoles?)</span>","options":["Thursday","October","Seven"],"correct":"Thursday"}
+    ],
+    "closing": "🎉 ¡Muy bien! Ya reconocés los siete días y la pista DAY."
+  },
+  {
+    "id": "months-of-year-v1",
+    "number": 12,
+    "contentKey": "months-of-year",
+    "revision": 1,
+    "icon": "🗓️",
+    "title": "MISIÓN 12 – Months of the Year",
+    "intro": "Vamos a aprender los meses del año aprovechando algo que ya sabés en español.",
+    "sections": [
+      {
+        "title": "📖 Aprende",
+        "html": '<p>Muchos meses en inglés se parecen mucho a sus nombres en español. Eso los convierte en palabras transparentes o fáciles de reconocer. <strong>No hace falta traducir todos los meses al español uno por uno.</strong></p><div class="months-grid"><span>January</span><span>February</span><span>March</span><span>April</span><span>May</span><span>June</span><span>July</span><span>August</span><span>September</span><span>October</span><span>November</span><span>December</span></div><div class="mission-context-tip"><strong>💡 Una ventaja:</strong> la mayoría de los meses son palabras transparentes o muy parecidas al español. Prestale especial atención a <strong>January = enero</strong>, porque es el que más se diferencia.</div>' 
+      },
+      {
+        "title": "👀 Observa",
+        "html": "<p>No necesitás memorizar todo de una vez. Primero buscá qué meses te resultan transparentes porque se parecen al español.</p><p><strong>January = enero.</strong> Prestale especial atención porque su forma es menos transparente.</p><div class=\"mission-context-tip\"><strong>💡 Curiosidad:</strong> en inglés, los meses del año se escriben <strong>SIEMPRE</strong> con la primera letra en mayúscula.</div>"
+      }
+    ],
+    "questions": [
+      {"id":"h12q1","topic":"January","review":"January","points":1,"text":"How do you say enero in English? <span class=\"small\">(¿Cómo se dice enero en inglés?)</span>","options":["January","June","July"],"correct":"January"},
+      {"id":"h12q2","topic":"Transparent month","review":"October","points":1,"text":"Which word clearly looks like octubre? <span class=\"small\">(¿Cuál se parece claramente a octubre?)</span>","options":["October","January","May"],"correct":"October"},
+      {"id":"h12q3","topic":"August","review":"August","points":1,"text":"Which month corresponds to agosto? <span class=\"small\">(¿Qué mes corresponde a agosto?)</span>","options":["August","April","December"],"correct":"August"},
+      {"id":"h12q4","topic":"December","review":"December","points":1,"text":"Choose diciembre in English. <span class=\"small\">(Elegí diciembre en inglés.)</span>","options":["December","September","February"],"correct":"December"},
+      {"id":"h12q5","topic":"Month recognition","review":"months of the year","points":1,"text":"Which one is a month of the year? <span class=\"small\">(¿Cuál es un mes del año?)</span>","options":["March","Monday","Green"],"correct":"March"}
+    ],
+    "closing": "🎉 ¡Excelente! Usaste las semejanzas con el español para reconocer los meses."
   }
 ];
 
+
+
+const PARTS_FACE_BASE = {
+  contentKey:"parts-head-face", revision:1, icon:"🙂",
+  intro:"Vamos a aprender y repasar las partes de la cabeza y la cara.",
+  sections:[
+    {title:"📖 Aprende",html:'<div class="face-vocab-grid"><span>Head <small>cabeza</small></span><span>Face <small>cara</small></span><span>Hair <small>cabello</small></span><span>Eyes <small>ojos</small></span><span>Nose <small>nariz</small></span><span>Mouth <small>boca</small></span><span>Teeth <small>dientes</small></span><span>Ears <small>orejas</small></span></div><div class="mission-context-tip"><strong>💡 ¿Sabías que...?</strong> Un diente se dice <strong>tooth</strong>; varios dientes se dicen <strong>teeth</strong>. Además, <strong>eyebrows</strong> significa <strong>cejas</strong>: es una palabra nueva para sumar al vocabulario.</div>'},
+    {title:"👀 Observa",html:'<div class="mission-character-observe face-character-observe"><div class="face-character-crop"><img src="parts-head-face-card.jpg" alt="Personaje de Mission English para Parts of the Head and Face"></div><div class="character-word-list"><b>head · cabeza</b><b>face · cara</b><b>hair · cabello</b><b>eyes · ojos</b><b>nose · nariz</b><b>mouth · boca</b><b>teeth · dientes</b><b>ears · orejas</b><b class="bonus-word">eyebrows · cejas</b></div></div><p class="small">Observá la cabeza y la cara del personaje de Mission English y relacioná cada palabra con la parte correspondiente.</p>'}
+  ],
+  questions:[
+    {id:"faceq1",topic:"Eyes",review:"parts of the face",points:1,text:'Which word means ojos? <span class="small">(¿Qué palabra significa ojos?)</span>',options:["eyes","ears","teeth"],correct:"eyes"},
+    {id:"faceq2",topic:"Nose",review:"parts of the face",points:1,text:'Which part do you use to smell? <span class="small">(¿Qué parte usás para oler?)</span>',options:["nose","mouth","teeth"],correct:"nose"},
+    {id:"faceq3",topic:"Mouth",review:"parts of the face",points:1,text:'Choose boca in English. <span class="small">(Elegí boca en inglés.)</span>',options:["mouth","face","teeth"],correct:"mouth"},
+    {id:"faceq4",topic:"Ears",review:"parts of the face",points:1,text:'Which word means orejas? <span class="small">(¿Qué palabra significa orejas?)</span>',options:["ears","eyes","head"],correct:"ears"},
+    {id:"faceq5",topic:"Teeth",review:"parts of the face",points:1,text:'One tooth or many teeth? <span class="small">(¿Un diente o varios dientes?)</span>',options:["One tooth","Many teeth"],correct:"Many teeth"}
+  ],
+  closing:"🎉 ¡Muy bien! Repasaste las partes de la cabeza y la cara."
+};
+
+const PARTS_BODY_BASE = {
+  contentKey:"parts-body", revision:2, icon:"🧍",
+  intro:"Vamos a aprender las partes principales del cuerpo y, al mismo tiempo, repasar algunas palabras de Head and Face.",
+  sections:[
+    {title:"📖 Aprende",html:'<p><strong>Repaso de Head and Face:</strong> head, eyes, ear, nose, mouth y hair también son partes del cuerpo.</p><div class="body-vocab-grid"><span>Head <small>cabeza</small></span><span>Eyes <small>ojos</small></span><span>Ear <small>oreja</small></span><span>Nose <small>nariz</small></span><span>Mouth <small>boca</small></span><span>Hair <small>cabello</small></span><span>Neck <small>cuello</small></span><span>Shoulder <small>hombro</small></span><span>Back <small>espalda</small></span><span>Arm <small>brazo</small></span><span>Elbow <small>codo</small></span><span>Hand <small>mano</small></span><span>Finger <small>dedo de la mano</small></span><span>Chest <small>pecho</small></span><span>Stomach <small>panza / estómago</small></span><span>Leg <small>pierna</small></span><span>Knee <small>rodilla</small></span><span>Ankle <small>tobillo</small></span><span>Foot <small>pie</small></span></div>'},
+    {title:"🌟 Connections · Conexiones",html:'<p><strong>Back</strong> = espalda. Esa palabra también aparece en <strong>backpack</strong>.</p><p><strong>Knee</strong> se pronuncia aproximadamente como <em>“ni”</em>: la letra <strong>k</strong> no se pronuncia.</p><p><strong>Foot</strong> = un pie. Su plural irregular es <strong>feet</strong> = pies.</p>'},
+    {title:"👀 Observa",html:'<div class="mission-character-observe body-character-observe"><div class="body-character-full"><img src="parts-body-card.jpg" alt="Personaje de Mission English para Parts of the Body"></div><div class="character-word-list body-word-list"><b>head · cabeza</b><b>hair · cabello</b><b>eyes · ojos</b><b>ear · oreja</b><b>nose · nariz</b><b>mouth · boca</b><b>neck · cuello</b><b>shoulder · hombro</b><b>back · espalda</b><b>arm · brazo</b><b>elbow · codo</b><b>hand · mano</b><b>finger · dedo</b><b>chest · pecho</b><b>stomach · estómago</b><b>leg · pierna</b><b>knee · rodilla</b><b>ankle · tobillo</b><b>foot · pie</b></div></div><p class="small">Usá el personaje de cuerpo entero para ubicar cada parte. Las palabras de Head and Face aparecen nuevamente como repaso.</p>'}
+  ],
+  questions:[
+    {id:"bodyq1",topic:"Shoulder",review:"parts of the body",points:1,text:'Which word means hombro? <span class="small">(¿Qué palabra significa hombro?)</span>',options:["shoulder","finger","ankle"],correct:"shoulder"},
+    {id:"bodyq2",topic:"Hand",review:"parts of the body",points:1,text:'Which part has fingers? <span class="small">(¿Qué parte tiene dedos?)</span>',options:["hand","knee","back"],correct:"hand"},
+    {id:"bodyq3",topic:"Knee",review:"parts of the body",points:1,text:'Choose rodilla in English. <span class="small">(Elegí rodilla en inglés.)</span>',options:["knee","neck","foot"],correct:"knee"},
+    {id:"bodyq4",topic:"Foot",review:"parts of the body",points:1,text:'One foot, two...? <span class="small">(Un pie: foot. Dos pies: ¿...?)</span>',options:["feet","foots","fingers"],correct:"feet"},
+    {id:"bodyq5",topic:"Back",review:"parts of the body",points:1,text:'Which word in backpack also means espalda? <span class="small">(¿Qué palabra de backpack también significa espalda?)</span>',options:["back","pack","bag"],correct:"back"}
+  ],
+  closing:"🎉 ¡Excelente! Practicaste las partes del cuerpo y repasaste Head and Face."
+};
+
+function cloneMissionBase_(base, extra){
+  return {...base,...extra,sections:(base.sections||[]).map(x=>({...x})),questions:(base.questions||[]).map(q=>({...q,id:`${extra.id}-${q.id}`}))};
+}
+const GRADE45_EXTENDED_MISSIONS = [
+  cloneMissionBase_(PARTS_FACE_BASE,{id:"parts-face-g45-v1",number:13,title:"MISIÓN 13 – Parts of the Head and Face",visual:"face",defaultLocked:false}),
+  cloneMissionBase_(PARTS_BODY_BASE,{id:"parts-body-g45-v1",number:14,title:"MISIÓN 14 – Parts of the Body",visual:"body",defaultLocked:false}),
+  {id:"review-11-14-g45-v1",number:15,title:"MISIÓN 15 – Review Missions 11–14",contentKey:"review-11-14",revision:2,icon:"✅",visual:"review-11-14",defaultLocked:true,intro:"Vamos a repasar Days of the Week, Months of the Year, Parts of the Head and Face y Parts of the Body.",sections:[{title:"🧠 Recordemos",html:'<div class="review-topics-grid"><span>📅 <strong>Days of the Week</strong></span><span>🗓️ <strong>Months of the Year</strong></span><span>🙂 <strong>Head and Face</strong></span><span>🧍 <strong>Body</strong></span></div><p>Leé cada pregunta con calma. Si algo no sale, podés volver a la Mission correspondiente y practicar otra vez.</p>'}],questions:[{id:"r151",topic:"Days review",review:"Days of the Week",points:1,text:'Which word is a day of the week? <span class="small">(¿Cuál palabra es un día de la semana?)</span>',options:["Wednesday","January","shoulder"],correct:"Wednesday"},{id:"r152",topic:"Months review",review:"Months of the Year",points:1,text:'Which word is a month? <span class="small">(¿Cuál palabra es un mes?)</span>',options:["October","Friday","ankle"],correct:"October"},{id:"r153",topic:"Face review",review:"Parts of the Head and Face",points:1,text:'Which part is on your face? <span class="small">(¿Qué parte está en tu cara?)</span>',options:["nose","knee","shoulder"],correct:"nose"},{id:"r154",topic:"Body review",review:"Parts of the Body",points:1,text:'Which part bends in the middle of your leg? <span class="small">(¿Qué parte se dobla en el medio de la pierna?)</span>',options:["knee","ear","mouth"],correct:"knee"},{id:"r155",topic:"Integrated review",review:"Missions 11–14",points:1,text:'Choose the group with one day, one month and one body part. <span class="small">(Elegí el grupo con un día, un mes y una parte del cuerpo.)</span>',options:["Monday · March · hand","January · April · June","nose · ear · foot"],correct:"Monday · March · hand"}],closing:"🎉 ¡Review completado! Podés volver a practicar cualquiera de las Missions 11–14 cuando quieras."}
+];
+const GRADE6_EXTENDED_MISSIONS = [
+  {
+ id:"classroom-objects-g6-v1",number:13,grades:["5","6"],
+ title:"MISIÓN 13 – Classroom Objects",icon:"🎒",visual:"objects",defaultLocked:false,
+ intro:"Repasamos los objetos del aula que ya conocés.",
+ sections:[{title:"👀 Observa y recordá",html:`<p><strong>Hoy vamos a repasar Classroom Objects.</strong> Mirá cada ilustración y recordá qué significa cada palabra. Primero repasamos solamente el vocabulario.</p>
+ <div class="classroom-vocab-grid">
+ <div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img" src="images/classroom-objects/pen.jpg" alt="Pen"></div><b>pen</b><span>lapicera</span></div><div class="vocab-tile"><div class="vocab-illustration">📄</div><b>paper</b><span>papel</span></div><div class="vocab-tile"><div class="vocab-illustration">✏️</div><b>pencil</b><span>lápiz</span></div><div class="vocab-tile"><div class="vocab-illustration">📕</div><b>book</b><span>libro</span></div>
+ <div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img marker-img" src="images/classroom-objects/marker.png" alt="Marker"></div><b>marker</b><span>marcador / fibrón</span></div><div class="vocab-tile"><div class="vocab-illustration">📏</div><b>ruler</b><span>regla</span></div><div class="vocab-tile"><div class="vocab-illustration"><span class="obj-draw obj-eraser"></span></div><b>eraser</b><span>goma de borrar</span></div><div class="vocab-tile"><div class="vocab-illustration">🖍️</div><b>crayon</b><span>crayón</span></div>
+ <div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img liquid-paper-img" src="images/classroom-objects/liquid-paper.jpg" alt="Liquid paper"></div><b>liquid paper</b><span>corrector líquido</span></div><div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img" src="images/classroom-objects/pencil-sharpener.jpg" alt="Pencil sharpener"></div><b>pencil sharpener</b><span>sacapuntas</span></div><div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img" src="images/classroom-objects/pencil-case.jpg" alt="Pencil case"></div><b>pencil case</b><span>cartuchera</span></div><div class="vocab-tile"><div class="vocab-illustration"><span class="obj-draw obj-colored-pencil"></span></div><b>colored pencil</b><span>lápiz de color</span></div>
+ <div class="vocab-tile"><div class="vocab-illustration">🎒</div><b>backpack</b><span>mochila</span></div><div class="vocab-tile"><div class="vocab-illustration">✂️</div><b>scissors</b><span>tijera / tijeras</span></div><div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img plasticola-img" src="images/classroom-objects/plasticola.jpg" alt="Plasticola"></div><b>glue</b><span>plasticola</span></div>
+ <div class="vocab-tile"><div class="vocab-illustration"><span class="obj-draw obj-table"></span></div><b>table</b><span>mesa</span></div><div class="vocab-tile"><div class="vocab-illustration">🪑</div><b>chair</b><span>silla</span></div><div class="vocab-tile"><div class="vocab-illustration"><img class="classroom-object-img desk-img" src="images/classroom-objects/desk.jpg" alt="Desk"></div><b>desk</b><span>escritorio del teacher</span></div></div>
+ <div class="did-you-know-card"><strong>💡 ¿Sabías que...?</strong>
+<p>Después de recordar el vocabulario, hay algo importante que vamos a empezar a practicar.</p>
+<p><strong>A</strong> se usa cuando podemos contar un objeto, como por ejemplo: <strong>a pen</strong> (una lapicera), <strong>a book</strong> (un libro), etc.</p>
+<p>Y <strong>AN</strong> se usa cuando la palabra que le sigue comienza con una vocal, como por ejemplo: <strong>an eraser</strong>.</p>
+<p>Algunas palabras funcionan diferente. Como la palabra <strong>glue</strong>, como no se puede contar, decimos <strong>glue</strong>; al igual que agua, se dice <strong>water</strong>.</p>
+<p>Y <strong>scissors</strong> se usa en plural.</p>
+<div class="countability-mini"><div><b>Contable</b><span>a table</span><span>an eraser</span></div><div><b>Incontable</b><span>glue</span><small>Puedo contar el envase, pero no la plasticola que está adentro.</small></div><div><b>Plural</b><span>scissors</span><small>Como en español, decimos: “Tengo tijeras”.</small></div></div>
+<p><strong>Luego lo seguiremos practicando.</strong></p>
+<p class="read-tip">👀 <strong>¡RECORDÁ leer siempre los tips!</strong> Pueden ayudarte a responder las preguntas.</p></div>`}],
+ questions:[
+ {id:"m13-q1",topic:"Vocabulary",review:"classroom objects",points:1,text:'Which word means <strong>lapicera</strong>? <span class="small">(¿Qué palabra significa lapicera?)</span>',options:["pen","pencil","marker"],correct:"pen"},
+ {id:"m13-q2",topic:"Transparent words",review:"transparent words",points:1,text:'Which classroom object is a <strong>transparent word</strong>? <span class="small">(¿Cuál se parece mucho al español?)</span>',options:["crayon","ruler","glue"],correct:"crayon"},
+ {id:"m13-q3",topic:"Transparent words",review:"transparent words",points:1,text:'Which other expression is similar to Spanish? <span class="small">(¿Cuál otra expresión se parece al español?)</span>',options:["liquid paper","pencil case","backpack"],correct:"liquid paper"},
+ {id:"m13-q4",topic:"Recognition",review:"scissors",points:1,type:"truefalse",visual:"✂️",text:'These are scissors. <span class="small">(Estas son scissors.)</span>',correct:"True"},
+ {id:"m13-q5",topic:"A or AN",review:"a/an",points:1,text:'Choose the correct option. <span class="small">(Elegí la opción correcta.)</span>',options:["an eraser","a eraser","eraser a"],correct:"an eraser"},
+ {id:"m13-q6",topic:"Glue",review:"glue",points:1,text:'Which option is the one we normally use? <span class="small">(¿Cuál es la forma que usamos normalmente?)</span>',options:["glue","a glue","an glue"],correct:"glue"},
+ {id:"m13-q7",topic:"Furniture",review:"table chair desk",points:1,text:'Which three words are classroom furniture? <span class="small">(¿Cuáles tres palabras son muebles del aula?)</span>',options:["table · chair · desk","pen · paper · book","glue · ruler · scissors"],correct:"table · chair · desk"},
+ {id:"m13-q8",topic:"Recognition",review:"colored pencil",points:1,type:"truefalse",visual:"🟦✏️",text:'This can be a colored pencil. <span class="small">(Esto puede ser un lápiz de color.)</span>',correct:"True"}]},
+  {id:"verb-it-g6-v1",number:14,title:"MISIÓN 14 – Verb To Be · It",visual:"it-be",defaultLocked:true,sections:[],questions:[]},
+  {id:"review-11-14-g6-v1",number:15,title:"MISIÓN 15 – Review Missions 11–14",contentKey:"review-11-14-g6",revision:2,icon:"✅",visual:"review-11-14",defaultLocked:true,intro:"Repaso de Days of the Week, Months of the Year, Classroom Objects y Verb To Be · It.",sections:[{title:"🧠 Review",html:'<div class="review-topics-grid"><span>📅 <strong>Days</strong></span><span>🗓️ <strong>Months</strong></span><span>🎒 <strong>Classroom Objects</strong></span><span>✏️ <strong>It is / It\'s</strong></span></div><p>Usá lo que aprendiste en Missions 11–14. Esta Mission tiene más práctica para 6.º.</p>'}],questions:[{id:"r15g61",topic:"Days",review:"Days of the Week",points:1,text:'Is Wednesday a day or a month? <span class="small">(¿Wednesday es un día o un mes?)</span>',options:["A day","A month"],correct:"A day"},{id:"r15g62",topic:"Months",review:"Months of the Year",points:1,text:'Which one is a month? <span class="small">(¿Cuál es un mes?)</span>',options:["September","Saturday","pencil"],correct:"September"},{id:"r15g63",topic:"Classroom Objects",review:"Classroom Objects",points:1,text:'Which object is used to erase? <span class="small">(¿Qué objeto se usa para borrar?)</span>',options:["eraser","ruler","book"],correct:"eraser"},{id:"r15g64",topic:"Verb To Be It",review:"It is / It\'s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It is a pen.","It am a pen.","It are a pen."],correct:"It is a pen."},{id:"r15g65",topic:"OR question",review:"Classroom Objects + It",points:1,text:'Is it a pencil or a ruler? ✏️ <span class="small">(¿Es un lápiz o una regla?)</span>',options:["It is a pencil.","It is a ruler."],correct:"It is a pencil."},{id:"r15g66",topic:"Transfer",review:"Missions 11–14",points:1,text:'Choose the sentence that describes a classroom object. <span class="small">(Elegí la oración que describe un objeto del aula.)</span>',options:["It\'s a blue book.","Tuesday is a month.","January is a ruler."],correct:"It\'s a blue book."}],closing:"🎉 ¡Review completado! Seguí practicando lo que necesites de Missions 11–14."},
+  {id:"size-colors-g6-v1",number:16,title:"MISIÓN 16 – Adjectives: Size + Colors",visual:"size-colors",defaultLocked:true,sections:[],questions:[]},
+  {id:"this-that-g6-v1",number:17,title:"MISIÓN 17 – This and That",visual:"this-that",defaultLocked:true,sections:[],questions:[]},
+  cloneMissionBase_(PARTS_FACE_BASE,{id:"parts-face-g6-v1",number:18,title:"MISIÓN 18 – Parts of the Head and Face",visual:"face",defaultLocked:false}),
+  cloneMissionBase_(PARTS_BODY_BASE,{id:"parts-body-g6-v1",number:19,title:"MISIÓN 19 – Parts of the Body",visual:"body",defaultLocked:false}),
+  {id:"review-16-19-g6-v1",number:20,title:"MISIÓN 20 – Review Missions 16–19",visual:"review-16-19",defaultLocked:true,sections:[],questions:[]},
+  {id:"verb-to-be-g6-v1",number:21,title:"MISIÓN 21 – Verb To Be",visual:"to-be",defaultLocked:true,sections:[],questions:[]}
+];
+function studentMissionCatalog_(){
+  const grade6=String(state.student?.grade||"").trim()==="6";
+  return [...missions,...(grade6?GRADE6_EXTENDED_MISSIONS:GRADE45_EXTENDED_MISSIONS)];
+}
 
 
 const DIFFERENTIATED_COLORS = [
@@ -997,6 +1257,17 @@ function guidedPracticeSource_(type){
   // Primera etapa de Numbers: solamente 1–10.
   return DIFFERENTIATED_NUMBERS.filter(x=>Number(x.value)>=1 && Number(x.value)<=10);
 }
+function renderGuidedPracticeInline_(){
+  const practice=document.getElementById("practicePanel");
+  if(practice && practice.dataset.guidedOpen==="true"){
+    practice.innerHTML=guidedPracticeView();
+    practice.hidden=false;
+    bindEvents();
+    return true;
+  }
+  return false;
+}
+
 function startGuidedPractice_(type){
   const source=guidedPracticeSource_(type);
   guidedPractice={
@@ -1008,9 +1279,18 @@ function startGuidedPractice_(type){
     options:[],
     locked:false
   };
-  state.route="practice-guided";
   saveState();
-  render();
+  const practice=document.getElementById("practicePanel");
+  if(practice){
+    practice.dataset.guidedOpen="true";
+    practice.innerHTML=guidedPracticeView();
+    practice.hidden=false;
+    bindEvents();
+    practice.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }else{
+    state.route="practice-guided";
+    render();
+  }
 }
 function guidedCurrent_(){
   const source=guidedPracticeSource_(guidedPractice.type);
@@ -1053,14 +1333,20 @@ function guidedPracticeView(){
     const item=guidedCurrent_();
     const total=source.length;
     const spoken=item.word;
-    return `<section class="card guided-practice-card">
-      <div class="practice-progress">1 / 3 &nbsp; · &nbsp; ${guidedPractice.index+1} / ${total}</div>
-      <div class="practice-kind">${guidedPractice.type==="colors"?'🎨 Colors':'🔢 Numbers 1–10'}</div>
+    return `<section class="card guided-practice-card guided-stage-one">
+      <div class="guided-topbar">
+        <button class="practice-next-button guided-back-practice" data-action="guided-exit" aria-label="${missionsText_("Back to Practice","Volver a Practice")}">←</button>
+        <div class="practice-progress">1 / 3 &nbsp; · &nbsp; ${guidedPractice.index+1} / ${total}</div>
+      </div>
+      <div class="guided-home-banner">
+        <span class="guided-home-badge">${guidedPractice.type==="colors"?'🎨':'🔢'}</span>
+        <div><strong>${guidedPractice.type==="colors"?'Colors':'Numbers 1–10'}</strong><small>${missionsText_("Look · Listen · Practice","Mirá · Escuchá · Practicá")}</small></div>
+      </div>
       <div class="guided-single-visual">${guidedVisual_(item,false)}</div>
-      <button class="practice-listen-button guided-speaker" data-action="guided-listen" data-word="${escapeHtml(spoken)}" aria-label="Escuchar">🔊</button>
-      <div class="guided-nav">
-        <button class="secondary-button" data-action="guided-exit">←</button>
-        <button class="practice-next-button" data-action="guided-next-stage1" aria-label="Siguiente">▶</button>
+      <div class="guided-stage1-controls">
+        <button class="secondary-button guided-prev-button" data-action="guided-prev-stage1" aria-label="${missionsText_("Previous","Anterior")}" ${guidedPractice.index===0?'disabled':''}>◀</button>
+        <button class="practice-listen-button guided-speaker" data-action="guided-listen" data-word="${escapeHtml(spoken)}" aria-label="${missionsText_("Listen","Escuchar")}">🔊</button>
+        <button class="practice-next-button" data-action="guided-next-stage1" aria-label="${missionsText_("Next","Siguiente")}">▶</button>
       </div>
     </section>`;
   }
@@ -1087,7 +1373,7 @@ function guidedPracticeView(){
     </section>`;
   }
 
-  // Paso 3: conserva la práctica creada originalmente en v1.5.7.
+  // Paso 3: conserva la práctica creada originalmente en v1.6.0.
   return `<section class="card differentiated-menu">
     <div class="practice-progress">3 / 3</div>
     <div class="practice-kind">${guidedPractice.type==="colors"?'🎨 Colors':'🔢 Numbers 1–10'}</div>
@@ -1453,6 +1739,7 @@ function aboutHomeView() {
 
 function homeIntroView() {
   const name = firstNameOrNickname(state.student) || "estudiante";
+  const selectedAvatar=savedAvatar_(state.student);
   return `<section class="card home-intro-card">
     <div class="eyebrow">Mission English Home</div>
     <div class="read-first-banner" style="margin-bottom:1rem">
@@ -1471,7 +1758,7 @@ function homeIntroView() {
       <p>✅ Podés elegir cualquier misión que esté habilitada.</p>
       <p>🔁 Podés repetir una misión si querés practicarla otra vez.</p>
       <p>🌱 Si hay algo que conviene reforzar, aparecerá en <strong>Practice for you</strong>. Ese refuerzo también puede venir de lo que hiciste en Classroom.</p>
-      <p>🔊 Cuando haya audio, podés escucharlo a velocidad normal o más lenta.</p>
+      <p>🔊 El audio se usa en Listening y en prácticas específicas. Las Missions no tienen audio por ahora.</p>
       <p>📖 Antes de responder, leé la explicación de cada misión: está hecha para ayudarte.</p>
       <p>🏠 En Home no importa si tenés que salir un momento o ayudar en casa. Volvé cuando puedas y seguí.</p>
     </div>
@@ -1480,8 +1767,18 @@ function homeIntroView() {
       🎯 <strong>Lo importante no es terminar rápido.</strong> Lo importante es entender, practicar y aprender.
     </div>
 
-    <div class="button-row">
+    <div class="button-row home-intro-final-actions">
       <button class="primary-button" data-action="finish-home-intro">✓ Leí la introducción — Ir a misiones</button>
+      <button class="secondary-button avatar-reveal-button" data-action="toggle-avatar-chooser">${selectedAvatar?`Avatar ${selectedAvatar}`:"Elegir mi avatar"}</button>
+    </div>
+    <div class="home-avatar-chooser" id="homeAvatarChooser" hidden>
+      <div class="home-avatar-chooser-copy">
+        <strong>Elegí una imagen para representarte</strong>
+        <span>Podés elegir cualquiera. No cambia tus resultados ni tu progreso.</span>
+      </div>
+      <div class="home-avatar-options" role="group" aria-label="Elegir avatar">
+        ${HOME_AVATARS.map(a=>`<button type="button" class="home-avatar-choice ${selectedAvatar===a?"selected":""}" data-action="choose-avatar" data-avatar="${a}" aria-label="Elegir ${a}">${a}</button>`).join("")}
+      </div>
     </div>
   </section>`;
 }
@@ -1505,7 +1802,7 @@ function studentsForSelectedCourse() {
 }
 
 function identifyView() {
-  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(Boolean))]
+  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="6"))]
     .sort((a,b) => a.localeCompare(b, "es", { numeric:true }));
   const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
   const schoolValue = state.student.institution || savedHomeSchool();
@@ -1514,6 +1811,7 @@ function identifyView() {
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
     <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
+    <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>Por ahora, el acceso de alumnos está habilitado únicamente para 6.º grado.</strong></div>
 
     ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
 
@@ -1549,13 +1847,30 @@ function identifyView() {
         </select>
       </div>
 
-      <div class="field full"><div class="notice">👤 Home es individual. Elegí siempre tus propios datos.</div></div>
-      <div class="field full">
+      <div class="field full identity-main-actions">
         <div class="button-row">
           <button type="button" class="secondary-button" data-action="go-home">Volver</button>
           <button type="submit" class="primary-button">Continuar</button>
         </div>
       </div>
+
+      <details class="field full tester-access-box compact-tester">
+        <summary>🧪 Tester autorizado</summary>
+        <div class="tester-compact-body">
+          <p><strong>Tester:</strong> persona autorizada para probar el funcionamiento del programa y dar feedback. Este modo no es para alumnos.</p>
+          <div class="tester-pin-row">
+            <input id="testerPin" type="password" inputmode="text" autocomplete="off" placeholder="PIN de Tester" aria-label="PIN de Tester">
+            <button type="button" class="secondary-button" data-action="tester-unlock">Autorizar</button>
+          </div>
+          <div id="testerPinStatus" class="tester-pin-status">🔒 Acceso bloqueado.</div>
+          <div class="tester-authorized-controls">
+            <label>Grado <select id="testerGradeSelect" disabled><option value="4">4.º</option><option value="5">5.º</option><option value="6" selected>6.º</option></select></label>
+            <button type="button" class="secondary-button tester-login-button" data-action="tester-login" data-tester="0" disabled>Tester 1</button>
+            <button type="button" class="secondary-button tester-login-button" data-action="tester-login" data-tester="1" disabled>Tester 2</button>
+            <button type="button" class="secondary-button tester-login-button" data-action="tester-login" data-tester="2" disabled>Tester 3</button>
+          </div>
+        </div>
+      </details>
     </form>
   </section>`;
 }
@@ -1569,7 +1884,7 @@ function confirmView() {
     <p><strong>Grado:</strong> ${escapeHtml(gradeLabel(state.student.grade))}</p>
     <div class="notice">Confirmá antes de continuar para que tu práctica quede registrada con tu nombre.</div>
     <div class="button-row">
-      <button class="secondary-button" data-action="change-student">No, cambiar</button>
+        <button class="secondary-button" data-action="change-student">No, cambiar</button>
       <button class="primary-button" data-action="confirm-student">Sí, soy yo</button>
     </div>
   </section>`;
@@ -1597,9 +1912,36 @@ function studentProgress() {
   const local = getLocalProgress()[state.student.id] || {};
   return { ...server, ...local };
 }
+function getMissionDrafts() {
+  try { return JSON.parse(localStorage.getItem(MISSION_DRAFTS_KEY)) || {}; }
+  catch { return {}; }
+}
+function missionDraft_(missionId) {
+  const sid=state.student?.id; if(!sid||!missionId)return null;
+  return getMissionDrafts()?.[sid]?.[missionId] || null;
+}
+function saveMissionDraft_(mission) {
+  const sid=state.student?.id; if(!sid||!mission)return;
+  const all=getMissionDrafts(); all[sid]=all[sid]||{};
+  const answers={}; (mission.questions||[]).forEach(q=>{if(state.answers?.[q.id]!==undefined)answers[q.id]=state.answers[q.id];});
+  if(!Object.keys(answers).length)return;
+  all[sid][mission.id]={answers,optionOrders:state.optionOrders||{},questionVariants:state.questionVariants||{},savedAt:new Date().toISOString()};
+  localStorage.setItem(MISSION_DRAFTS_KEY,JSON.stringify(all));
+}
+function clearMissionDraft_(missionId) {
+  const sid=state.student?.id; if(!sid||!missionId)return;
+  const all=getMissionDrafts(); if(all[sid]){delete all[sid][missionId];localStorage.setItem(MISSION_DRAFTS_KEY,JSON.stringify(all));}
+}
+function restoreMissionDraft_(mission) {
+  const draft=missionDraft_(mission?.id); if(!draft)return false;
+  state.answers={...state.answers,...(draft.answers||{})};
+  state.optionOrders={...state.optionOrders,...(draft.optionOrders||{})};
+  state.questionVariants={...state.questionVariants,...(draft.questionVariants||{})};
+  return true;
+}
 function firstPendingMissionIndex() {
   const progress = studentProgress();
-  const idx = missions.findIndex(m => !progress[m.id]);
+  const idx = studentMissionCatalog_().findIndex(m => !progress[m.id]);
   return idx === -1 ? 0 : idx;
 }
 function greetingForStudent() {
@@ -1624,6 +1966,17 @@ function sessionCheckView() {
   </section>`;
 }
 
+
+function missionLabelForPracticeTopic_(topic){
+  const key=String(topic||"").toLowerCase();
+  for(const m of studentMissionCatalog_()){
+    const qs=m.questions||[];
+    if(qs.some(q=>String(q.topic||"").toLowerCase()===key || String(q.review||"").toLowerCase()===key)){
+      return `Mission ${m.number}`;
+    }
+  }
+  return "Mission to review";
+}
 
 function homePracticeForYouHtml() {
   const id = state.student?.id;
@@ -1657,11 +2010,12 @@ function homePracticeForYouHtml() {
   return `<div class="practice-for-you">
     <strong>🌱 Practice for you · Práctica para vos</strong>
     <p class="small">Según lo que practicaste, estos temas conviene repasarlos un poco más. Para decidirlo, Classroom tiene más peso que Home:</p>
-    <div class="practice-chips">${list.map(x=>`<span>${escapeHtml(x[0])}</span>`).join("")}</div>
+    <div class="practice-chips">${list.map(x=>`<span><b>${escapeHtml(x[0])}</b><small>Volvé a practicar: ${escapeHtml(missionLabelForPracticeTopic_(x[0]))}</small></span>`).join("")}</div>
   </div>`;
 }
 
 
+// Weekly Quick Vote reminder belongs in ESL Teacher Manager; Home only renders the active weekly poll.
 function quickVoteResultsHtml() {
   if (quickVoteStats.myChoice) {
     const labels = { blue:"Blue", red:"Red", green:"Green", yellow:"Yellow", purple:"Purple", orange:"Orange" };
@@ -1691,6 +2045,13 @@ function refreshQuickVoteResults() {
 
 function submitQuickVote(choice) {
   if (!state.student?.id || !choice) return;
+  if (isHomeTester_() && !testerBackendTrackingEnabled_()) {
+    quickVoteStats.myChoice=choice;
+    quickVoteStats.choices={...(quickVoteStats.choices||{}),[choice]:Number(quickVoteStats.choices?.[choice]||0)+1};
+    quickVoteStats.total=Number(quickVoteStats.total||0)+1;
+    const box=document.getElementById("quickVoteResults"); if(box) box.innerHTML=quickVoteResultsHtml();
+    return;
+  }
   if (quickVoteStats.myChoice) {
     alert("Cada persona puede votar una sola vez. Tu voto ya fue registrado.");
     return;
@@ -1749,18 +2110,208 @@ function jsonpRequestHome(action, params={}) {
   });
 }
 
-function missionEnabledForStudent(mission) {
+
+const HOME_MISSION_VISUALS = {
+  "m1": {base:"images/home-missions/approved-cards/m1-date.jpg", grade6:"images/home-missions/approved-cards/m1-date.jpg"},
+  "m2": {base:"images/home-missions/approved-cards/m2-greetings.jpg", grade6:"images/home-missions/approved-cards/m2-greetings.jpg"},
+  "m3": {base:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg"},
+  "m4": {base:"images/home-missions/approved-cards/m4-permission-dashboard.jpg", grade6:"images/home-missions/approved-cards/m4-permission-dashboard.jpg"},
+  "review-1-4-v1": {base:"images/home-missions/approved-cards/m5-review.jpg", grade6:"images/home-missions/approved-cards/m5-review.jpg"},
+  "colors-v1": {base:"images/home-missions/approved-cards/m6-colors-dashboard.jpg", grade6:"images/home-missions/approved-cards/m6-colors-dashboard.jpg"},
+  "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg", grade6:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg"},
+  "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-weather-dashboard.jpg", grade6:"images/home-missions/approved-cards/m8-weather-dashboard.jpg"},
+  "numbers-11-20-v1": {base:"images/home-missions/approved-cards/m9-numbers-11-20-dashboard.jpg", grade6:"images/home-missions/approved-cards/m9-numbers-11-20-dashboard.jpg"},
+  "mixed-review-colors-numbers-weather-v1": {base:"images/home-missions/approved-cards/m10-review.jpg", grade6:"images/home-missions/approved-cards/m10-review.jpg"},
+  "days-of-week-v1": {base:"images/home-missions/approved-cards/m11-days-dashboard.jpg", grade6:"images/home-missions/approved-cards/m11-days-dashboard.jpg"},
+  "months-of-year-v1": {base:"images/home-missions/approved-cards/m12-months-dashboard.jpg", grade6:"images/home-missions/approved-cards/m12-months-dashboard.jpg"},
+  "parts-face-g45-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
+  "parts-body-g45-v1": {base:"images/home-missions/approved-cards/m14-body-dashboard.jpg"},
+  "review-11-14-g45-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
+  "classroom-objects-g6-v1": {base:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg"},
+  "verb-it-g6-v1": {base:"images/home-missions/approved-cards/m14-it.jpg", grade6:"images/home-missions/approved-cards/m14-it.jpg"},
+  "review-11-14-g6-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg", grade6:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
+  "size-colors-g6-v1": {base:"images/home-missions/approved-cards/m16-size-dashboard.jpg", grade6:"images/home-missions/approved-cards/m16-size-dashboard.jpg"},
+  "this-that-g6-v1": {base:"images/home-missions/approved-cards/m17-this-that.jpg", grade6:"images/home-missions/approved-cards/m17-this-that.jpg"},
+  "parts-face-g6-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg", grade6:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
+  "parts-body-g6-v1": {base:"images/home-missions/approved-cards/m14-body-dashboard.jpg", grade6:"images/home-missions/approved-cards/m14-body-dashboard.jpg"},
+  "review-16-19-g6-v1": {base:"images/home-missions/approved-cards/m20-review-16-19.jpg", grade6:"images/home-missions/approved-cards/m20-review-16-19.jpg"},
+  "verb-to-be-g6-v1": {base:"images/home-missions/approved-cards/m21-to-be.jpg", grade6:"images/home-missions/approved-cards/m21-to-be.jpg"}
+};
+
+const GRADE6_EXTRA_QUESTIONS = {
+  "m1":[
+    {id:"h1g6q1",topic:"Date order",review:"orden de la fecha",points:1,text:"Is August a month or a weekday? <span class=\"small\">(¿August es un mes o un día de la semana?)</span>",options:["A month","A weekday"],correct:"A month"},
+    {id:"h1g6q2",topic:"Date sentence",review:"estructura de la fecha",points:1,text:"Choose the best beginning for a date. <span class=\"small\">(Elegí el mejor comienzo para una fecha.)</span>",options:["Today is...","Good night...","Can I...?"],correct:"Today is..."}
+  ],
+  "m2":[
+    {id:"h2g6q1",topic:"Night farewell",review:"Good night",points:1,text:"Is “Good night” for arriving or saying goodbye? <span class=\"small\">(¿Es para llegar o despedirse?)</span>",options:["Arriving","Saying goodbye"],correct:"Saying goodbye"},
+    {id:"h2g6q2",topic:"Evening greeting",review:"Good evening",points:1,text:"You arrive in the evening. Which expression fits? <span class=\"small\">(Llegás por la tarde-noche. ¿Cuál corresponde?)</span>",options:["Good evening!","Good night!","See you!"],correct:"Good evening!"}
+  ],
+  "m3":[
+    {id:"h3g6q1",topic:"Stand up",review:"Stand up",points:1,text:"Does “Stand up” mean sit down or get up? <span class=\"small\">(¿Significa sentarse o ponerse de pie?)</span>",options:["Sit down","Get up"],correct:"Get up"},
+    {id:"h3g6q2",topic:"Following instructions",review:"instrucciones de clase",points:1,text:"The teacher points to the board. Choose the instruction.",options:["Look.","Copy.","Stop."],correct:"Look."}
+  ],
+  "m4":[
+    {id:"h4g6q1",topic:"Polite requests",review:"please",points:1,text:"Is “please” polite or impolite? <span class=\"small\">(¿Please es amable o descortés?)</span>",options:["Polite","Impolite"],correct:"Polite"},
+    {id:"h4g6q2",topic:"Polite full request",review:"pedido completo",points:1,text:"Choose the request you could use with the teacher.",options:["Excuse me. Can I go to the toilet, please?","Toilet!","Go toilet."],correct:"Excuse me. Can I go to the toilet, please?"}
+  ],
+  "review-1-4-v1":[
+    {id:"h5g6q1",topic:"Greetings review",review:"saludos",points:1,text:"Is “Good evening” a greeting or a classroom instruction? <span class=\"small\">(¿Es un saludo o una instrucción?)</span>",options:["A greeting","A classroom instruction"],correct:"A greeting"},
+    {id:"h5g6q2",topic:"Permission review",review:"pedir permiso",points:1,text:"Which one asks for permission?",options:["Can I... ?","Stand up.","Goodbye!"],correct:"Can I... ?"}
+  ],
+  "colors-v1":[
+    {id:"h6g6q1",topic:"Colors",review:"colores",points:1,text:"Is purple a color or a number? <span class=\"small\">(¿Purple es un color o un número?)</span>",options:["A color","A number"],correct:"A color"},
+    {id:"h6g6q2",topic:"Color comprehension",review:"reconocer colores",points:1,text:"Choose the sentence that matches a green object. <span class=\"small\">(Elegí la oración que corresponde a un objeto verde.)</span>",options:["It is green.","It is seven.","It is rainy."],correct:"It is green."}
+  ],
+  "numbers-1-10-v1":[
+    {id:"h7g6q1",topic:"Numbers 1–10",review:"números 1–10",points:1,text:"Is eight a number or a color? <span class=\"small\">(¿Eight es un número o un color?)</span>",options:["A number","A color"],correct:"A number"},
+    {id:"h7g6q2",topic:"Number comprehension",review:"números 1–10",points:1,text:"Choose the number word for 6.",options:["six","seven","ten"],correct:"six"}
+  ],
+  "weather-temperature-v1":[
+    {id:"h8g6q1",topic:"Weather",review:"weather",points:1,text:"Is sunny weather or a number? <span class=\"small\">(¿Sunny es clima o un número?)</span>",options:["Weather","A number"],correct:"Weather"},
+    {id:"h8g6q2",topic:"Weather comprehension",review:"weather",points:1,text:"You see rain outside. Choose the best word. <span class=\"small\">(Ves lluvia afuera. Elegí la mejor palabra.)</span>",options:["rainy","sunny","hot"],correct:"rainy"}
+  ],
+  "numbers-11-20-v1":[
+    {id:"h9g6q1",topic:"Numbers 11–20",review:"números 11–20",points:1,text:"Is fourteen 14 or 40? <span class=\"small\">(¿Fourteen es 14 o 40?)</span>",options:["14","40"],correct:"14"},
+    {id:"h9g6q2",topic:"Number comprehension",review:"números 11–20",points:1,text:"Choose the word for 18.",options:["eighteen","eight","eighty"],correct:"eighteen"}
+  ],
+  "mixed-review-colors-numbers-weather-v1":[
+    {id:"h10g6q1",topic:"Mixed review",review:"repaso mixto",points:1,text:"Is blue a color or weather? <span class=\"small\">(¿Blue es un color o clima?)</span>",options:["A color","Weather"],correct:"A color"},
+    {id:"h10g6q2",topic:"Integrated comprehension",review:"usar lo aprendido",points:1,text:"Choose the option that contains a number and a weather word. <span class=\"small\">(Elegí la opción que contiene un número y una palabra del clima.)</span>",options:["twelve + rainy","green + purple","Monday + January"],correct:"twelve + rainy"}
+  ],
+  "days-of-week-v1":[
+    {id:"h11g6q1",topic:"Days of the week",review:"days of the week",points:1,text:"Is Tuesday a day or a month? <span class=\"small\">(¿Tuesday es un día o un mes?)</span>",options:["A day","A month"],correct:"A day"},
+    {id:"h11g6q2",topic:"Days pattern",review:"DAY",points:1,text:"Does every day end in DAY or MONTH? <span class=\"small\">(¿Todos los días terminan en DAY o MONTH?)</span>",options:["DAY","MONTH"],correct:"DAY"}
+  ],
+  "months-of-year-v1":[
+    {id:"h12g6q1",topic:"Months of the year",review:"months of the year",points:1,text:"Is October a month or a weekday? <span class=\"small\">(¿October es un mes o un día de la semana?)</span>",options:["A month","A weekday"],correct:"A month"},
+    {id:"h12g6q2",topic:"January",review:"January = enero",points:1,text:"Choose the English word for enero. <span class=\"small\">(Elegí la palabra en inglés para enero.)</span>",options:["January","June","July"],correct:"January"}
+  ],
+  "classroom-objects-g6-v1":[
+    {id:"objg6q1",topic:"Classroom objects OR",review:"classroom objects",points:1,visualHtml:'<div class="question-object-visual"><span class="obj-draw obj-ruler-large"></span></div>',text:"Is it a ruler or a pencil? <span class=\"small\">(¿Es una regla o un lápiz?)</span>",options:["It is a ruler.","It is a pencil."],correct:"It is a ruler."},
+    {id:"objg6q2",topic:"Classroom objects production",review:"classroom objects",points:1,text:"Choose the best sentence for 📘. <span class=\"small\">(Elegí la mejor oración para 📘.)</span>",options:["It is a book.","It is glue.","It is a ruler."],correct:"It is a book."}
+  ],
+  "parts-face-g6-v1":[
+    {id:"faceg6q1",topic:"Face OR",review:"parts of the face",points:1,text:"Are these eyes or ears? 👀 <span class=\"small\">(¿Son ojos u orejas?)</span>",options:["They are eyes.","They are ears."],correct:"They are eyes."},
+    {id:"faceg6q2",topic:"Face transfer",review:"parts of the face",points:1,text:"Choose the word you can connect with seeing. <span class=\"small\">(Elegí la palabra que relacionás con ver.)</span>",options:["eyes","nose","hair"],correct:"eyes"}
+  ],
+  "parts-body-g6-v1":[
+    {id:"bodyg6q1",topic:"Body OR",review:"parts of the body",points:1,text:"Is this a hand or a foot? ✋ <span class=\"small\">(¿Es una mano o un pie?)</span>",options:["It is a hand.","It is a foot."],correct:"It is a hand."},
+    {id:"bodyg6q2",topic:"Body transfer",review:"parts of the body",points:1,text:"Choose the part that bends in the middle of your leg. <span class=\"small\">(Elegí la parte que se dobla en el medio de la pierna.)</span>",options:["knee","elbow","neck"],correct:"knee"}
+  ]
+};
+
+function addMissionExerciseVisual_(mission){
+  if(!mission || !Array.isArray(mission.questions) || !mission.questions.length || !mission.homeImage) return mission;
+  if(!mission.questions.some(q=>q.image)){
+    const qs=mission.questions.map((q,i)=> i===0 ? {...q,image:mission.homeImage,imageAlt:`Apoyo visual de ${mission.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"")}`} : q);
+    return {...mission,questions:qs};
+  }
+  return mission;
+}
+
+
+const HOME_MORE_PRACTICE = {
+ "m1":[
+  {id:"homeplus-m1-tf",topic:"Date order",review:"orden de la fecha",points:1,type:"truefalse",visual:"📅 SEPTEMBER 9",text:'In English, the month comes before the number in this date. <span class="small">(En inglés, el mes aparece antes del número en esta fecha.)</span>',correct:"True"},
+  {id:"homeplus-m1-2",topic:"Date sentence",review:"escribir la fecha",points:1,text:'Choose the complete sentence. <span class="small">(Elegí la oración completa.)</span>',options:["Today is Monday.","Today Monday.","Is Monday today."],correct:"Today is Monday."}],
+ "m2":[
+  {id:"homeplus-m2-tf",topic:"Greetings",review:"saludos",points:1,type:"truefalse",visual:"👋 HI!",text:'“Hi” is an informal greeting. <span class="small">(“Hi” es un saludo informal.)</span>',correct:"True"},
+  {id:"homeplus-m2-2",topic:"Greetings",review:"saludos",points:1,text:'You are leaving. What can you say? <span class="small">(Te estás yendo. ¿Qué podés decir?)</span>',options:["See you later.","Good morning.","Hello."],correct:"See you later."}],
+ "m3":[
+  {id:"homeplus-m3-tf",topic:"Classroom English",review:"instrucciones de clase",points:1,type:"truefalse",visual:"👂",text:'“Listen” means escuchar. <span class="small">(“Listen” significa escuchar.)</span>',correct:"True"},
+  {id:"homeplus-m3-2",topic:"Classroom English",review:"instrucciones de clase",points:1,text:'The teacher says “Sit down.” What should you do? <span class="small">(El teacher dice “Sit down”. ¿Qué tenés que hacer?)</span>',options:["Sentarte.","Pararte.","Hablar."],correct:"Sentarte."}],
+ "m4":[
+  {id:"homeplus-m4-tf",topic:"Polite requests",review:"pedidos amables",points:1,type:"truefalse",visual:"📚",text:'“Can I go to the library, please?” is a polite request. <span class="small">(Es un pedido amable.)</span>',correct:"True"},
+  {id:"homeplus-m4-2",topic:"School places",review:"lugares de la escuela",points:1,text:'Where can you find many books? <span class="small">(¿Dónde podés encontrar muchos libros?)</span>',options:["library","kitchen","office"],correct:"library"}],
+ "review-1-4-v1":[
+  {id:"homeplus-m5-tf",topic:"Review",review:"Missions 1–4",points:1,type:"truefalse",visual:"✅ 1 · 2 · 3 · 4",text:'This Review practices Missions 1–4. <span class="small">(Este repaso practica Missions 1–4.)</span>',correct:"True"},
+  {id:"homeplus-m5-2",topic:"Review",review:"Missions 1–4",points:1,text:'Choose a classroom instruction. <span class="small">(Elegí una instrucción del aula.)</span>',options:["Listen.","September.","Purple."],correct:"Listen."}],
+ "colors-v1":[
+  {id:"homeplus-m6-tf",topic:"Yellow",review:"yellow",points:1,type:"truefalse",visual:"🟡",text:'It’s yellow. <span class="small">(Es amarillo.)</span>',correct:"True"},
+  {id:"homeplus-m6-2",topic:"Colors",review:"colores",points:1,text:'Choose the color of grass. <span class="small">(Elegí el color del pasto.)</span>',options:["green","purple","orange"],correct:"green"}],
+ "numbers-1-10-v1":[
+  {id:"homeplus-m7-tf",topic:"Eight spelling",review:"cómo escribir eight",points:1,type:"truefalse",visual:"8️⃣",text:'8 is spelled “eight”. <span class="small">(El 8 se escribe “eight”.)</span>',correct:"True"},
+  {id:"homeplus-m7-2",topic:"Numbers 1–10",review:"números 1–10",points:1,text:'What comes after six? <span class="small">(¿Qué viene después de six?)</span>',options:["seven","five","ten"],correct:"seven"}],
+ "weather-temperature-v1":[
+  {id:"homeplus-m8-tf",topic:"Weather",review:"weather",points:1,type:"truefalse",visual:"🌧️",text:'It’s rainy. <span class="small">(Está lluvioso.)</span>',correct:"True"},
+  {id:"homeplus-m8-2",topic:"Weather",review:"weather",points:1,text:'Choose the best word for ☀️. <span class="small">(Elegí la mejor palabra.)</span>',options:["sunny","rainy","cloudy"],correct:"sunny"}],
+ "numbers-11-20-v1":[
+  {id:"homeplus-m9-tf",topic:"Numbers 11–20",review:"números 11–20",points:1,type:"truefalse",visual:"1️⃣7️⃣",text:'17 is seventeen. <span class="small">(17 es seventeen.)</span>',correct:"True"},
+  {id:"homeplus-m9-2",topic:"Numbers 11–20",review:"números 11–20",points:1,text:'Which number is nineteen? <span class="small">(¿Qué número es nineteen?)</span>',options:["19","9","90"],correct:"19"}],
+ "mixed-review-colors-numbers-weather-v1":[
+  {id:"homeplus-m10-tf",topic:"Mixed review",review:"repaso mixto",points:1,type:"truefalse",visual:"🔵 12 🌧️",text:'Blue, twelve and rainy belong to topics from Missions 6–9. <span class="small">(Pertenecen a temas de Missions 6–9.)</span>',correct:"True"},
+  {id:"homeplus-m10-2",topic:"Mixed review",review:"repaso mixto",points:1,text:'Choose the weather word. <span class="small">(Elegí la palabra del clima.)</span>',options:["cloudy","thirteen","red"],correct:"cloudy"}],
+ "days-of-week-v1":[
+  {id:"homeplus-m11-tf",topic:"Days capitalization",review:"days of the week",points:1,type:"truefalse",visual:"📅 Monday",text:'In English, days of the week begin with a capital letter. <span class="small">(En inglés, los días empiezan con mayúscula.)</span>',correct:"True"},
+  {id:"homeplus-m11-2",topic:"Days of the week",review:"days of the week",points:1,text:'Which one is NOT a day? <span class="small">(¿Cuál NO es un día?)</span>',options:["January","Friday","Sunday"],correct:"January"}],
+ "months-of-year-v1":[
+  {id:"homeplus-m12-tf",topic:"Months capitalization",review:"months of the year",points:1,type:"truefalse",visual:"🗓️ October",text:'In English, months begin with a capital letter. <span class="small">(En inglés, los meses empiezan con mayúscula.)</span>',correct:"True"},
+  {id:"homeplus-m12-2",topic:"Months",review:"months of the year",points:1,text:'Which month comes after September? <span class="small">(¿Qué mes viene después de September?)</span>',options:["October","August","Monday"],correct:"October"}],
+ "classroom-objects-g6-v1":[
+  {id:"homeplus-m13-tf",topic:"Classroom objects",review:"classroom objects",points:1,type:"truefalse",visualHtml:'<div class="question-object-visual ruler-focus"><span class="obj-draw obj-ruler-large"></span></div>',text:'It is a ruler. <span class="small">(Es una regla.)</span>',correct:"True"},
+  {id:"homeplus-m13-2",topic:"Classroom objects",review:"classroom objects",points:1,text:'Which object do you use to stick paper? <span class="small">(¿Qué objeto usás para pegar papel?)</span>',options:["glue","eraser","ruler"],correct:"glue"}],
+ "parts-face-g6-v1":[
+  {id:"homeplus-m18-tf",topic:"Face",review:"parts of the face",points:1,type:"truefalse",visual:"👄",text:'This is a mouth. <span class="small">(Esto es una boca.)</span>',correct:"True"},
+  {id:"homeplus-m18-2",topic:"Face",review:"parts of the face",points:1,text:'Which part do you use to hear? <span class="small">(¿Qué parte usás para escuchar?)</span>',options:["ears","eyes","nose"],correct:"ears"}],
+ "parts-body-g6-v1":[
+  {id:"homeplus-m19-tf",topic:"Body",review:"parts of the body",points:1,type:"truefalse",visual:"🦶",text:'This is a foot. <span class="small">(Esto es un pie.)</span>',correct:"True"},
+  {id:"homeplus-m19-2",topic:"Body",review:"parts of the body",points:1,text:'What is the plural of foot? <span class="small">(¿Cuál es el plural de foot?)</span>',options:["feet","foots","foot"],correct:"feet"}]
+};
+
+function missionForStudent_(mission){
+  if(!mission) return mission;
+  const grade6=String(state.student?.grade||"").trim()==="6";
+  const visual=HOME_MISSION_VISUALS[mission.id]||{};
+  let copy={...mission, homeImage: grade6?(visual.grade6||visual.base):visual.base, questions:[...(mission.questions||[])]};
+  if(grade6){
+    const extras=mission.id==="classroom-objects-g6-v1"?[]:(GRADE6_EXTRA_QUESTIONS[mission.id]||[]);
+    const core=[...(copy.questions||[])];
+    if(extras.length>=2 && core.length>=4){
+      copy.questions=[core[2],core[0],extras[0],core[3],core[1],extras[1]].filter(Boolean);
+    } else if(core.length>=6){
+      copy.questions=[core[2],core[0],core[4],core[3],core[1],core[5],...core.slice(6)].filter(Boolean);
+    } else {
+      copy.questions=[...core,...extras].filter(Boolean);
+    }
+  }
+  if(grade6){
+    const more=mission.id==="classroom-objects-g6-v1"?[]:(HOME_MORE_PRACTICE[mission.id]||[]);
+    const existing=new Set((copy.questions||[]).map(q=>q.id));
+    copy.questions=[...(copy.questions||[]),...more.filter(q=>!existing.has(q.id))];
+  }
+  return copy;
+}
+
+function sectionLockedForStudent_(sectionKey){
   const key=courseKey(state.student);
   const course=bootstrapData.missionPermissions?.[key];
-  if(!course)return true;
-  const value=course[String(mission.number||state.currentMission+1)];
+  if(!course || !course.sections) return false;
+  return course.sections[sectionKey]===false;
+}
+
+function missionEnabledForStudent(mission) {
+  if(!isHomeTester_() && String(state.student?.grade||"").trim()==="6"){
+    return [2,4,13].includes(Number(mission?.number));
+  }
+  const key=courseKey(state.student);
+  const course=bootstrapData.missionPermissions?.[key];
+  const value=course?.[String(mission.number||state.currentMission+1)];
+  if(mission?.defaultLocked) return value===true;
+  if(!course) return true;
   return value!==false;
 }
 
 
 
 function normalizeMissionVideoUrl(rawUrl) {
-  const raw=String(rawUrl||"").trim(); if(!/^https:\/\//i.test(raw)) return null;
+  const raw=String(rawUrl||"").trim();
+  // Local videos packaged with Mission English Home (for example Cloudy.mp4).
+  // They must work both when Home is opened locally and when it is published on GitHub Pages.
+  if (/^(?!https?:\/\/)(?:\.\/)?[^?#]+\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(raw)) {
+    return {type:"video",url:raw.startsWith("./") ? raw : `./${raw}`};
+  }
+  if(!/^https:\/\//i.test(raw)) return null;
   try { const u=new URL(raw),host=u.hostname.replace(/^www\./,"").toLowerCase(); let id="";
     if(host==="youtu.be") id=u.pathname.split("/").filter(Boolean)[0]||"";
     if(host.endsWith("youtube.com")){ if(u.pathname==="/watch") id=u.searchParams.get("v")||""; else if(/^\/(shorts|embed)\//.test(u.pathname)) id=u.pathname.split("/")[2]||""; }
@@ -1785,23 +2336,22 @@ function homeVideosForStudent() {
 
 function shortVideosHtml() {
   const videos = homeVideosForStudent();
-
-  if (!videos.length) {
-    return `<div class="short-video-empty small">
-      Todavía no hay videos habilitados para tu grado.
+  const localCloudy = `
+    <div class="short-video-item">
+      <strong>Cloudy</strong>
+      <span class="small">Weather · Mission 8 · Un momento gracioso de un teacher</span>
+      <button class="primary-button" data-action="open-local-video" data-video-src="Cloudy.mp4" data-video-title="Cloudy">▶ Ver video</button>
     </div>`;
-  }
 
-  return videos.map((v, index) => `
+  const teacherVideos = videos.map((v, index) => `
     <div class="short-video-item">
       <strong>${escapeHtml(v.title || "Short video")}</strong>
       ${v.translation ? `<span class="small">(${escapeHtml(v.translation)})</span>` : ""}
       ${v.note ? `<span class="small">${escapeHtml(v.note)}</span>` : ""}
-      <button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">
-        ▶ Ver video
-      </button>
+      <button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button>
     </div>
   `).join("");
+  return localCloudy + teacherVideos;
 }
 
 function openTeacherVideo(index) {
@@ -1812,118 +2362,215 @@ function openTeacherVideo(index) {
   panel.hidden=false;panel.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
+
+
+const CLASSROOM_OBJECTS_GRADE6_HOME = {
+  number:13,
+  title:"Classroom Objects",
+  vocabulary:[
+    ["pen","lapicera / bolígrafo"],["pencil","lápiz"],["pencil case","cartuchera"],["paper","papel"],
+    ["glue","pegamento"],["eraser","goma de borrar"],["marker","marcador"],["liquid paper","corrector líquido"],
+    ["backpack","mochila"],["crayon","crayón"],["ruler","regla"],["book","libro"],["colored pencils","lápices de colores"]
+  ],
+  note:"In British English, eraser can also be called rubber. En inglés británico, a la goma de borrar también se le puede decir rubber.",
+  questions:[
+    {text:"Which object do you use to write with ink? (¿Qué objeto usás para escribir con tinta?)",options:["pen","ruler","glue"],correct:"pen"},
+    {text:"Which object keeps your pencils together? (¿Qué objeto guarda juntos tus lápices?)",options:["pencil case","paper","book"],correct:"pencil case"},
+    {text:"Is a ruler for measuring or erasing? (¿Una regla sirve para medir o borrar?)",options:["measuring","erasing"],correct:"measuring",type:"OR"},
+    {text:"Which object would you use to correct a written mistake? (¿Qué objeto usarías para corregir un error escrito?)",options:["liquid paper","crayon","backpack"],correct:"liquid paper"}
+  ]
+};
+
+function missionSceneHtml_(mission, grade6=false, locked=false) {
+  const id=String(mission?.id||"");
+  const number=Number(mission?.number||0);
+  const mapped=HOME_MISSION_VISUALS[id];
+  if(mapped){const src=grade6?(mapped.grade6||mapped.base):mapped.base; if(src) return `<img src="${src}" alt="${escapeHtml(mission?.title||'Mission')}">${locked?`<div class="scene-lock">🔒</div>`:""}`;}
+  const sceneClass={
+    "m1":"date","m3":"classroom","m4":"permission","review-1-4-v1":"review-1-4",
+    "colors-v1":"colors","numbers-1-10-v1":"numbers10","weather-temperature-v1":"weather",
+    "numbers-11-20-v1":"numbers20","mixed-review-colors-numbers-weather-v1":"review-6-9",
+    "days-of-week-v1":"days","months-of-year-v1":"months"
+  }[id] || mission?.visual || "review";
+  let visual="";
+  if(sceneClass==="classroom") visual=`<div class="scene-classroom-english"><span class="shh">🤫</span><span class="sit">🧍<b>↓</b></span><span class="look">👁️<b>→ ▭</b></span><span class="listen">👂</span></div>`;
+  else if(sceneClass==="permission") visual=`<div class="scene-permission-can"><strong>Can I...?</strong><div><span title="restroom">🚻</span><span title="library">📚</span><span title="office">🏢</span><span title="kitchen">🍽️</span></div></div>`;
+  else if(sceneClass.startsWith("review")){
+    const labels=sceneClass==="review-1-4"?["DATE","GREETINGS","CLASS","CAN I…?"]:sceneClass==="review-6-9"?["COLORS","NUMBERS","WEATHER","11–20"]:sceneClass==="review-11-14"?["DAYS","MONTHS","FACE","BODY"]:["SIZE","THIS/THAT","FACE","BODY"];
+    visual=`<div class="scene-review-checklist"><div class="review-paper">${labels.map((x,i)=>`<span><b>✓</b>${x}</span>`).join("")}</div><i>🔎</i></div>`;
+  }
+  else if(sceneClass==="weather") visual=`<div class="scene-weather-pro"><span>☀️</span><span>☁️</span><span>🌧️</span><span>❄️</span><b>🌡️</b></div>`;
+  else if(sceneClass==="days") visual=`<div class="scene-calendar-pro"><div class="calendar-rings">● ●</div><strong>WEEK</strong><div class="calendar-days-mini">M T W T F S S</div><small>every day → <b>DAY</b></small></div>`;
+  else if(sceneClass==="months") visual=`<div class="scene-calendar-pro months"><div class="calendar-rings">● ●</div><strong>YEAR</strong><div class="month-grid-mini"><i>JAN</i><i>APR</i><i>JUL</i><i>OCT</i></div><small>12 months</small></div>`;
+  else if(sceneClass==="face") visual=`<img src="parts-head-face-card.jpg" alt="Mission English character showing parts of the head and face">`;
+  else if(sceneClass==="body") visual=`<img src="parts-body-card.jpg" alt="Mission English character showing parts of the body">`;
+  else if(sceneClass==="objects") visual=`<div class="scene-objects-pro"><span>✏️</span><span>🖊️</span><span>📏</span><span>📘</span><span>🎒</span><span>🖍️</span></div>`;
+  else {
+    const old={date:`<div class="scene-calendar"><b>TODAY</b><strong>29</strong><span>MONDAY · JUNE</span></div>`,colors:`<div class="scene-color-chips"><i></i><i></i><i></i><i></i><i></i><i></i></div>`,numbers10:`<div class="scene-number-line">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<span>${n}</span>`).join("")}</div>`,numbers20:`<div class="scene-number-cards">${[11,12,13,14,15,16,17,18,19,20].map(n=>`<span>${n}</span>`).join("")}</div>`,"it-be":`<div class="scene-it-be"><span>✏️</span><b>It is …</b></div>`,"size-colors":`<div class="scene-size-colors"><span class="big-pencil">✏️</span><span class="small-pencil">✏️</span><i></i><i></i><i></i></div>`,"this-that":`<div class="scene-this-that"><span class="near">📘<b>THIS</b></span><span class="far">✏️<b>THAT</b></span></div>`,"to-be":`<div class="scene-to-be"><span>I</span><span>YOU</span><span>HE</span><span>SHE</span><span>IT</span></div>`};
+    visual=old[sceneClass]||`<div class="scene-review-checklist"><div class="review-paper"><span><b>✓</b>REVIEW</span></div></div>`;
+  }
+  return `<div class="mission-scene ${grade6?"grade6-scene":""} scene-${escapeHtml(sceneClass)}">${visual}${locked?`<div class="scene-lock">🔒</div>`:""}</div>`;
+}
+
 function mapView() {
   const progress = studentProgress();
   const school = state.student.institution || savedHomeSchool() || "Mission English";
   const grade = gradeLabel(state.student.grade);
-  const shortVideoTitle = ["4","5"].includes(String(state.student.grade))
-    ? "Short videos (Videos cortos)"
-    : "Short videos";
+  const studentName = firstNameOrNickname(state.student) || "Student";
+  const initial = (studentName.trim()[0] || "S").toUpperCase();
+  const badgeClasses=["badge-green","badge-blue","badge-purple","badge-orange","badge-teal","badge-pink","badge-gold","badge-cyan","badge-indigo","badge-red"];
 
-  return `<section class="card">
-    <div class="home-map-header">
-      <div>
-        <div class="eyebrow">Home · Tus misiones</div>
-        <h2>🌎 ${escapeHtml(greetingForStudent())}</h2>
+  const missionCatalog = studentMissionCatalog_();
+  const existingMissionCards = missionCatalog.map((m, i) => {
+    const mm=missionForStudent_(m);
+    const p=progress[m.id], enabled=missionEnabledForStudent(m), draft=missionDraft_(m.id);
+    const isOptional=Number(m.number)===4 && enabled && !p && !draft;
+    const status=enabled
+      ? (p ? missionsText_("↻ Practice again","↻ Practicar otra vez")
+          : (draft ? missionsText_("▶ Continue","▶ Continuar")
+          : (isOptional ? missionsText_("◇ Optional","◇ Opcional") : missionsText_("▷ Start","▷ Comenzar"))))
+      : missionsText_("🔒 Locked","🔒 Bloqueada");
+    const statusClass=enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked";
+    const title=m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"");
+    return `<article class="dashboard-mission-card ${enabled?"available":"future-card"}">
+      <div class="mission-card-heading">
+        <div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div>
+        <h3>${escapeHtml(title)}</h3>
       </div>
-      <div class="home-school-badge">
-        <strong>${escapeHtml(school)}</strong>
-        <span>${escapeHtml(grade)}</span>
+      <div class="mission-card-image">
+        ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", !enabled)}
       </div>
+      <div class="mission-status-strip ${statusClass}">${status}</div>
+      ${enabled?`<button class="mission-card-hit" data-action="open-mission" data-index="${i}" aria-label="Abrir ${escapeHtml(title)}"></button>`:""}
+    </article>`;
+  }).join("");
+
+  const missionCards = existingMissionCards;
+
+  return `<section class="home-dashboard">
+    ${homeworkReminderNeedsPopup_()?`
+    <div class="homework-reminder-overlay" role="dialog" aria-modal="true" aria-labelledby="homeworkReminderTitle">
+      <div class="homework-reminder-card">
+        <div class="homework-reminder-icon">📋</div>
+        <h2 id="homeworkReminderTitle">¡Tenés una tarea asignada!</h2>
+        <p>Antes de empezar, revisá qué tenés que hacer y la fecha límite.</p>
+        <div class="homework-reminder-deadline">📅 <strong>Martes 1.º de septiembre · 12:00 PM (mediodía)</strong></div>
+        <p class="homework-reminder-location">Cuando cierres este mensaje, podés volver a ver tu tarea cuando quieras desde el botón <strong>📋 Tarea</strong> en la parte superior.</p>
+        <button type="button" class="homework-reminder-close" data-action="close-homework-reminder">Entendido</button>
+      </div>
+    </div>`:""}
+    <div class="home-dashboard-top">
+      <a class="dashboard-brand" href="#home" data-action="go-home" aria-label="Mission English Home">
+        <img src="mission-english-home-logo.png" alt="Mission English Home">
+      </a>
+      <div class="student-profile-summary">
+        <div class="student-avatar-placeholder" title="Avatar del alumno">${savedAvatar_(state.student)?`<span class="student-avatar-emoji">${savedAvatar_(state.student)}</span>`:`<span class="student-initial">${escapeHtml((studentName.trim().charAt(0)||"?").toUpperCase())}</span>`}</div>
+        <div><strong>¡Hola, ${escapeHtml(studentName)}!</strong><span>${String(grade).trim().startsWith("6")?'<span class="grade-cap">🎓</span> ':""}${escapeHtml(grade)}</span></div>
+      </div>
+      <div class="homework-mini-wrap">
+        <button type="button" class="homework-mini-trigger ${homeworkReminderApplies_()?"tarea-assigned":""}" data-action="toggle-homework-mini" aria-expanded="false">📋 Tarea</button>
+        <div id="homeworkMiniPopover" class="homework-popover" hidden>
+          <strong>Tu tarea · 6.º grado</strong>
+          <div class="homework-mini-list">
+            <div><strong>Obligatorio:</strong></div>
+            <div>✓ Mission 2 · Greetings</div>
+            <div>✓ Mission 13 · Classroom Objects</div>
+            <div>✓ Hacer la encuesta · Quick Vote</div>
+            <div>✓ Escuchar el audio · Listening</div>
+            <div>✓ Ver el video · Short Video</div>
+            <div class="homework-deadline"><strong>📅 Deadline / Fecha límite:</strong><br>Martes 1.º de septiembre · 12:00 PM (mediodía)</div>
+          </div>
+        </div>
+      </div>
+      <details class="account-menu">
+        <summary class="header-action account-summary">↪ <span>Cambiar estudiante<br>/ Cerrar sesión</span></summary>
+        <div class="account-menu-popover">
+          <button data-action="change-student">Cambiar estudiante</button>
+          <button data-action="sign-out">Cerrar sesión</button>
+        </div>
+      </details>
     </div>
 
-    <p>Elegí una misión para seguir practicando. <strong>Podés elegir todas las misiones que quieras, cuando quieras, y repetirlas si querés.</strong></p>
+    <nav class="home-dashboard-nav" aria-label="Navegación de Mission English Home">
+      <button data-action="dashboard-home"><span class="nav-home-logo-crop"><img src="images/ui/home-tab-house.png" alt=""></span><span>Home</span></button>
+      <button class="active" data-action="dashboard-missions"><span class="nav-icon">🎯</span> <span>Missions</span></button>
+      <button data-action="dashboard-explore"><img class="nav-icon-img" src="images/ui/rocket.svg" alt=""><span>${missionsText_("Explore & Practice","Explorar y Practicar")}</span></button>
+      <div class="mission-language-switch" aria-label="Mission page language">
+        <button type="button" class="${missionsPageLanguage_()==="en"?"selected":""}" data-action="mission-language" data-lang="en">EN</button>
+        <span>|</span>
+        <button type="button" class="${missionsPageLanguage_()==="es"?"selected":""}" data-action="mission-language" data-lang="es">ES</button>
+      </div>
+    </nav>
 
-    <div class="home-exit-guide">
-      <strong>🚪 Cuando termines por hoy</strong>
-      <span>El botón <strong>Salir de Mission English Home</strong> está al final de esta página.</span>
-    </div>
+    <section class="missions-panel" id="missionsPanel">
+      <div class="missions-title-row"><div><h2>🎯 Missions</h2><p>${missionsText_("Choose a Mission to start learning.","Elegí una misión para empezar a aprender.")}</p></div></div>
+      <div class="dashboard-mission-grid">${missionCards}</div>
+    </section>
 
-    ${homePracticeForYouHtml()}
+    <section class="home-discovery" id="explorePanel">
+      <h3><img class="section-rocket-icon" src="images/ui/rocket.svg" alt=""> ${missionsText_("Explore & Practice","Explorar y Practicar")}</h3>
+      <div class="dashboard-extra-grid">
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="listeningPanel"><img src="images/ui/headphones.svg" alt=""><span><strong>Listening</strong><small>${missionsText_("Listen and understand","Escuchar y comprender")}</small></span></button>
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="quickVotePanel"><img src="images/ui/megaphone.svg" alt=""><span><strong>Quick Vote</strong><small>${missionsText_("Your opinion counts","Tu opinión cuenta")}</small></span></button>
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="practicePanel"><img src="images/ui/target.svg" alt=""><span><strong>Practice</strong><small>${missionsText_("Practice at your pace","Practicá a tu ritmo")}</small></span></button>
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="shortVideosPanel"><img src="images/ui/video.svg" alt=""><span><strong>Short Videos</strong><small>${missionsText_("Watch, enjoy and learn","Mirá, disfrutá y aprendé")}</small></span></button>
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="kahootPanel"><img src="images/ui/kahoot.svg" alt=""><span><strong>Kahoots</strong><small>${missionsText_("Play and review","Jugá y repasá")}</small></span></button>
+      </div>
 
-    <div class="mission-grid">
-      ${missions.map((m, i) => {
-        const p = progress[m.id],enabled=missionEnabledForStudent(m);
-        return `<article class="mission-card ${enabled?"available":"future-card"}">
-          <div class="mission-icon">${enabled?m.icon:"🔒"}</div>
-          <h3>${m.title}</h3>
-          <p class="mission-status">${enabled?(p ? `✓ Completada · Mejor: ${p.bestEarned}/${p.possible}` : "Pendiente"):"Bloqueada por el teacher"}</p>
-          <button class="${enabled?"primary-button":"secondary-button"}" ${enabled?`data-action="open-mission" data-index="${i}"`:"disabled"}>
-            ${enabled?(p ? "Practicar otra vez" : (i === firstPendingMissionIndex() ? "Continuar aquí" : "Comenzar")):"🔒 Bloqueada"}
-          </button>
-        </article>`;
-      }).join("")}
-    </div>
+      <div class="explore-detail" id="listeningPanel" hidden>
+        <div class="explore-detail-head"><strong>🎧 Listening</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <p><strong>Can I go to the toilet, please?</strong><br><span class="small">¿Puedo ir al baño, por favor?</span></p>
+        <div class="audio-controls">
+          ${sectionLockedForStudent_("listening")?`<button class="secondary-button" disabled>🔒 Bloqueado</button>`:`<button class="secondary-button" data-action="speak-useful">▶ Escuchar</button>`}
+          <button class="secondary-button audio-rate ${homeAudioRate===1?"selected":""}" data-action="audio-rate" data-rate="1">1×</button>
+          <button class="secondary-button audio-rate ${Math.abs(homeAudioRate-0.75)<0.01?"selected":""}" data-action="audio-rate" data-rate="0.75">🐢 0.75×</button>
+        </div>
+        <p class="listening-speed-tip">💡 Para escuchar el audio más lento, hacé click en <strong>0.75</strong> y luego presioná <strong>Play</strong> nuevamente.</p>
+      </div>
 
-    <section class="home-discovery">
-      <h3>✨ Explore & Practice</h3>
-      <p class="small">Estas actividades son opcionales. Sirven para practicar de otras maneras.</p>
+      <div class="explore-detail" id="quickVotePanel" hidden>
+        <div class="explore-detail-head"><strong>📣 Quick Vote · Encuesta semanal</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <p><strong>What’s your favorite color?</strong><br><span class="small">¿Cuál es tu color favorito?</span></p>
+        <div class="quick-vote-rule"><strong>Cada persona puede votar una sola vez.</strong></div>
+        <div class="poll-buttons">${["blue","red","green","yellow","purple","orange"].map(c=>`<button class="secondary-button poll-choice" data-action="poll-vote" data-choice="${c}" ${quickVoteStats.myChoice?"disabled":""}>${c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join("")}</div>
+        <div id="quickVoteResults">${quickVoteResultsHtml()}</div>
+      </div>
 
-      <div class="home-extra-grid">
-        <article class="home-extra-card differentiated-home-card">
-          <div class="mode-icon">👀 🔊</div>
-          <h4>Practice <span class="small">(Práctica)</span></h4>
-          <p><strong>Colors & Numbers</strong></p>
-          <p class="small">Mirá, escuchá y elegí. También podés practicar reconociendo la palabra escrita.</p>
-          <button class="primary-button" data-action="open-practice">Practicar</button>
-        </article>
-
-        <article class="home-extra-card">
-          <div class="mode-icon">🔊</div>
-          <h4>Useful English</h4>
-          <p><strong>Can I go to the toilet, please?</strong><br><span class="small">¿Puedo ir al baño, por favor?</span></p>
-          <div class="audio-controls">
-            <button class="secondary-button" data-action="speak-useful">▶ Escuchar</button>
-            <button class="secondary-button audio-rate ${homeAudioRate===1?"selected":""}" data-action="audio-rate" data-rate="1">1× Normal</button>
-            <button class="secondary-button audio-rate ${Math.abs(homeAudioRate-0.75)<0.01?"selected":""}" data-action="audio-rate" data-rate="0.75">🐢 0.75× Lento</button>
+      <div class="explore-detail" id="practicePanel" hidden>
+        <div class="explore-detail-head"><strong>🎯 Practice</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <div class="practice-for-you">${homePracticeForYouHtml()}</div>
+        <div class="extra-practice-box">
+          <div class="extra-practice-heading"><span aria-hidden="true">🎨 1·2·3</span><div><strong>Prácticas extras</strong><small>Colores y números para practicar mirando y escuchando. Cualquier alumno puede usarlas.</small></div></div>
+          <div class="differentiated-choice-grid extra-practice-grid">
+            <article class="differentiated-choice-card visual-choice"><div class="practice-big-icon">🎨</div><h3>Colors</h3><button class="primary-button" data-action="guided-start" data-type="colors" aria-label="Practicar colores">▶</button></article>
+            <article class="differentiated-choice-card visual-choice"><div class="practice-big-icon visual-numbers-icon">1 2 3</div><h3>Numbers 1–10</h3><button class="primary-button" data-action="guided-start" data-type="numbers" aria-label="Practicar números del 1 al 10">▶</button></article>
           </div>
-          <div class="audio-speed-help"><strong>0.75× Lento</strong> reproduce la voz al 75% de la velocidad normal.<br>Para volver a la velocidad normal, tocá <strong>1× Normal</strong>.</div>
-        </article>
+        </div>
+      </div>
 
-        <article class="home-extra-card" id="quickVoteCard">
-          <div class="mode-icon">🗳️</div>
-          <h4>Quick Vote <span class="small">(Voto rápido)</span></h4>
-          <p><strong>What’s your favorite color?</strong><br><span class="small">(¿Cuál es tu color favorito?)</span></p>
-          <div class="quick-vote-rule"><strong>⚠️ Cada persona solo puede votar una vez.</strong><br><span class="small">Pensá bien antes de votar. Después no se puede cambiar.</span></div>
-          <div class="poll-buttons">
-            ${["blue","red","green","yellow","purple","orange"].map(c=>`<button class="secondary-button poll-choice" data-action="poll-vote" data-choice="${c}" ${quickVoteStats.myChoice?"disabled":""}>${c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join("")}
-          </div>
-          <p class="small">El resultado se conocerá en clase. Después podrán conversar sobre qué color votó cada uno usando las palabras en inglés.</p>
-          <div id="quickVoteResults">${quickVoteResultsHtml()}</div>
-        </article>
+      <div class="explore-detail" id="shortVideosPanel" hidden>
+        <div class="explore-detail-head"><strong>🎬 Short Videos</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <div id="shortVideoList">${shortVideosHtml()}</div>
+        <div id="shortVideoPlayer" class="short-video-player" hidden><div class="short-video-head"><strong id="shortVideoTitle">🎬 Short Video</strong><button class="secondary-button" data-action="close-short-video">Cerrar</button></div><div id="shortVideoFrameHost"></div></div>
+      </div>
 
-        <article class="home-extra-card">
-          <div class="mode-icon">🎬</div>
-          <h4>${shortVideoTitle}</h4>
-          <p class="small">Videos breves elegidos por el teacher y que se reproducen dentro de Mission English.</p>
-          <div id="shortVideoList">${shortVideosHtml()}</div>
-
-          <div id="shortVideoPlayer" class="short-video-player" hidden>
-            <div class="short-video-head">
-              <strong id="shortVideoTitle">🎬 Short video</strong>
-              <button class="secondary-button" data-action="close-short-video">Cerrar</button>
-            </div>
-            <div id="shortVideoFrameHost"></div>
-          </div>
-        </article>
-
-        <article class="home-extra-card future-card">
-          <div class="mode-icon">💬</div>
-          <h4>Mission English Assistant <span class="small">(Asistente)</span></h4>
-          <p><strong>Under construction (En construcción)</strong></p>
-          <p class="small">La idea es que sea un asistente real con el que puedas conversar sobre temas ya trabajados. Se activará cuando pueda responder de forma útil y coherente.</p>
-        </article>
+      <div class="explore-detail" id="kahootPanel" hidden>
+        <div class="explore-detail-head"><strong>Kahoots</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <div class="kahoot-list">
+          <a class="kahoot-card" href="https://kahoot.it/challenge/04563251?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787587917893" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Colors</strong><small>Mission 6 · Colores</small></span></a>
+          <a class="kahoot-card" href="https://kahoot.it/challenge/02412575?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787588019194" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Spelling Colors</strong><small>Mission 6 · Deletreando colores</small></span></a>
+          <a class="kahoot-card" href="https://kahoot.it/challenge/06972109?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787588188996" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>What's the weather like?</strong><small>Mission 8 · ¿Cómo está el clima?</small></span></a>
+          <a class="kahoot-card" href="https://kahoot.it/challenge/02854007?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787602483812" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Months of the Year</strong><small>Mission 12 · Meses del año</small></span></a>
+        </div><p class="kahoot-deadline">⏰ Estos juegos vencen el sábado 5 de septiembre al mediodía.</p>
       </div>
     </section>
 
-    <div class="button-row map-footer-actions">
-      <button class="secondary-button" data-action="sign-out">Salir de Mission English Home</button>
-    </div>
+    <div class="dashboard-footer-note"><span class="footer-left">🌎 Mission: Learn English everyday.</span><span class="footer-center">Powered by <strong>WizPro</strong></span><span class="footer-right">Versión ${escapeHtml(APP_VERSION.replace("Home ",""))}</span></div>
   </section>`;
 }
 
 function missionIntroView() {
-  const m = missions[state.currentMission];
+  const m = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   return `<section class="card" id="missionReviewTop">
     <div class="read-first-banner">
       <div class="read-first-icon">📖</div>
@@ -1963,7 +2610,7 @@ function resolvedQuestion(q) {
 }
 
 function prepareMissionQuestionSet() {
-  const mission = missions[state.currentMission];
+  const mission = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   state.optionOrders = state.optionOrders || {};
   state.questionVariants = state.questionVariants || {};
   mission.questions.forEach(q => {
@@ -1983,7 +2630,7 @@ function optionsForQuestion(q) {
 }
 
 function missionView() {
-  const m = missions[state.currentMission];
+  const m = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   if (!state.reviewConfirmed) {
     state.route = "mission-intro"; saveState(); return missionIntroView();
   }
@@ -2011,9 +2658,17 @@ function missionView() {
 function questionHtml(q, idx) {
   const value = state.answers[q.id] ?? "";
   const questionText = q.promptWord ? `${q.text} <strong>${escapeHtml(q.promptWord)}</strong>` : q.text;
-  const imageHtml = q.image
-    ? `<div class="question-image-wrap"><img class="question-image" src="${q.image}" alt="${escapeHtml(q.imageAlt || "Imagen para responder")}" /></div>`
-    : "";
+  const imageHtml = ""; // v1.6.0: exercise images temporarily disabled; Mission/Observe visuals remain.
+
+  if (q.type === "truefalse") {
+    const tfOptions=["True","False"];
+    return `<fieldset class="question true-false-question"><legend>${questionText} <span class="small">(${q.points} punto)</span></legend>
+      ${q.visualHtml || `<div class="tf-visual">${escapeHtml(q.visual||"")}</div>`}
+      <div class="tf-options">
+        ${tfOptions.map(opt=>`<label class="tf-option ${opt==="True"?"tf-true":"tf-false"}" data-action="choose-tf"><input type="radio" name="${q.id}" value="${opt}" ${value===opt?"checked":""} required><span class="tf-symbol">${opt==="True"?"✓":"×"}</span><b>${opt}</b></label>`).join("")}
+      </div>
+    </fieldset>`;
+  }
 
   if (q.type === "text") {
     return `<fieldset class="question"><legend>${questionText} <span class="small">(${q.points} punto)</span></legend>
@@ -2024,10 +2679,10 @@ function questionHtml(q, idx) {
   const options = optionsForQuestion(q);
   return `<fieldset class="question"><legend>${questionText} <span class="small">(${q.points} ${q.points===1?"punto":"puntos"})</span></legend>
     ${imageHtml}
-    <div class="option-grid ${q.optionImages ? "image-options" : ""}">
-    ${options.map((opt, optionIndex) => `<label class="option ${q.optionImages?.[opt] ? "option-with-image" : ""}">
+    <div class="option-grid">
+    ${options.map(opt => `<label class="option">
       <input type="radio" name="${q.id}" value="${escapeHtml(opt)}" ${value===opt?"checked":""} required />
-      ${q.optionImages?.[opt] ? `<img src="${q.optionImages[opt]}" alt="Opción visual ${optionIndex + 1}" /><span class="visually-hidden">Opción ${optionIndex + 1}</span>` : `<span>${opt}</span>`}
+      <span>${opt}</span>
       </label>`).join("")}
     </div>
   </fieldset>`;
@@ -2088,7 +2743,7 @@ function reviewLabel(topic) {
 }
 
 function calculateMissionResult() {
-  const mission = missions[state.currentMission];
+  const mission = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   const details = [];
   let earned = 0, possible = 0;
   mission.questions.forEach(q => {
@@ -2162,7 +2817,7 @@ function missionResultView() {
       <p><strong>Respondiste correctamente ${correctCount} de ${totalCount} actividades.</strong></p>
     </div>
 
-    <p>${missions[state.currentMission].closing}</p>
+    <p>${missionForStudent_(studentMissionCatalog_()[state.currentMission]).closing}</p>
 
     ${r.details.filter(d => d.acceptedFeedback).map(d => `<div class="notice"><strong>💡 Recuerda:</strong> ${escapeHtml(d.acceptedFeedback)}</div>`).join("")}
 
@@ -2183,7 +2838,7 @@ function missionResultView() {
 }
 
 function updateJourneyProgress() {
-  const mission = missions[state.currentMission];
+  const mission = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   if (!mission) return;
   const answered = mission.questions.filter(q => state.answers[q.id] !== undefined && state.answers[q.id] !== "").length;
   const pct = Math.round((answered / mission.questions.length) * 100);
@@ -2199,8 +2854,8 @@ function updateJourneyProgress() {
 let missionIdleTimer=null, lastAttentionInteraction=Date.now(), hiddenAt=0;
 function isMissionActive(){ return state.route==="mission" && !!state.student?.id && !!state.missionStartedAt; }
 function sendActivityEvent(eventType, extra={}) {
-  if (!state.student?.id) return;
-  const m=missions[state.currentMission]||{};
+  if (!state.student?.id || !testerBackendTrackingEnabled_()) return;
+  const m=missionForStudent_(studentMissionCatalog_()[state.currentMission])||{};
   const payload={type:"activityEvent",id:crypto.randomUUID?crypto.randomUUID():`event-${Date.now()}-${Math.random()}`,createdAt:new Date().toISOString(),origin:"Home",eventType,teacher:state.teacher,device:{computerName:"Home",location:"Fuera del aula"},student:state.student,mission:{id:m.id||"",number:m.number||"",title:m.title||""},...extra};
   try{fetch(SYNC_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),keepalive:true});}catch{}
 }
@@ -2214,7 +2869,10 @@ document.addEventListener("visibilitychange",()=>{if(!isMissionActive())return;i
 window.addEventListener("beforeunload",event=>{if(!isMissionActive())return;sendActivityEvent("attempted_close",{});event.preventDefault();event.returnValue="";});
 
 function bindEvents() {
-  document.querySelectorAll("[data-action]").forEach(el => el.addEventListener("click", async event => {
+  document.querySelectorAll("[data-action]").forEach(el => {
+    if(el.dataset.actionBound==="1") return;
+    el.dataset.actionBound="1";
+    el.addEventListener("click", async event => {
     const action = event.currentTarget.dataset.action;
     if (action && action.startsWith("dp-") && dpHandleAction(action, event.currentTarget)) return;
     if (action === "start-home") { state.forceHomeIntro=false; state.route = "identify"; saveState(); render(); }
@@ -2222,6 +2880,94 @@ function bindEvents() {
     if (action === "about-home-continue") { state.forceHomeIntro=true; state.route = "identify"; saveState(); render(); }
     if (action === "go-home") { state.route = "home"; saveState(); render(); }
     if (action === "reload-roster") { await loadBootstrap(true); }
+    if (action === "dashboard-home") { state.route="home"; saveState(); render(); return; }
+    if (action === "close-homework-reminder") {
+      closeHomeworkReminder_();
+      document.querySelector(".homework-reminder-overlay")?.remove();
+      document.querySelector(".homework-mini-trigger")?.focus();
+      return;
+    }
+    if (action === "toggle-homework-mini") {
+      const panel=document.getElementById("homeworkMiniPopover");
+      if(panel){
+        panel.hidden=!panel.hidden;
+        event.currentTarget.setAttribute("aria-expanded",String(!panel.hidden));
+      }
+      return;
+    }
+    if (action === "dashboard-missions") {
+      document.querySelectorAll(".home-dashboard-nav > button").forEach(b=>b.classList.toggle("active",b.dataset.action==="dashboard-missions"));
+      document.getElementById("missionsPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+      return;
+    }
+    if (action === "dashboard-explore") {
+      document.querySelectorAll(".home-dashboard-nav > button").forEach(b=>b.classList.toggle("active",b.dataset.action==="dashboard-explore"));
+      const panel=document.getElementById("explorePanel");
+      if(panel){
+        panel.scrollIntoView({behavior:"smooth",block:"end"});
+        panel.classList.remove("explore-focus");
+        void panel.offsetWidth;
+        panel.classList.add("explore-focus");
+        setTimeout(()=>panel.classList.remove("explore-focus"),900);
+        setTimeout(()=>panel.querySelector(".explore-launcher")?.focus({preventScroll:true}),250);
+      }
+      return;
+    }
+    if (action === "mission-language") {
+      setMissionsPageLanguage_(event.currentTarget.dataset.lang||"en");
+      render();
+      return;
+    }
+    if (action === "toggle-explore-panel") {
+      const id=event.currentTarget.dataset.panel;
+      document.querySelectorAll(".explore-detail").forEach(el=>{ if(el.id!==id) el.hidden=true; });
+      const panel=document.getElementById(id); if(panel){panel.hidden=!panel.hidden; if(!panel.hidden) panel.scrollIntoView({behavior:"smooth",block:"nearest"});}
+      return;
+    }
+    if (action === "poll-vote") { submitQuickVote(event.currentTarget.dataset.choice || ""); return; }
+    if (action === "open-local-video") {
+      const panel=document.getElementById("shortVideoPlayer"), title=document.getElementById("shortVideoTitle"), host=document.getElementById("shortVideoFrameHost");
+      if(panel&&host){ if(title) title.textContent=event.currentTarget.dataset.videoTitle||"Short Video"; renderMissionVideo_(host,event.currentTarget.dataset.videoSrc||""); panel.hidden=false; panel.scrollIntoView({behavior:"smooth",block:"center"}); sendActivityEvent("short_video_opened",{detail:`Short Video abierto: ${event.currentTarget.dataset.videoTitle||"Short Video"}`}); }
+      return;
+    }
+    if (action === "close-explore-panels") { document.querySelectorAll(".explore-detail").forEach(el=>el.hidden=true); return; }
+    if (action === "choose-tf") {
+      const input=event.currentTarget.querySelector('input[type="radio"]');
+      if(input){ input.checked=true; input.dispatchEvent(new Event("change",{bubbles:true})); }
+      return;
+    }
+    if (action === "tester-unlock") {
+      const pinInput=document.getElementById("testerPin");
+      const testerIndex=await testerPinIndex_(pinInput?.value||"");
+      const ok=testerIndex>=0;
+      homeTesterAuthorized=ok;
+      homeTesterAuthorizedIndex=testerIndex;
+      const status=document.getElementById("testerPinStatus");
+      document.querySelectorAll(".tester-login-button").forEach(b=>{b.disabled=!ok || Number(b.dataset.tester)!==testerIndex;});
+      const gradeSelect=document.getElementById("testerGradeSelect"); if(gradeSelect) gradeSelect.disabled=!ok;
+      if(status){status.textContent=ok?`✓ Tester ${testerIndex+1} autorizado. Elegí el grado y continuá.`:"✕ PIN incorrecto. El modo Tester continúa bloqueado.";status.classList.toggle("authorized",ok);}
+      if(!ok && pinInput){pinInput.value="";pinInput.focus();}
+      return;
+    }
+    if (action === "tester-login") {
+      if(!homeTesterAuthorized) return;
+      const requestedTester=Number(event.currentTarget.dataset.tester||0);
+      if(requestedTester!==homeTesterAuthorizedIndex) return;
+
+      const tester=HOME_TESTERS[requestedTester]||HOME_TESTERS[0];
+      const testerGrade=String(document.getElementById("testerGradeSelect")?.value||"6");
+      state.student={...tester,grade:testerGrade,firstName:tester.displayName,lastName:"",level:"Tester",mode:"individual",partnerId:"",partner:"",isTester:true};
+      // Testers must see the homework reminder on every new tester login so the
+      // assigned-task experience can always be verified. Real students still see
+      // it only once per assignment.
+      try{ localStorage.removeItem(homeworkReminderKey_()); }catch{}
+      // Quick Vote state must be isolated per tester. Otherwise a vote loaded for a previous
+      // tester can leave myChoice set and prevent Tester 2/3 from sending their own vote.
+      quickVoteStats = { total: 0, choices: {}, myChoice: "" };
+      state.identityError=""; state.currentMission=0; state.route="map"; saveState(); render(); await loadBootstrap(true,true);
+      await refreshQuickVoteResults();
+      return;
+    }
     if (action === "change-student") {
       state.student = freshState().student; state.selectedGradeKey = ""; state.route = "identify";
       state.reviewConfirmed=false; state.sessionNotice=""; saveState(); render();
@@ -2241,6 +2987,17 @@ function bindEvents() {
       saveState();
       render();
     }
+    if (action === "toggle-avatar-chooser") {
+      const chooser=document.getElementById("homeAvatarChooser");
+      if(chooser){ chooser.hidden=!chooser.hidden; if(!chooser.hidden) chooser.scrollIntoView({behavior:"smooth",block:"nearest"}); }
+      return;
+    }
+    if (action === "choose-avatar") {
+      saveAvatar_(event.currentTarget.dataset.avatar || "", state.student);
+      saveState();
+      render();
+      return;
+    }
     if (action === "finish-home-intro") {
       markIntroSeenForStudent(state.student?.id);
       state.forceHomeIntro=false;
@@ -2252,7 +3009,11 @@ function bindEvents() {
     }
     if (action === "open-mission") {
       state.currentMission = Number(event.currentTarget.dataset.index);
+      const mission=missionForStudent_(studentMissionCatalog_()[state.currentMission]);
+      const completed=!!studentProgress()[mission.id];
       clearCurrentMissionAnswers(); prepareMissionQuestionSet();
+      if(completed){ clearMissionDraft_(mission.id); }
+      else { restoreMissionDraft_(mission); }
       state.reviewConfirmed=false; state.missionExitCount=0; state.inactivityLogged=false; state.sessionNotice="";
       state.route="mission-intro"; saveState(); render();
     }
@@ -2262,6 +3023,7 @@ function bindEvents() {
     }
     if (action === "speak-useful") {
       playUsefulEnglishAudio();
+      sendActivityEvent("listening_played",{detail:`Listening reproducido a ${homeAudioRate}x`});
       event.currentTarget.blur();
     }
     if (action === "audio-rate") {
@@ -2273,7 +3035,10 @@ function bindEvents() {
       event.currentTarget.blur();
     }
     if (action === "open-teacher-video") {
-      openTeacherVideo(event.currentTarget.dataset.videoIndex || "0");
+      const videoIndex=event.currentTarget.dataset.videoIndex || "0";
+      const video=homeVideosForStudent()[Number(videoIndex)]||{};
+      openTeacherVideo(videoIndex);
+      sendActivityEvent("short_video_opened",{detail:`Short Video abierto: ${video.title||"Short Video"}`});
       event.currentTarget.blur();
     }
     if (action === "close-short-video") {
@@ -2283,24 +3048,49 @@ function bindEvents() {
       if (player) player.hidden = true;
     }
     if (action === "back-map") { state.route = "map"; saveState(); render(); refreshQuickVoteResults(); }
-    if (action === "open-practice") { state.route="practice-menu"; saveState(); render(); }
+    if (action === "open-practice") { const p=document.getElementById("practicePanel"); if(p){document.querySelectorAll(".explore-detail").forEach(x=>x.hidden=true);p.hidden=false;p.scrollIntoView({behavior:"smooth",block:"nearest"});} else {state.route="practice-menu";saveState();render();} }
     if (action === "guided-start") {
-      startGuidedPractice_(event.currentTarget.dataset.type);
+      const practiceType=event.currentTarget.dataset.type||"practice";
+      sendActivityEvent("practice_opened",{detail:`Practice iniciada: ${practiceType}`,practiceType});
+      startGuidedPractice_(practiceType);
     }
     if (action === "guided-listen") {
-      speakPracticeWord_(event.currentTarget.dataset.word||"");
+      const word=String(event.currentTarget.dataset.word||"").trim();
+      if(word){
+        try{
+          window.speechSynthesis?.cancel();
+          const utter=new SpeechSynthesisUtterance(word);
+          utter.lang="en-US";
+          utter.rate=.82;
+          const voices=window.speechSynthesis?.getVoices?.()||[];
+          utter.voice=voices.find(v=>/^en-US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)) || null;
+          window.speechSynthesis?.speak(utter);
+        }catch{ speakPracticeWord_(word); }
+      }
+      return;
+    }
+    if (action === "guided-prev-stage1") {
+      if(guidedPractice.stage===1 && guidedPractice.index>0){
+        guidedPractice.index--;
+        saveState();
+        if(!renderGuidedPracticeInline_()) render();
+      }
+      return;
     }
     if (action === "guided-next-stage1") {
       const source=guidedPracticeSource_(guidedPractice.type);
       if(guidedPractice.index+1 < source.length){
         guidedPractice.index++;
-        render();
+        saveState();
+        if(!renderGuidedPracticeInline_()) render();
       } else {
         guidedPractice.stage=2;
         guidedMakeStage2Order_();
         guidedPrepareQuestion_();
-        render();
+        saveState();
+        if(!renderGuidedPracticeInline_()) render();
       }
+      return;
     }
     if (action === "guided-answer") {
       if(guidedPractice.locked)return;
@@ -2320,6 +3110,7 @@ function bindEvents() {
         const source=guidedPracticeSource_(guidedPractice.type);
         guidedPractice.index++;
         if(guidedPractice.index>=source.length){
+          sendActivityEvent("practice_completed",{detail:`Practice guiada completada: ${guidedPractice.type} · reconocimiento`,practiceType:guidedPractice.type,practiceMode:"guided"});
           guidedPractice.stage=3;
           guidedPractice.target=null;
           guidedPractice.options=[];
@@ -2328,7 +3119,8 @@ function bindEvents() {
           guidedPrepareQuestion_();
         }
         guidedPractice.locked=false;
-        render();
+        saveState();
+        if(!renderGuidedPracticeInline_()) render();
       },650);
     }
     if (action === "guided-final-start") {
@@ -2336,10 +3128,24 @@ function bindEvents() {
     }
     if (action === "guided-exit") {
       guidedPractice={type:"",stage:0,index:0,order:[],target:null,options:[],locked:false};
-      state.route="practice-menu"; saveState(); render();
+      state.route="map"; saveState(); render();
+      requestAnimationFrame(()=>{
+        const practice=document.getElementById("practicePanel");
+        if(practice){
+          document.querySelectorAll(".explore-detail").forEach(x=>x.hidden=x.id!=="practicePanel");
+          practice.hidden=false;
+          practice.scrollIntoView({behavior:"smooth",block:"nearest"});
+        }
+      });
+      return;
     }
 
-    if (action === "practice-start") { startDifferentiatedPractice(event.currentTarget.dataset.type, event.currentTarget.dataset.mode||"audio"); }
+    if (action === "practice-start") {
+      const practiceType=event.currentTarget.dataset.type||"practice";
+      const practiceMode=event.currentTarget.dataset.mode||"audio";
+      sendActivityEvent("practice_opened",{detail:`Practice iniciada: ${practiceType} · ${practiceMode}`,practiceType,practiceMode});
+      startDifferentiatedPractice(practiceType, practiceMode);
+    }
     if (action === "practice-listen") { const t=practiceTarget_(); if(t)speakPracticeWord_(t.word); }
     if (action === "practice-answer") {
       if(differentiatedPractice.locked)return;
@@ -2357,7 +3163,10 @@ function bindEvents() {
     }
     if (action === "practice-next") {
       differentiatedPractice.index++; differentiatedPractice.feedback=""; differentiatedPractice.locked=false;
-      if(differentiatedPractice.index>=differentiatedPractice.items.length){state.route="practice-result";saveState();render();}
+      if(differentiatedPractice.index>=differentiatedPractice.items.length){
+        sendActivityEvent("practice_completed",{detail:`Practice completada: ${differentiatedPractice.type} · ${differentiatedPractice.mode} · ${differentiatedPractice.correct}/${differentiatedPractice.items.length}`,practiceType:differentiatedPractice.type,practiceMode:differentiatedPractice.mode,correct:differentiatedPractice.correct,total:differentiatedPractice.items.length});
+        state.route="practice-result";saveState();render();
+      }
       else {render(); if(differentiatedPractice.mode==="audio")setTimeout(()=>{const t=practiceTarget_();if(t)speakPracticeWord_(t.word)},180);}
     }
     if (action === "practice-again") { startDifferentiatedPractice(differentiatedPractice.type,differentiatedPractice.mode); }
@@ -2390,7 +3199,8 @@ function bindEvents() {
     if (action === "sync-now") syncQueue(true);
     if (action === "open-settings") { state.route = "settings"; saveState(); render(); }
     if (action === "cancel-settings") { state.route = "home"; saveState(); render(); }
-  }));
+    });
+  });
 
   const deviceForm = document.getElementById("deviceForm");
   if (deviceForm) deviceForm.addEventListener("submit", event => {
@@ -2414,6 +3224,11 @@ function bindEvents() {
     const lastName = String(form.get("lastName") || "").trim();
     const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
     const grade = String(form.get("grade") || "").trim();
+
+    if (grade !== "6") {
+      state.identityError = "Por ahora Mission English Home está habilitado solamente para 6.º grado.";
+      saveState(); render(); return;
+    }
 
     if (!firstName && !nickname) {
       state.identityError = "Escribí tu nombre o tu apodo.";
@@ -2483,6 +3298,7 @@ function bindEvents() {
       const result = calculateMissionResult();
       state.lastMissionResult = result;
       saveLocalMissionProgress(result);
+      clearMissionDraft_(result.mission.id);
       enqueueResult(result);
       state.route = "mission-result";
       saveState(); render();
@@ -2492,7 +3308,7 @@ function bindEvents() {
 }
 
 function clearCurrentMissionAnswers() {
-  const mission = missions[state.currentMission];
+  const mission = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
   state.optionOrders = state.optionOrders || {};
   mission.questions.forEach(q => {
     delete state.answers[q.id];
@@ -2507,8 +3323,10 @@ function captureMissionAnswers() {
   if (!form) return;
   const data = new FormData(form);
   for (const [key, value] of data.entries()) state.answers[key] = value;
+  saveMissionDraft_(missionForStudent_(studentMissionCatalog_()[state.currentMission]));
 }
 function enqueueResult(result) {
+  if (!testerBackendTrackingEnabled_()) return;
   const queue = getQueue();
   if (!queue.some(x => x.id === result.id)) queue.push(result);
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));

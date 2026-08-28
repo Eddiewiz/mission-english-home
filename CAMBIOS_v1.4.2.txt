@@ -1,0 +1,9 @@
+Mission English Home v1.4.2
+
+- “Volver al mapa de misiones” queda dentro del mismo recuadro de confirmación de lectura.
+- Cambiar 1× / 0.75× ya no vuelve al inicio de la página.
+- 1× Normal restaura explícitamente la velocidad original.
+- Quick Vote guarda votos en Mission English World.
+- Resultados de Quick Vote se ordenan de más votado a menos votado y muestran cantidades.
+- Los nombres de quienes votaron quedan disponibles para la vista docente, no expuestos a alumnos.
+- Practice for you pondera Classroom 3 veces más que Home.

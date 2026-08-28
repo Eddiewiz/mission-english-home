@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="430" viewBox="0 0 720 430">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5369a8"/><stop offset=".55" stop-color="#e88b70"/><stop offset="1" stop-color="#ffd09a"/></linearGradient></defs>
+<rect width="720" height="430" rx="24" fill="url(#sky)"/><path d="M0 310 Q180 255 360 305 T720 300 V430 H0Z" fill="#344f45"/>
+<circle cx="360" cy="300" r="70" fill="#ffbf47"/>
+<path d="M575 145V290" stroke="#fff" stroke-width="16" stroke-linecap="round"/><path d="M525 240l50 55 50-55" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="36" y="58" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#fff">Good evening</text></svg>

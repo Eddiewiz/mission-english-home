@@ -1,0 +1,15 @@
+Mission English Home v1.5.16 — APPROVED UI MATCH PRE-GITHUB
+
+- Ajuste visual para acercar la web a la maqueta aprobada sin cambiar el contenido real de las Missions.
+- Tarjetas de Missions más cortas y uniformes.
+- Logo Home reducido y contenido dentro del encabezado azul.
+- Mission 2 usa la composición visual aprobada de los cuatro momentos del día, sin palabras en la tarjeta del mapa.
+- Mission 3 usa la referencia visual aprobada de Classroom English.
+- Mission 4 usa la referencia visual aprobada para pedir permiso / restroom.
+- Se mantiene la lógica real: Comenzar / Continuar / Practicar otra vez / Bloqueada.
+- Se corrigió el controlador de Listening, Quick Vote, Short Videos y Kahoots (toggle-explore-panel).
+- Se eliminó el footer duplicado que repetía Powered by WizPro.
+- Explore & Practice conserva cinco botones: Listening, Quick Vote, Practice, Short Videos y Kahoots.
+- El progreso general permanece oculto; el progreso se consulta dentro de cada Mission.
+- No se usan trofeos ni medallas como iconografía de Missions.
+- GitHub no fue actualizado.

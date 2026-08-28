@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+  <g stroke="#111820" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- pointed original-style rocket -->
+    <path d="M66 8 L78 22 C84 29 86 39 84 49 C80 62 69 73 54 82 L29 57 C38 42 49 25 66 8 Z" fill="#f7f8fa"/>
+    <path d="M66 8 L78 22 L70 30 L58 18 Z" fill="#ef3340"/>
+    <circle cx="64" cy="39" r="9" fill="#20a7f4"/>
+    <circle cx="64" cy="39" r="4.5" fill="#9de4ff" stroke="none"/>
+    <path d="M35 58 L17 61 L27 43 Z" fill="#ef3340"/>
+    <path d="M53 78 L49 94 L68 83 Z" fill="#ef3340"/>
+    <path d="M28 68 C18 73 13 82 13 92 C23 91 33 87 40 78 Z" fill="#ffb81c"/>
+    <path d="M24 72 C19 77 17 82 17 87 C23 85 28 82 33 77 Z" fill="#ff5a1f" stroke="none"/>
+  </g>
+</svg>

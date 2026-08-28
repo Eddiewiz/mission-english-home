@@ -1,0 +1,9 @@
+Mission English Home v1.5.4
+
+- Useful English vuelve a la voz natural del navegador. Se priorizan voces naturales de Microsoft/Google/Apple cuando están disponibles.
+- Quick Vote: se explica claramente que cada persona tiene un solo voto y debe pensar antes de votar.
+- Home ya no muestra el ranking ni el total de votos a los alumnos. El resultado queda para ser anunciado por el teacher en clase.
+- El alumno solo ve confirmación de su propio voto.
+- El teacher conserva los datos de votación en Mission English World para trabajar luego oralmente en clase.
+- Nuevo icono Home: conserva el icono base de MEC y agrega una casa con el estilo visual de Home.
+- Se generan PNG 192/512 y MissionEnglishHome.ico para escritorio.

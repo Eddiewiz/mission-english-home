@@ -1,0 +1,11 @@
+Mission English Home v1.5.17 — correcciones directas aprobadas
+
+- Logo único Mission English Home: solo texto + tabla de madera HOME, sin segunda casa; solapa levemente la barra celeste.
+- Navegación: Home / Missions / Explorar y Practicar.
+- Tipografía refinada con pesos más livianos.
+- Cohete de navegación con contorno negro fino.
+- Iconos Listening y Quick Vote refinados; Short Videos naranja y texto a juego.
+- Practice abre debajo de Explorar y Practicar, igual que las demás herramientas.
+- Imágenes de las 10 Missions actualizadas hacia una familia visual más consistente y profesional; Greetings conserva las cuatro partes del día aprobadas.
+- Se agregan tarjetas 11–15 visibles y bloqueadas, sin contenido; sus títulos/orden quedan pendientes de confirmación.
+- Se mantiene el avatar provisional por inicial y el birrete solo para 6.º.

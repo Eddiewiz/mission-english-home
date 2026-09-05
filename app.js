@@ -1,16 +1,15 @@
 
-const HOME_RELEASE_VERSION = "v1.6.11";
+const HOME_RELEASE_VERSION = "v1.6.31";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
-  const assignment=`${HOME_ASSIGNMENT.deadlineLabel}|${HOME_ASSIGNMENT.requiredMissionIds.join(",")}|${HOME_ASSIGNMENT.requireQuickVote}|${HOME_ASSIGNMENT.requireListening}|${HOME_ASSIGNMENT.requireVideo}`;
+  const task=currentHomeTask_();
+  const signature=task ? `${task.id||""}|${task.updatedAt||task.createdAt||""}|${task.dueAt||""}` : "no-task";
   let hash=0;
-  for(let i=0;i<assignment.length;i++) hash=((hash<<5)-hash+assignment.charCodeAt(i))|0;
+  for(let i=0;i<signature.length;i++) hash=((hash<<5)-hash+signature.charCodeAt(i))|0;
   return `mission_english_home_homework_reminder_${sid}_${Math.abs(hash)}`;
 }
-function homeworkReminderApplies_(){
-  return !!(HOME_ASSIGNMENT.enabled && homeGradeAllowed_());
-}
+function homeworkReminderApplies_(){ return !!currentHomeTask_(); }
 function homeworkReminderNeedsPopup_(){
   if(!homeworkReminderApplies_()) return false;
   try{return localStorage.getItem(homeworkReminderKey_())!=="closed";}catch{return true;}
@@ -22,25 +21,12 @@ function closeHomeworkReminder_(){
 (function prepareFreshHomeRelease_(){
   try{
     const marker="mission_english_home_release_marker";
-    if(localStorage.getItem(marker)===HOME_RELEASE_VERSION) return;
-    const prefixes=[
-      "mission_english","missionEnglish","mission-english",
-      "home_student","homeStudent","quickVote","quick_vote",
-      "guidedPractice","guided_practice"
-    ];
-    Object.keys(localStorage).forEach(key=>{
-      const lower=String(key).toLowerCase();
-      if(prefixes.some(p=>lower.includes(p.toLowerCase())) && key!==marker){
-        localStorage.removeItem(key);
-      }
-    });
-    sessionStorage.clear();
     localStorage.setItem(marker,HOME_RELEASE_VERSION);
   }catch{}
 })();
 
 
-const APP_VERSION = "Home v1.6.11";
+const APP_VERSION = "Home v1.6.31";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -87,18 +73,21 @@ function testerBackendTrackingEnabled_(){ return !isHomeTester_() || state.stude
 function isHomeTester_(){ return !!state.student?.isTester || String(state.student?.id||"").startsWith("TESTER-HOME-"); }
 function homeGradeAllowed_(){ return isHomeTester_() || HOME_ASSIGNMENT.allowedGrades.includes(String(state.student?.grade||"").trim()); }
 function homeworkPanelHtml_(){
-  if(!HOME_ASSIGNMENT.enabled || !homeGradeAllowed_()) return "";
-  const catalog=studentMissionCatalog_();
-  const selected=HOME_ASSIGNMENT.requiredMissionIds.map(id=>catalog.find(m=>m.id===id)).filter(Boolean);
-  const missions=selected.length ? selected.map(m=>`<li><strong>Mission ${m.number}</strong> · ${escapeHtml(m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,""))}</li>`).join("") : `<li><strong>2 Missions obligatorias</strong> · el teacher las indicará.</li>`;
+  const task=currentHomeTask_();
+  if(!task) return "";
+  const due=homeTaskDueLabel_();
+  const missionLis=homeTaskMissionItems_().map(m=>`<li><strong>Mission ${escapeHtml(m.number)}</strong> · ${escapeHtml(m.title)}</li>`).join("");
+  const exploreLis=(Array.isArray(task.explorePractice)?task.explorePractice:[]).map(x=>`<li>✓ ${homeTaskExploreLine_(x)}</li>`).join("");
+  const message=task.teacherMessage?`<div class="homework-teacher-message"><strong>💬 Teacher Eddie:</strong> ${escapeHtml(task.teacherMessage)}</div>`:"";
   return `<section class="home-assignment-card">
-    <div class="assignment-title">${HOME_ASSIGNMENT.title}</div>
-    <div class="assignment-deadline">⏰ ${escapeHtml(HOME_ASSIGNMENT.deadlineLabel)}</div>
-    <ul>${missions}${HOME_ASSIGNMENT.requireQuickVote?"<li>📣 Completar <strong>Quick Vote</strong>.</li>":""}${HOME_ASSIGNMENT.requireListening?"<li>🎧 Escuchar el <strong>Listening</strong>.</li>":""}${HOME_ASSIGNMENT.requireVideo?"<li>🎬 Ver el <strong>Short Video</strong>.</li>":""}</ul>
+    <div class="assignment-title">📌 ${escapeHtml(homeTaskTitle_())} <span class="home-new-feature-badge">¡Nueva función!</span></div>
+    ${due?`<div class="assignment-deadline">⏰ ${escapeHtml(due)}</div>`:""}
+    <ul>${missionLis}${exploreLis}</ul>
+    ${message}
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.12 — definitive mobile layout and Explore & Practice stability fix";
+const CONTENT_VERSION = "Mission English Home v1.6.31 — dynamic Dashboard homework + teacher message";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -171,6 +160,15 @@ function playUsefulEnglishAudio() {
 }
 
 let quickVoteStats = { total: 0, choices: {}, myChoice: "" };
+let explorePracticeCatalog = [];
+let activeQuickVote = null;
+let quickVotePolls = [];
+let selectedQuickVotePollId = "";
+let quickVoteStatsByPoll = {};
+function quickVoteCacheKey_(pollId){
+  return `${String(state.student?.id||"guest")}::${String(pollId||"")}`;
+}
+let pendingQuickVoteChoices = [];
 // Mission IDs are stable content identifiers. Display numbers may change without rewriting historical results.
 const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbyUt9Wm6VS9NQoCuc6hBhH6QgJHzv6KFETQX7or9YJg6WdQvkDlMddlm-fub5FyF6soRg/exec"; // Mission English Classroom receiver.
 const LOCAL_STUDENTS = [{"id":"ALU-4-001","officialName":"Almada, Francisco","displayName":"Almada, Francisco","nickname":"","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-002","officialName":"Alvarez, Iker Mariano","displayName":"Alvarez, Iker Mariano","nickname":"Iker","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-003","officialName":"Churaira, Alison Tamara","displayName":"Churaira, Alison Tamara","nickname":"Alison","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-004","officialName":"Cruz, Angel Alexis","displayName":"Cruz, Angel Alexis","nickname":"Angel","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-005","officialName":"Gonzalez Reyes, Maria Pia","displayName":"Gonzalez Reyes, Maria Pia","nickname":"Pia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-006","officialName":"Hualpa Diaz, Sofia Alisson","displayName":"Hualpa Diaz, Sofia Alisson","nickname":"Sofia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-007","officialName":"Lobos, Alexis Agustin","displayName":"Lobos, Alexis Agustin","nickname":"Alexis","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-008","officialName":"Lopez Bustamante, Julieta Tatiana","displayName":"Lopez Bustamante, Julieta Tatiana","nickname":"Julieta","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-009","officialName":"Lujan Cabrera, Milo Santino","displayName":"Lujan Cabrera, Milo Santino","nickname":"Milo","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-010","officialName":"Marcelo La Cruz, Wendy Nicole","displayName":"Marcelo La Cruz, Wendy Nicole","nickname":"Wendy","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-011","officialName":"Munoz Massa, Noah German","displayName":"Munoz Massa, Noah German","nickname":"Noah","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-012","officialName":"Nievas, Santino Benjamin","displayName":"Nievas, Santino Benjamin","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-013","officialName":"Ocampo, Ivan Hernan","displayName":"Ocampo, Ivan Hernan","nickname":"Ivan","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-014","officialName":"Ontivero, Alina Yasmin","displayName":"Ontivero, Alina Yasmin","nickname":"Alina","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-015","officialName":"Peredo Corrales, Abril Britany","displayName":"Peredo Corrales, Abril Britany","nickname":"Abril","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-016","officialName":"Perez Miranda, Morena Yuliana","displayName":"Perez Miranda, Morena Yuliana","nickname":"Morena","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-017","officialName":"Ramallo Ledesma, Agustin S","displayName":"Ramallo Ledesma, Agustin S","nickname":"Agustin","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-018","officialName":"Reyes, Santino Leonel","displayName":"Reyes, Santino Leonel","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-019","officialName":"Tabares, Laureano","displayName":"Tabares, Laureano","nickname":"Laureano","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-020","officialName":"Traico, Nicole Franchesca","displayName":"Traico, Nicole Franchesca","nickname":"Nicole","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-021","officialName":"Villegas, Aylen Melodi","displayName":"Villegas, Aylen Melodi","nickname":"Aylen","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-5-001","officialName":"Acuña Cabral, Paz","displayName":"Acuña Cabral, Paz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-002","officialName":"Andrada, Noha Valentino","displayName":"Andrada, Noha Valentino","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-003","officialName":"Andrada Moreyra, Theo Yeremias","displayName":"Andrada Moreyra, Theo Yeremias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-004","officialName":"Andreo, Alvaro Benjamin","displayName":"Andreo, Alvaro Benjamin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-005","officialName":"Ariza Rojas, Benjamin","displayName":"Ariza Rojas, Benjamin","nickname":"Benja","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-006","officialName":"Bastidos Cerron, Dilan","displayName":"Bastidos Cerron, Dilan","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-007","officialName":"Caceres, Misael Ezequias","displayName":"Caceres, Misael Ezequias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-008","officialName":"De Toro Romero, Thiago Valentin","displayName":"De Toro Romero, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-009","officialName":"Faotto, Eliseo Damian","displayName":"Faotto, Eliseo Damian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-010","officialName":"Faraig, Franchesca Charlot","displayName":"Faraig, Franchesca Charlot","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-011","officialName":"Ferreyra, Benjamin Nicolas","displayName":"Ferreyra, Benjamin Nicolas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-012","officialName":"Garcia, Mirko Alejandro","displayName":"Garcia, Mirko Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-013","officialName":"Ignacio Champi, Rishell Briana","displayName":"Ignacio Champi, Rishell Briana","nickname":"Briana","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-014","officialName":"Lopez, Francisco Tomas","displayName":"Lopez, Francisco Tomas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-015","officialName":"Lopez, Ian Alejandro","displayName":"Lopez, Ian Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-016","officialName":"Lopez, Sofia Luz","displayName":"Lopez, Sofia Luz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-017","officialName":"Mantilla Anchante, Iker Sebastian","displayName":"Mantilla Anchante, Iker Sebastian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-018","officialName":"Olivera, Noa","displayName":"Olivera, Noa","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-019","officialName":"Pagnetto, Lara Jazmin","displayName":"Pagnetto, Lara Jazmin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-020","officialName":"Palomino Checcllo, Damaris Avigai","displayName":"Palomino Checcllo, Damaris Avigai","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-021","officialName":"Rios Tejeda, Angel Rodrigo","displayName":"Rios Tejeda, Angel Rodrigo","nickname":"Rodrigo","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-022","officialName":"Rodriguez, Catalehia","displayName":"Rodriguez, Catalehia","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-023","officialName":"Rodriguez, Luz Victoria","displayName":"Rodriguez, Luz Victoria","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-024","officialName":"Saldano, Jeremias Simon","displayName":"Saldano, Jeremias Simon","nickname":"Simon","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-025","officialName":"Traico, Onur Boran Jesus","displayName":"Traico, Onur Boran Jesus","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-6-001","officialName":"Agustin","displayName":"Agustin","nickname":"Agus","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-002","officialName":"Allamano, Dylan Francisco","displayName":"Allamano, Dylan Francisco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-003","officialName":"Andrada, Ruben Bautista","displayName":"Andrada, Ruben Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-004","officialName":"Arguello, Melody Nahiara","displayName":"Arguello, Melody Nahiara","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-005","officialName":"Britez Allauca, Yamile Mercedes","displayName":"Britez Allauca, Yamile Mercedes","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-006","officialName":"Contreras Corbalan, Theo Azahel","displayName":"Contreras Corbalan, Theo Azahel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-007","officialName":"Drago Traico, Thiago Isaias","displayName":"Drago Traico, Thiago Isaias","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-008","officialName":"Escobar Centeno, Samira","displayName":"Escobar Centeno, Samira","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-009","officialName":"Faotto, Felipe David","displayName":"Faotto, Felipe David","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-010","officialName":"Gonzales Gallardo, Mayco","displayName":"Gonzales Gallardo, Mayco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-011","officialName":"Gonzalez Reyes, Martina","displayName":"Gonzalez Reyes, Martina","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-012","officialName":"Gutierrez Domingo, Mateo Ismael","displayName":"Gutierrez Domingo, Mateo Ismael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-013","officialName":"Guzman Rinaldi, Thiago Franco","displayName":"Guzman Rinaldi, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-014","officialName":"Lopez Ronaldo, Augusto","displayName":"Lopez Ronaldo, Augusto","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-015","officialName":"Mamani Arze, Thiago Franco","displayName":"Mamani Arze, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-016","officialName":"Marcelo La Cruz, Andres","displayName":"Marcelo La Cruz, Andres","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-017","officialName":"Marigliano, Valentino Emmanuel","displayName":"Marigliano, Valentino Emmanuel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-018","officialName":"Moreyra, Eimi Antonella","displayName":"Moreyra, Eimi Antonella","nickname":"Antonella","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-019","officialName":"Ortiz, Josefina Paz","displayName":"Ortiz, Josefina Paz","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-020","officialName":"Pavez, Ruth Abigael","displayName":"Pavez, Ruth Abigael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-021","officialName":"Perez, Felipe Javier","displayName":"Perez, Felipe Javier","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-022","officialName":"Pistoia, Isabella","displayName":"Pistoia, Isabella","nickname":"Isa","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-023","officialName":"Pucheta, Lorenzo Bautista","displayName":"Pucheta, Lorenzo Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-024","officialName":"Reyes, Thiago Valentin","displayName":"Reyes, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-025","officialName":"Salas, Cecile Guadalupe","displayName":"Salas, Cecile Guadalupe","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-026","officialName":"Santillan Gonzales, Lucas Simon","displayName":"Santillan Gonzales, Lucas Simon","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-027","officialName":"Tabares, Julian","displayName":"Tabares, Julian","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-028","officialName":"Traico, Miguel Angel","displayName":"Traico, Miguel Angel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-029","officialName":"Vedia Soto, Rosalinda","displayName":"Vedia Soto, Rosalinda","nickname":"","schoolYear":"2026","grade":"6","division":""}];
@@ -1472,6 +1470,135 @@ let deviceConfig = loadDeviceConfig();
 let deferredInstallPrompt = null;
 let bootstrapData = { students: [], progress: {}, classroomProgress:{}, homeProgress:{}, missionPermissions:{}, homeVideos:[], loaded: false, error: "" };
 
+// Mission permissions are intentionally kept separate from the large bootstrap.
+// Dashboard lock/unlock is authoritative only after this lightweight endpoint responds.
+let homePermissionState = {
+  permissions: {},
+  loaded: false,
+  loading: false,
+  error: "",
+  generatedAt: ""
+};
+
+let homeTaskState = {
+  task: null,
+  loaded: false,
+  loading: false,
+  error: "",
+  generatedAt: ""
+};
+
+function currentHomeTask_(){
+  return homeTaskState.loaded ? homeTaskState.task : null;
+}
+
+function homeTaskMissionItems_(){
+  const task=currentHomeTask_();
+  if(!task || !Array.isArray(task.missions)) return [];
+  const catalog=studentMissionCatalog_();
+  return task.missions.map(num=>{
+    const m=catalog.find(x=>Number(x.number)===Number(num));
+    const title=m ? String(m.title||"").replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"") : `Mission ${num}`;
+    return {number:Number(num),title};
+  });
+}
+
+function homeTaskExploreLine_(name){
+  const raw=String(name||"").trim();
+  const configured=explorePracticeCatalog.find(a=>String(a.id)===raw);
+  if(configured) return `${escapeHtml(configured.category)} · <strong>${escapeHtml(configured.title)}</strong>`;
+  const key=raw.toLowerCase();
+  if(key.includes("quick")&&key.includes("vote")) return `Hacer la encuesta · <strong>Quick Vote</strong>`;
+  if(key.includes("listen")) return `Escuchar el audio · <strong>Listening</strong>`;
+  if(key.includes("short")&&key.includes("video")) return `Ver el video · <strong>Short Video</strong>`;
+  if(key==="practice"||key.includes("practice")) return `Completar · <strong>Practice</strong>`;
+  if(key.includes("assistant")) return `Usar · <strong>Mission English Assistant</strong>`;
+  return `${escapeHtml(raw)}`;
+}
+
+function homeTaskDueLabel_(){
+  const due=String(currentHomeTask_()?.dueAt||"").trim();
+  if(!due) return "";
+  try{
+    const d=new Date(due);
+    if(!isNaN(d)) return d.toLocaleString("es-AR",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
+  }catch{}
+  return due;
+}
+
+function homeTaskTitle_(){
+  const task=currentHomeTask_();
+  return String(task?.title||"Tu tarea").trim() || "Tu tarea";
+}
+
+function homeTaskListHtml_(){
+  const task=currentHomeTask_();
+  if(!task) return "";
+  const missionLines=homeTaskMissionItems_().map(m=>`<div class="homework-task-item">✓ <span>Mission ${escapeHtml(m.number)} · ${escapeHtml(m.title)}</span></div>`).join("");
+  const rawExplore=Array.isArray(task.explorePractice)?task.explorePractice:[];
+  const exploreItems=[];
+  rawExplore.forEach(x=>{
+    const raw=String(x||"").trim();
+    if(!raw)return;
+    if(explorePracticeCatalog.some(a=>String(a.id)===raw)) exploreItems.push(raw);
+    else raw.split(/\n|;|,(?=\s*\S)/).map(s=>s.trim()).filter(Boolean).forEach(s=>exploreItems.push(s));
+  });
+  const exploreLines=exploreItems.map(x=>`<div class="homework-task-item">✓ <span>${homeTaskExploreLine_(x)}</span></div>`).join("");
+  const msg=task.teacherMessage ? `<div class="homework-teacher-message"><strong>💬 Teacher Eddie:</strong> ${escapeHtml(task.teacherMessage)}</div>` : "";
+  const due=homeTaskDueLabel_();
+  const deadline=due ? `<div class="homework-deadline"><strong>📅 Deadline / Fecha límite:</strong><br>${escapeHtml(due)}</div>` : "";
+  return `<div class="homework-task-list">${missionLines}${exploreLines}</div>${msg}${deadline}`;
+}
+
+function loadHomeTask(force=false){
+  const sid=String(state.student?.id||"").trim();
+  if(!sid || isHomeTester_()){
+    homeTaskState={task:null,loaded:true,loading:false,error:"",generatedAt:""};
+    return Promise.resolve(homeTaskState);
+  }
+  if(homeTaskState.loading && !force) return Promise.resolve(homeTaskState);
+  if(homeTaskState.loaded && !force) return Promise.resolve(homeTaskState);
+  if(!navigator.onLine){
+    homeTaskState.error="offline";
+    return Promise.resolve(homeTaskState);
+  }
+
+  homeTaskState.loading=true;
+  homeTaskState.error="";
+  return jsonpRequestHome("homeTask",{studentId:sid})
+    .then(data=>{
+      if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
+      explorePracticeCatalog=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog:[];
+      quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
+      setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
+        const list=document.getElementById("shortVideoList");
+        if(list){list.innerHTML=shortVideosHtml();bindEvents();}
+      }),350);
+      if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
+        selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
+      }
+      activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
+      quickVoteStats=quickVoteStatsByPoll[quickVoteCacheKey_(selectedQuickVotePollId)]||{total:0,choices:{},myChoice:"",myChoices:[],maxSelections:Number(activeQuickVote?.maxSelections||1)};
+      homeTaskState={
+        task:data.task||null,
+        loaded:true,
+        loading:false,
+        error:"",
+        generatedAt:String(data.generatedAt||"")
+      };
+      if(state.route==="map"||state.route==="home") render();
+      return homeTaskState;
+    })
+    .catch(error=>{
+      homeTaskState.loading=false;
+      homeTaskState.loaded=false;
+      homeTaskState.error=String(error?.message||error||"No se pudo cargar la tarea.");
+      console.error("Mission English Home task error:",homeTaskState.error);
+      return homeTaskState;
+    });
+}
+
+
 function freshState() {
   return {
     route: "home",
@@ -1661,7 +1788,12 @@ function setupView() {
   </section>`;
 }
 
+let __lastRenderedRoute = null;
 function render() {
+  const previousRoute=__lastRenderedRoute;
+  const currentRoute=state.route;
+  const preserveY=(previousRoute===currentRoute)?window.scrollY:null;
+  const openExplore=document.querySelector(".explore-detail:not([hidden])")?.id||"";
   const app = document.getElementById("app");
   if (state.route === "home") app.innerHTML = homeView();
   else if (state.route === "about-home") app.innerHTML = aboutHomeView();
@@ -1679,8 +1811,19 @@ function render() {
   else if (state.route === "practice-result") app.innerHTML = differentiatedPracticeResultView();
   bindEvents();
   updateNetworkStatus();
+  __lastRenderedRoute=currentRoute;
 
-  if (["about-home","home-intro","mission-intro","mission","mission-result","map"].includes(state.route)) {
+  // Background sync may rerender the same page. Keep the open Explore panel and
+  // the exact viewport instead of throwing the student back to the top.
+  if(previousRoute===currentRoute){
+    if(openExplore){
+      const panel=document.getElementById(openExplore);
+      if(panel)panel.hidden=false;
+    }
+    if(preserveY!==null){
+      requestAnimationFrame(()=>window.scrollTo({top:preserveY,left:0,behavior:"auto"}));
+    }
+  }else if (["about-home","home-intro","mission-intro","mission","mission-result","map"].includes(state.route)) {
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
   }
 }
@@ -2016,74 +2159,131 @@ function homePracticeForYouHtml() {
 
 
 // Weekly Quick Vote reminder belongs in ESL Teacher Manager; Home only renders the active weekly poll.
+
+function quickVotePanelInnerHtml_(){
+  return `
+    <div class="explore-detail-head"><strong>📣 Quick Vote</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+    ${quickVotePolls.length>1?`<div class="quick-vote-poll-selector">${quickVotePolls.map(p=>`<button type="button" class="secondary-button quick-vote-poll-button ${p.pollId===selectedQuickVotePollId?"selected":""}" data-action="select-quick-vote" data-poll-id="${escapeHtml(p.pollId)}"><strong>${escapeHtml(p.title||p.question||"Quick Vote")}</strong><small>${escapeHtml(quickVoteDateLabel_(p))}</small></button>`).join("")}</div>`:""}
+    ${activeQuickVote?`
+      <div class="quick-vote-meta"><span>● ${escapeHtml(quickVoteDateLabel_(activeQuickVote))}</span></div>
+      <p><strong>${escapeHtml(activeQuickVote.question||activeQuickVote.title||"Quick Vote")}</strong>${activeQuickVote.instructions?`<br><span class="small">${escapeHtml(activeQuickVote.instructions)}</span>`:""}</p>
+      <div class="quick-vote-rule"><strong>${Number(activeQuickVote.maxSelections||1)>1?`Podés elegir hasta ${Number(activeQuickVote.maxSelections||1)} Missions. Marcá las que quieras repasar y después presioná Votar.`:"Cada persona puede votar una sola vez."}</strong></div>
+      <div class="poll-buttons">${(activeQuickVote.options||[]).map(c=>{
+        const multi=Number(activeQuickVote.maxSelections||1)>1;
+        const selected=pendingQuickVoteChoices.includes(String(c));
+        const voted=(quickVoteStats.myChoices||[]).length||quickVoteStats.myChoice;
+        return `<button type="button" class="secondary-button poll-choice ${selected?"selected":""}" data-action="${multi?"poll-toggle-choice":"poll-vote"}" data-choice="${escapeHtml(c)}" ${voted?"disabled":""}>${selected?"✓ ":""}${escapeHtml(c)}</button>`;
+      }).join("")}</div>
+      ${Number(activeQuickVote.maxSelections||1)>1 && !((quickVoteStats.myChoices||[]).length||quickVoteStats.myChoice)?`<button type="button" class="primary-button quick-vote-submit" data-action="poll-submit" ${pendingQuickVoteChoices.length?"":"disabled"}>Votar${pendingQuickVoteChoices.length?` (${pendingQuickVoteChoices.length})`:""}</button>`:""}
+      <div id="quickVoteResults">${quickVoteResultsHtml()}</div>`
+      :`<p class="small">No hay una encuesta activa en este momento.</p>`}
+  `;
+}
+function refreshQuickVotePanelDom_(){
+  const panel=document.getElementById("quickVotePanel");
+  if(!panel)return;
+  const wasHidden=panel.hidden;
+  panel.innerHTML=quickVotePanelInnerHtml_();
+  panel.hidden=wasHidden;
+  bindEvents();
+}
+
+function quickVoteDateLabel_(poll){
+  const start=String(poll?.visibleFrom||poll?.displayFrom||poll?.firstVoteAt||poll?.createdAt||"").slice(0,10);
+  const end=String(poll?.visibleUntil||"").slice(0,10);
+  const fmt=s=>{
+    const m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?`${m[3]}/${m[2]}/${m[1]}`:s;
+  };
+  if(start&&end)return `Activa · ${fmt(start)} → ${fmt(end)}`;
+  if(start)return `Activa · desde ${fmt(start)}`;
+  if(end)return `Activa · hasta ${fmt(end)}`;
+  return "Activa";
+}
+function renderQuickVotePreserve_(){
+  const y=window.scrollY;
+  render();
+  const panel=document.getElementById("quickVotePanel");
+  if(panel)panel.hidden=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:"auto"})));
+}
 function quickVoteResultsHtml() {
-  if (quickVoteStats.myChoice) {
-    const labels = { blue:"Blue", red:"Red", green:"Green", yellow:"Yellow", purple:"Purple", orange:"Orange" };
-    const picked = labels[quickVoteStats.myChoice] || quickVoteStats.myChoice;
+  const mine=Array.isArray(quickVoteStats.myChoices)&&quickVoteStats.myChoices.length?quickVoteStats.myChoices:(quickVoteStats.myChoice?[quickVoteStats.myChoice]:[]);
+  if (mine.length) {
+    const labels={blue:"Blue",red:"Red",green:"Green",yellow:"Yellow",purple:"Purple",orange:"Orange"};
+    const picked=mine.map(x=>labels[x]||x).join(", ");
     return `<div class="quick-vote-private-status">✓ Tu voto fue registrado: <strong>${escapeHtml(picked)}</strong>.<br><span class="small">El resultado lo contará el teacher en clase.</span></div>`;
   }
   return `<div class="quick-vote-empty small">Todavía no votaste.</div>`;
 }
 
 function refreshQuickVoteResults() {
+  const poll=activeQuickVote;
+  if(!poll){quickVoteStats={total:0,choices:{},myChoice:"",myChoices:[]};return Promise.resolve();}
   return jsonpRequestHome("quickVoteStats", {
     grade: state.student?.grade || "",
     division: state.student?.division || "",
-    studentId: state.student?.id || ""
+    studentId: state.student?.id || "",
+    pollId: poll.pollId || ""
   }).then(data => {
     if (data?.ok) {
       quickVoteStats = {
-        total: Number(data.total)||0,
-        choices: data.choices || {},
-        myChoice: data.myChoice || ""
+        total:Number(data.total)||0,
+        choices:data.choices||{},
+        myChoice:data.myChoice||"",
+        myChoices:Array.isArray(data.myChoices)?data.myChoices:(data.myChoice?[data.myChoice]:[]),
+        maxSelections:Number(data.maxSelections||poll.maxSelections||1)||1
       };
-      const box = document.getElementById("quickVoteResults");
-      if (box) box.innerHTML = quickVoteResultsHtml();
+      quickVoteStatsByPoll[quickVoteCacheKey_(poll.pollId)]=quickVoteStats;
+      const box=document.getElementById("quickVoteResults");
+      if(box)box.innerHTML=quickVoteResultsHtml();
     }
   }).catch(()=>{});
 }
 
-function submitQuickVote(choice) {
-  if (!state.student?.id || !choice) return;
-  if (isHomeTester_() && !testerBackendTrackingEnabled_()) {
-    quickVoteStats.myChoice=choice;
-    quickVoteStats.choices={...(quickVoteStats.choices||{}),[choice]:Number(quickVoteStats.choices?.[choice]||0)+1};
-    quickVoteStats.total=Number(quickVoteStats.total||0)+1;
-    const box=document.getElementById("quickVoteResults"); if(box) box.innerHTML=quickVoteResultsHtml();
-    return;
-  }
-  if (quickVoteStats.myChoice) {
-    alert("Cada persona puede votar una sola vez. Tu voto ya fue registrado.");
+function submitQuickVote(choiceOrChoices) {
+  if (!state.student?.id || !activeQuickVote) return;
+  let choices=Array.isArray(choiceOrChoices)?choiceOrChoices:[choiceOrChoices];
+  choices=[...new Set(choices.map(x=>String(x||"").trim()).filter(Boolean))];
+  const max=Math.max(1,Number(activeQuickVote.maxSelections||1)||1);
+  choices=choices.slice(0,max);
+  if(!choices.length)return;
+
+  const already=Array.isArray(quickVoteStats.myChoices)&&quickVoteStats.myChoices.length ? quickVoteStats.myChoices : (quickVoteStats.myChoice?[quickVoteStats.myChoice]:[]);
+  if(already.length){
+    alert("Cada persona puede votar una sola vez en esta encuesta. Tu voto ya fue registrado.");
     return;
   }
 
-  const payload = {
-    type: "quickVote",
-    id: crypto.randomUUID ? crypto.randomUUID() : `vote-${Date.now()}-${Math.random()}`,
-    createdAt: new Date().toISOString(),
-    origin: "Home",
-    pollId: "favorite-color-v1",
-    question: "What's your favorite color?",
-    choice,
-    student: state.student,
-    device: { computerName:"Home", location:"Fuera del aula" }
+  if (isHomeTester_() && !testerBackendTrackingEnabled_()) {
+    quickVoteStats.myChoices=choices; quickVoteStats.myChoice=choices[0]||"";
+    quickVoteStatsByPoll[quickVoteCacheKey_(activeQuickVote.pollId)]=quickVoteStats;
+    refreshQuickVotePanelDom_(); return;
+  }
+
+  const payload={
+    type:"quickVote",
+    id:crypto.randomUUID?crypto.randomUUID():`vote-${Date.now()}-${Math.random()}`,
+    createdAt:new Date().toISOString(),
+    origin:"Home",
+    pollId:activeQuickVote.pollId||"favorite-color-v1",
+    question:activeQuickVote.question||"",
+    choice:choices[0]||"",
+    choices,
+    student:state.student,
+    device:{computerName:"Home",location:"Fuera del aula"}
   };
 
-  try {
-    fetch(SYNC_ENDPOINT, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload),
-      keepalive:true
-    });
-  } catch {}
+  try{
+    fetch(SYNC_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),keepalive:true});
+  }catch{}
 
-  quickVoteStats.myChoice = choice;
-  document.querySelectorAll(".poll-choice").forEach(btn => btn.disabled = true);
-  const box = document.getElementById("quickVoteResults");
-  if (box) box.innerHTML = quickVoteResultsHtml();
-  setTimeout(refreshQuickVoteResults, 700);
+  quickVoteStats.myChoices=choices;
+  quickVoteStats.myChoice=choices[0]||"";
+  quickVoteStatsByPoll[quickVoteCacheKey_(activeQuickVote.pollId)]=quickVoteStats;
+  pendingQuickVoteChoices=[];
+  refreshQuickVotePanelDom_();
+  setTimeout(()=>refreshQuickVoteResults().then(()=>refreshQuickVotePanelDom_()),700);
 }
 
 function jsonpRequestHome(action, params={}) {
@@ -2109,6 +2309,53 @@ function jsonpRequestHome(action, params={}) {
     document.head.appendChild(script);
   });
 }
+
+function loadHomeMissionPermissions(force=false) {
+  if (homePermissionState.loading && !force) return Promise.resolve(homePermissionState);
+  if (homePermissionState.loaded && !force) return Promise.resolve(homePermissionState);
+  if (!navigator.onLine) {
+    homePermissionState.error = "offline";
+    return Promise.resolve(homePermissionState);
+  }
+
+  homePermissionState.loading = true;
+  homePermissionState.error = "";
+
+  const attempt = (remainingRetries) =>
+    jsonpRequestHome("homePermissions", { origin:"Home" })
+      .then(data => {
+        if (!data || data.ok === false || !data.missionPermissions || typeof data.missionPermissions !== "object") {
+          throw new Error(data?.error || "Respuesta de permisos inválida.");
+        }
+
+        homePermissionState = {
+          permissions: data.missionPermissions,
+          loaded: true,
+          loading: false,
+          error: "",
+          generatedAt: String(data.generatedAt || "")
+        };
+
+        console.info("Mission English Home permissions loaded:", homePermissionState);
+        if (state.route === "map" || state.route === "home") render();
+        return homePermissionState;
+      })
+      .catch(error => {
+        if (remainingRetries > 0 && navigator.onLine) {
+          return new Promise(resolve => setTimeout(resolve, 900))
+            .then(() => attempt(remainingRetries - 1));
+        }
+        homePermissionState.loading = false;
+        homePermissionState.loaded = false;
+        homePermissionState.error = String(error?.message || error || "No se pudieron cargar los permisos.");
+        console.error("Mission English Home permissions error:", homePermissionState.error);
+        if (state.route === "map" || state.route === "home") render();
+        return homePermissionState;
+      });
+
+  return attempt(1);
+}
+
 
 
 const HOME_MISSION_VISUALS = {
@@ -2290,16 +2537,56 @@ function sectionLockedForStudent_(sectionKey){
   return course.sections[sectionKey]===false;
 }
 
+function missionPermissionCourseForStudent_() {
+  // v1.6.19: mission availability uses ONLY the dedicated Home permissions endpoint.
+  // This prevents roster/progress/video bootstrap failures from affecting locks.
+  const permissions=homePermissionState.permissions||{};
+
+  // Resolve the current student against the fresh backend roster whenever possible.
+  // Older Home sessions may contain a saved student object from v1.6.11 without
+  // schoolYear/division. Using the current roster prevents that stale local state
+  // from breaking the permission key.
+  const sid=String(state.student?.id||"").trim();
+  const rosterMatch=(bootstrapData.students||[]).find(s=>String(s?.id||"").trim()===sid);
+  const student=rosterMatch || state.student || {};
+
+  const year=String(student.schoolYear||"").replace(/\.0$/,"").trim();
+  const grade=String(student.grade||"").replace(/\.0$/,"").trim();
+  const division=String(student.division||"").trim();
+
+  const exactKey=[year,grade,division].join("|");
+  if(permissions[exactKey]) return permissions[exactKey];
+
+  // Prefer the explicit blank-division course when it exists (current Grade 6 setup).
+  const blankKey=`${year}|${grade}|`;
+  if(permissions[blankKey]) return permissions[blankKey];
+
+  const prefix=`${year}|${grade}|`;
+  const candidates=Object.entries(permissions).filter(([key])=>String(key).startsWith(prefix));
+
+  if(candidates.length===1) return candidates[0][1];
+
+  // Last safe fallback: if the student's saved schoolYear was stale/missing but
+  // the grade uniquely identifies one permissions row, use that row.
+  const gradeSuffix=`|${grade}|`;
+  const gradeCandidates=Object.entries(permissions).filter(([key])=>{
+    const parts=String(key).split("|");
+    return parts.length>=3 && String(parts[1]||"").trim()===grade;
+  });
+  if(grade && gradeCandidates.length===1) return gradeCandidates[0][1];
+
+  return null;
+}
+
 function missionEnabledForStudent(mission) {
-  if(!isHomeTester_() && String(state.student?.grade||"").trim()==="6"){
-    return [2,4,13].includes(Number(mission?.number));
-  }
-  const key=courseKey(state.student);
-  const course=bootstrapData.missionPermissions?.[key];
-  const value=course?.[String(mission.number||state.currentMission+1)];
-  if(mission?.defaultLocked) return value===true;
-  if(!course) return true;
-  return value!==false;
+  // Home permissions come from the dedicated Dashboard/Home endpoint.
+  // Fail closed until that small request has completed successfully.
+  if (isHomeTester_()) return true;
+  if (!homePermissionState.loaded) return false;
+  const course=missionPermissionCourseForStudent_();
+  if(!course) return false;
+  const value=course[String(mission.number||state.currentMission+1)];
+  return value===true;
 }
 
 
@@ -2322,6 +2609,37 @@ function normalizeMissionVideoUrl(rawUrl) {
     return null;
   } catch { return null; }
 }
+
+function renderExploreVideo_(host,video){
+  if(!host||!video)return false;
+  const url=String(video.url||"").trim();
+  const title=escapeHtml(video.title||"Short Video");
+  const driveId=String(video.driveFileId||"").trim() ||
+    (url.match(/drive\.google\.com\/file\/d\/([^/]+)/)||[])[1] || "";
+
+  if(driveId){
+    const preview=`https://drive.google.com/file/d/${encodeURIComponent(driveId)}/preview`;
+    host.innerHTML=`<iframe src="${preview}" title="${title}" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px"></iframe>`;
+    return true;
+  }
+
+  if(/^https?:\/\//i.test(url)){
+    if(/\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(url)){
+      host.innerHTML=`<video controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px"><source src="${escapeHtml(url)}"></video>`;
+      return true;
+    }
+    host.innerHTML=`<iframe src="${escapeHtml(url)}" title="${title}" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px"></iframe>`;
+    return true;
+  }
+
+  // Existing packaged videos such as Cloudy.mp4.
+  if(url){
+    host.innerHTML=`<video controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px"><source src="${escapeHtml(url)}" type="${escapeHtml(video.mediaMime||"video/mp4")}"></video>`;
+    return true;
+  }
+  return false;
+}
+
 function renderMissionVideo_(container,rawUrl){const info=normalizeMissionVideoUrl(rawUrl);if(!container||!info)return false;container.innerHTML=info.type==="video"?`<video controls playsinline preload="metadata" style="width:100%;max-height:440px;border-radius:10px;background:#111"><source src="${escapeHtml(info.url)}"></video>`:`<iframe title="Mission English Short Video" src="${escapeHtml(info.url)}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="width:100%;min-height:300px;border:0;border-radius:10px;background:#111"></iframe>`;return true;}
 
 function homeVideosForStudent() {
@@ -2334,24 +2652,37 @@ function homeVideosForStudent() {
     .filter(v => !v.division || String(v.division) === division);
 }
 
-function shortVideosHtml() {
-  const videos = homeVideosForStudent();
-  const localCloudy = `
-    <div class="short-video-item">
-      <strong>Cloudy</strong>
-      <span class="small">Weather · Mission 8 · Un momento gracioso de un teacher</span>
-      <button class="primary-button" data-action="open-local-video" data-video-src="Cloudy.mp4" data-video-title="Cloudy">▶ Ver video</button>
-    </div>`;
+function exploreActivityDateHtml_(a){
+  const fmt=v=>{
+    const s=String(v||"").slice(0,10),m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?`${m[3]}/${m[2]}/${m[1]}`:(s||"—");
+  };
+  const from=fmt(a?.visibleFrom||a?.displayFrom||a?.createdAt||"");
+  const until=a?.visibleUntil?fmt(a.visibleUntil):"Sin fecha límite";
+  return `<span class="explore-activity-dates">Activa · Desde ${escapeHtml(from)} · Hasta ${escapeHtml(until)}</span>`;
+}
+function refreshExplorePracticeCatalog_(){
+  if(!state.student?.id)return Promise.resolve(explorePracticeCatalog);
+  return jsonpRequestHome("explorePracticeCatalog",{studentId:state.student.id}).then(data=>{
+    if(data?.ok&&Array.isArray(data.explorePracticeCatalog)){
+      explorePracticeCatalog=data.explorePracticeCatalog;
+      quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
+    }
+    return explorePracticeCatalog;
+  }).catch(()=>explorePracticeCatalog);
+}
 
-  const teacherVideos = videos.map((v, index) => `
-    <div class="short-video-item">
-      <strong>${escapeHtml(v.title || "Short video")}</strong>
-      ${v.translation ? `<span class="small">(${escapeHtml(v.translation)})</span>` : ""}
-      ${v.note ? `<span class="small">${escapeHtml(v.note)}</span>` : ""}
-      <button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button>
-    </div>
-  `).join("");
-  return localCloudy + teacherVideos;
+function exploreListeningHtml_(){
+ const items=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Listening"&&a.url);
+ return items.map((a,index)=>`<div class="listening-upload-item"><div><strong>${escapeHtml(a.title||"Listening")}</strong><span class="small">${a.mission?`Mission ${escapeHtml(a.mission)} · `:""}${escapeHtml(a.instructions||"")}</span>${exploreActivityDateHtml_(a)}</div><audio id="exploreListeningAudio${index}" controls preload="metadata" src="${escapeHtml(a.url)}"></audio></div>`).join("");
+}
+
+function shortVideosHtml() {
+  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
+  const dynamic=exploreVideos.map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong><span class="small">${v.mission?`Mission ${escapeHtml(v.mission)} · `:""}${escapeHtml(v.instructions||"")}</span>${exploreActivityDateHtml_(v)}<button class="primary-button" data-action="open-explore-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
+  const teacherVideos=homeVideosForStudent().map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong>${v.translation?`<span class="small">(${escapeHtml(v.translation)})</span>`:""}${v.note?`<span class="small">${escapeHtml(v.note)}</span>`:""}<span class="explore-activity-dates">Activa · Desde — · Hasta Sin fecha límite</span><button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
+  const empty=(!dynamic&&!teacherVideos)?`<div class="short-video-empty"><strong>No hay videos activos para este alumno.</strong></div>`:"";
+  return dynamic+teacherVideos+empty;
 }
 
 function openTeacherVideo(index) {
@@ -2454,7 +2785,7 @@ function mapView() {
         <div class="homework-reminder-icon">📋</div>
         <h2 id="homeworkReminderTitle">¡Tenés una tarea asignada!</h2>
         <p>Antes de empezar, revisá qué tenés que hacer y la fecha límite.</p>
-        <div class="homework-reminder-deadline">📅 <strong>Martes 1.º de septiembre · 12:00 PM (mediodía)</strong></div>
+        <div class="homework-reminder-deadline">📅 <strong>${escapeHtml(homeTaskDueLabel_() || "Revisá la tarea asignada.")}</strong></div>
         <p class="homework-reminder-location">Cuando cierres este mensaje, podés volver a ver tu tarea cuando quieras desde el botón <strong>📋 Tarea</strong> en la parte superior.</p>
         <button type="button" class="homework-reminder-close" data-action="close-homework-reminder">Entendido</button>
       </div>
@@ -2468,18 +2799,15 @@ function mapView() {
         <div><strong>¡Hola, ${escapeHtml(studentName)}!</strong><span>${String(grade).trim().startsWith("6")?'<span class="grade-cap">🎓</span> ':""}${escapeHtml(grade)}</span></div>
       </div>
       <div class="homework-mini-wrap">
-        <button type="button" class="homework-mini-trigger ${homeworkReminderApplies_()?"tarea-assigned":""}" data-action="toggle-homework-mini" aria-expanded="false">📋 Tarea</button>
+        <button type="button" class="homework-mini-trigger ${homeworkReminderApplies_()?"tarea-assigned":""}" data-action="toggle-homework-mini" aria-expanded="false">📋 Tarea ${homeworkReminderApplies_()?'<span class="home-new-feature-badge">¡Nueva función!</span>':""}</button>
         <div id="homeworkMiniPopover" class="homework-popover" hidden>
-          <strong>Tu tarea · 6.º grado</strong>
-          <div class="homework-mini-list">
-            <div><strong>Obligatorio:</strong></div>
-            <div>✓ Mission 2 · Greetings</div>
-            <div>✓ Mission 13 · Classroom Objects</div>
-            <div>✓ Hacer la encuesta · Quick Vote</div>
-            <div>✓ Escuchar el audio · Listening</div>
-            <div>✓ Ver el video · Short Video</div>
-            <div class="homework-deadline"><strong>📅 Deadline / Fecha límite:</strong><br>Martes 1.º de septiembre · 12:00 PM (mediodía)</div>
-          </div>
+          ${currentHomeTask_()?`
+            <strong>${escapeHtml(homeTaskTitle_())} · ${escapeHtml(gradeLabel(state.student.grade))}</strong>
+            <div class="homework-mini-list">
+              <div><strong>Obligatorio:</strong></div>
+              ${homeTaskListHtml_()}
+            </div>`
+          :`<strong>Tu tarea</strong><div class="homework-mini-list"><div>${homeTaskState.loading?"Actualizando tarea…":"No hay una tarea asignada en este momento."}</div></div>`}
         </div>
       </div>
       <details class="account-menu">
@@ -2519,6 +2847,7 @@ function mapView() {
 
       <div class="explore-detail" id="listeningPanel" hidden>
         <div class="explore-detail-head"><strong>🎧 Listening</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+        <div class="dynamic-listening-catalog">${exploreListeningHtml_()}</div>
         <p><strong>Can I go to the toilet, please?</strong><br><span class="small">¿Puedo ir al baño, por favor?</span></p>
         <div class="audio-controls">
           ${sectionLockedForStudent_("listening")?`<button class="secondary-button" disabled>🔒 Bloqueado</button>`:`<button class="secondary-button" data-action="speak-useful">▶ Escuchar</button>`}
@@ -2528,14 +2857,7 @@ function mapView() {
         <p class="listening-speed-tip">💡 Para escuchar el audio más lento, hacé click en <strong>0.75</strong> y luego presioná <strong>Play</strong> nuevamente.</p>
       </div>
 
-      <div class="explore-detail" id="quickVotePanel" hidden>
-        <div class="explore-detail-head"><strong>📣 Quick Vote · Encuesta semanal</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
-        <p><strong>What’s your favorite color?</strong><br><span class="small">¿Cuál es tu color favorito?</span></p>
-        <div class="quick-vote-rule"><strong>Cada persona puede votar una sola vez.</strong></div>
-        <div class="poll-buttons">${["blue","red","green","yellow","purple","orange"].map(c=>`<button class="secondary-button poll-choice" data-action="poll-vote" data-choice="${c}" ${quickVoteStats.myChoice?"disabled":""}>${c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join("")}</div>
-        <div id="quickVoteResults">${quickVoteResultsHtml()}</div>
-      </div>
-
+      <div class="explore-detail" id="quickVotePanel" hidden>${quickVotePanelInnerHtml_()}</div>
       <div class="explore-detail" id="practicePanel" hidden>
         <div class="explore-detail-head"><strong>🎯 Practice</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
         <div class="practice-for-you">${homePracticeForYouHtml()}</div>
@@ -2868,7 +3190,34 @@ function startMissionAttentionTracking(){resetMissionIdleTimer();}
 document.addEventListener("visibilitychange",()=>{if(!isMissionActive())return;if(document.hidden){hiddenAt=Date.now();}else if(hiddenAt){const seconds=Math.max(1,Math.round((Date.now()-hiddenAt)/1000));hiddenAt=0;state.missionExitCount=Number(state.missionExitCount||0)+1;saveState();sendActivityEvent("left_app",{awaySeconds:seconds,exitCount:state.missionExitCount});}});
 window.addEventListener("beforeunload",event=>{if(!isMissionActive())return;sendActivityEvent("attempted_close",{});event.preventDefault();event.returnValue="";});
 
+function bindDynamicExploreVideoEvents_(){
+  if(window.__mewDynamicExploreVideoBound)return;
+  window.__mewDynamicExploreVideoBound=true;
+  document.addEventListener("click",event=>{
+    const button=event.target.closest?.('[data-action="open-explore-video"]');
+    if(!button)return;
+    // Buttons already bound by the normal binder handle themselves there.
+    if(button.dataset.actionBound==="1")return;
+    event.preventDefault();
+    const items=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
+    const video=items[Number(button.dataset.videoIndex)];
+    const panel=document.getElementById("shortVideoPlayer");
+    const title=document.getElementById("shortVideoTitle");
+    const host=document.getElementById("shortVideoFrameHost");
+    if(video&&panel&&host){
+      if(title)title.textContent=video.title||"Short Video";
+      if(!renderExploreVideo_(host,video)){
+        host.innerHTML='<div class="short-video-empty"><strong>Este video no se puede reproducir.</strong></div>';
+      }
+      panel.hidden=false;
+      requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"nearest"}));
+    }
+    button.blur();
+  });
+}
+
 function bindEvents() {
+  bindDynamicExploreVideoEvents_();
   document.querySelectorAll("[data-action]").forEach(el => {
     if(el.dataset.actionBound==="1") return;
     el.dataset.actionBound="1";
@@ -2934,28 +3283,40 @@ function bindEvents() {
       return;
     }
     if (action === "toggle-explore-panel") {
-      const id=event.currentTarget.dataset.panel;
-      const mobileHome=window.matchMedia("(max-width:1024px)").matches;
-      const keepY=window.scrollY;
-      document.querySelectorAll(".explore-detail").forEach(el=>{ if(el.id!==id) el.hidden=true; });
+      const id=event.currentTarget.dataset.panel,keepY=window.scrollY;
+      document.querySelectorAll(".explore-detail").forEach(el=>{if(el.id!==id)el.hidden=true;});
       const panel=document.getElementById(id);
       if(panel){
-        panel.hidden=!panel.hidden;
-        if(!panel.hidden){
-          if(mobileHome){
-            /* Expanding content below the launcher must not move the page on a phone.
-               Restore the exact pre-click viewport after layout/scroll anchoring settles. */
-            event.currentTarget.focus({preventScroll:true});
-            requestAnimationFrame(()=>requestAnimationFrame(()=>{
-              window.scrollTo({top:keepY,left:0,behavior:"auto"});
-            }));
-          }else{
-            panel.scrollIntoView({behavior:"smooth",block:"nearest"});
-          }
+        panel.hidden=!panel.hidden;event.currentTarget.focus({preventScroll:true});
+        if(!panel.hidden&&(id==="shortVideosPanel"||id==="listeningPanel")){
+          refreshExplorePracticeCatalog_().then(()=>{
+            if(id==="shortVideosPanel"){const list=document.getElementById("shortVideoList");if(list){list.innerHTML=shortVideosHtml();bindEvents();}}
+            else{const list=panel.querySelector(".dynamic-listening-catalog");if(list)list.innerHTML=exploreListeningHtml_();}
+            requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:"auto"}));
+          });
         }
+        requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:"auto"}));
       }
       return;
     }
+    if (action === "select-quick-vote") {
+      selectedQuickVotePollId=event.currentTarget.dataset.pollId||"";
+      activeQuickVote=quickVotePolls.find(p=>p.pollId===selectedQuickVotePollId)||null;
+      pendingQuickVoteChoices=[];
+      quickVoteStats=quickVoteStatsByPoll[quickVoteCacheKey_(selectedQuickVotePollId)]||{total:0,choices:{},myChoice:"",myChoices:[],maxSelections:Number(activeQuickVote?.maxSelections||1)};
+      refreshQuickVotePanelDom_();
+      refreshQuickVoteResults().then(()=>refreshQuickVotePanelDom_());
+      return;
+    }
+    if (action === "poll-toggle-choice") {
+      const choice=String(event.currentTarget.dataset.choice||"");
+      const max=Math.max(1,Number(activeQuickVote?.maxSelections||1)||1);
+      if(pendingQuickVoteChoices.includes(choice)) pendingQuickVoteChoices=pendingQuickVoteChoices.filter(x=>x!==choice);
+      else if(pendingQuickVoteChoices.length<max) pendingQuickVoteChoices=[...pendingQuickVoteChoices,choice];
+      else { alert(`Podés elegir hasta ${max} Missions.`); return; }
+      refreshQuickVotePanelDom_(); return;
+    }
+    if (action === "poll-submit") { submitQuickVote(pendingQuickVoteChoices); return; }
     if (action === "poll-vote") { submitQuickVote(event.currentTarget.dataset.choice || ""); return; }
     if (action === "open-local-video") {
       const panel=document.getElementById("shortVideoPlayer"), title=document.getElementById("shortVideoTitle"), host=document.getElementById("shortVideoFrameHost");
@@ -2996,11 +3357,12 @@ function bindEvents() {
       // Quick Vote state must be isolated per tester. Otherwise a vote loaded for a previous
       // tester can leave myChoice set and prevent Tester 2/3 from sending their own vote.
       quickVoteStats = { total: 0, choices: {}, myChoice: "" };
-      state.identityError=""; state.currentMission=0; state.route="map"; saveState(); render(); await loadBootstrap(true,true);
+      state.identityError=""; state.currentMission=0; state.route="map"; saveState(); render(); await loadBootstrap(true,true); await loadHomeTask(true);
       await refreshQuickVoteResults();
       return;
     }
     if (action === "change-student") {
+      homeTaskState={task:null,loaded:false,loading:false,error:"",generatedAt:""};
       state.student = freshState().student; state.selectedGradeKey = ""; state.route = "identify";
       state.reviewConfirmed=false; state.sessionNotice=""; saveState(); render();
     }
@@ -3010,6 +3372,7 @@ function bindEvents() {
       saveState();
       render();
       await loadBootstrap(true,true);
+      await loadHomeTask(true);
       if (state.route === "map") refreshQuickVoteResults();
     }
     if (action === "confirm-student") {
@@ -3018,6 +3381,7 @@ function bindEvents() {
       state.route = (state.forceHomeIntro || !introSeenForStudent(state.student?.id)) ? "home-intro" : "map";
       saveState();
       render();
+      await loadHomeTask(true);
     }
     if (action === "toggle-avatar-chooser") {
       const chooser=document.getElementById("homeAvatarChooser");
@@ -3065,6 +3429,23 @@ function bindEvents() {
         btn.classList.toggle("selected", Math.abs(rate-homeAudioRate) < 0.01);
       });
       event.currentTarget.blur();
+    }
+    if (action === "open-explore-video") {
+      const items=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
+      const video=items[Number(event.currentTarget.dataset.videoIndex)];
+      const panel=document.getElementById("shortVideoPlayer");
+      const title=document.getElementById("shortVideoTitle");
+      const host=document.getElementById("shortVideoFrameHost");
+      if(video&&panel&&host){
+        if(title)title.textContent=video.title||"Short Video";
+        if(!renderExploreVideo_(host,video)){
+          host.innerHTML='<div class="short-video-empty"><strong>Este video no se puede reproducir.</strong></div>';
+        }
+        panel.hidden=false;
+        panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+      }
+      event.currentTarget.blur();
+      return;
     }
     if (action === "open-teacher-video") {
       const videoIndex=event.currentTarget.dataset.videoIndex || "0";
@@ -3444,7 +3825,10 @@ function loadBootstrap(force=false, silent=false) {
         loaded: true,
         error: ""
       };
-      if (!silent) render();
+      // Mission permissions may arrive after the Missions map has already rendered.
+      // Even during a silent refresh, re-render the map so Dashboard lock/unlock
+      // changes become visible immediately after the fresh Home bootstrap arrives.
+      if (!silent || state.route === "map") render();
       return bootstrapData;
     })
     .catch(error => {
@@ -3505,7 +3889,14 @@ function updateNetworkStatus() {
   el.textContent = navigator.onLine ? "● Online" : "● Offline";
   el.className = `status-pill ${navigator.onLine ? "online" : "offline"}`;
 }
-window.addEventListener("online", () => { updateNetworkStatus(); syncQueue(false); });
+window.addEventListener("online", () => {
+  updateNetworkStatus();
+  syncQueue(false);
+  loadHomeMissionPermissions(true);
+  loadHomeTask(true);
+  // Roster/progress/videos remain on the general bootstrap.
+  loadBootstrap(true, true);
+});
 window.addEventListener("offline", updateNetworkStatus);
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -3527,4 +3918,28 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   navigator.serviceWorker.register("./service-worker.js").catch(console.error);
 }
 render();
+
+// Mission permissions are loaded independently and first.
+loadHomeMissionPermissions(true);
+
+// Roster, progress and videos continue using the general bootstrap.
+loadBootstrap(true, true);
+if(state.student?.id) loadHomeTask(true);
 syncQueue(false);
+
+// If Home was left open while the teacher changed permissions, refresh the
+// lightweight permissions endpoint when the student returns.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && navigator.onLine) {
+    loadHomeMissionPermissions(true);
+    loadHomeTask(true);
+    loadBootstrap(true, true);
+  }
+});
+window.addEventListener("focus", () => {
+  if (navigator.onLine) {
+    loadHomeMissionPermissions(true);
+    loadHomeTask(true);
+    loadBootstrap(true, true);
+  }
+});

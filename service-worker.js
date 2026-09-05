@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "mission-english-home-v1.6.12-mobile-definitive-20260828";
+const CACHE_NAME = "mission-english-home-v1.6.31-dedicated-permissions-20260904";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./icon.svg", "./mission-english-home-logo.png", "./mission-english-home-icon-512.png", "./mission-english-home-icon-192.png", "./manifest.webmanifest", "./images/mission6/black.svg", "./images/mission6/blue.svg", "./images/mission6/brown.svg", "./images/mission6/gray.svg", "./images/mission6/green.svg", "./images/mission6/orange.svg", "./images/mission6/pink.svg", "./images/mission6/purple.svg", "./images/mission6/red.svg", "./images/mission6/white.svg", "./images/mission6/yellow.svg", "./images/mission7/balloons-2.svg", "./images/mission7/balloons-3.svg", "./images/mission7/balloons-4.svg", "./images/mission7/balloons-6.svg", "./images/mission7/number-10.svg", "./images/mission7/number-4.svg", "./images/mission7/number-5.svg", "./images/mission7/number-8.svg", "./images/mission7/six-stars.svg", "./images/mission7/stars-5.svg", "./images/mission7/stars-6.svg", "./images/mission7/stars-7.svg", "./images/mission7/stars-9.svg", "./images/mission7/three-balloons.svg", "./images/mission8/cloudy.svg", "./images/mission8/cold.svg", "./images/mission8/cool.svg", "./images/mission8/hot.svg", "./images/mission8/rainy.svg", "./images/mission8/snowy.svg", "./images/mission8/stormy.svg", "./images/mission8/sunny.svg", "./images/mission8/warm.svg", "./images/mission8/windy.svg", "./images/home/landing-cloud-left.png", "./images/home/landing-cloud-right.png", "./images/home/landing-trees-left.png", "./images/home/landing-trees-right.png", "./images/greetings/good-morning.svg", "./images/greetings/good-afternoon.svg", "./images/greetings/good-evening.svg", "./images/greetings/good-night.svg", "./images/approved/home-landing-approved.jpg", "./images/approved/good-morning.jpg", "./images/approved/good-afternoon.jpg", "./images/approved/good-evening.jpg", "./images/approved/good-night.jpg", "./images/home-missions/good-evening-sunset.svg", "./images/home-missions/good-morning-sunrise.svg", "./images/home-missions/m1-date.svg", "./images/home-missions/m1-date-grade6.svg", "./images/home-missions/m2-greetings.svg", "./images/home-missions/m2-greetings-grade6.svg", "./images/home-missions/m3-classroom.svg", "./images/home-missions/m3-classroom-grade6.svg", "./images/home-missions/m4-permission.svg", "./images/home-missions/m4-permission-grade6.svg", "./images/home-missions/m5-review.svg", "./images/home-missions/m5-review-grade6.svg", "./images/ui/headphones.svg",
   "./images/ui/megaphone.svg",
   "./images/ui/target.svg",
@@ -46,6 +46,26 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+  const isCoreShell =
+    url.origin === self.location.origin &&
+    (url.pathname.endsWith("/app.js") ||
+     url.pathname.endsWith("/index.html") ||
+     url.pathname.endsWith("/styles.css") ||
+     url.pathname.endsWith("/manifest.webmanifest"));
+
+  if (isCoreShell) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       const copy = response.clone();

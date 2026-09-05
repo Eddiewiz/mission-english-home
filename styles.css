@@ -2416,3 +2416,33 @@ body{background:#edf5fb}
   .home-dashboard-nav>button{font-size:.59rem!important}.nav-home-logo-crop,.nav-home-logo-crop img,.nav-icon-img{width:27px!important;height:27px!important}
   .home-discovery>.dashboard-extra-grid{grid-template-columns:1fr 1fr!important}
 }
+
+/* v1.6.20 — dynamic Dashboard homework */
+.home-new-feature-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#fff0a8;color:#6a5200;font-size:10px;font-weight:800;line-height:1.35;vertical-align:middle}
+.homework-teacher-message{margin-top:9px;padding:8px 10px;border-radius:10px;background:#f7f9fc;border:1px solid #dfe7ef;font-size:12px;line-height:1.4}
+
+.quick-vote-poll-selector{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.quick-vote-poll-selector .selected{font-weight:700;outline:2px solid currentColor;outline-offset:1px}
+
+.quick-vote-meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px;font-size:11px;color:#667085}
+.quick-vote-meta span:first-child{font-weight:700;color:#2f7d32}
+.poll-choice.selected{font-weight:700;outline:2px solid currentColor;outline-offset:1px}
+.quick-vote-submit{margin-top:10px}
+
+.quick-vote-poll-button{display:flex!important;flex-direction:column;align-items:flex-start!important;gap:2px;text-align:left}
+.quick-vote-poll-button small{font-size:10px;opacity:.78}
+.quick-vote-poll-button.selected small{font-weight:700}
+
+.explore-panel,.explore-detail,#quickVotePanel{overflow-anchor:none}
+.quick-vote-poll-button,.poll-choice,.quick-vote-submit{touch-action:manipulation}
+
+.homework-task-list{display:grid;grid-template-columns:1fr;gap:.3rem;width:100%}
+.homework-task-item{display:flex!important;align-items:flex-start;gap:.35rem;width:100%;line-height:1.35}
+.homework-task-item>span{display:block;min-width:0}
+.homework-mini-list .homework-task-list{display:grid!important}
+
+.listening-upload-item{display:grid;gap:8px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.listening-upload-item>div{display:flex;flex-direction:column;gap:2px}.listening-upload-item audio{width:100%;max-width:520px}
+
+.explore-activity-dates{display:block;font-size:10px;color:#667085;margin-top:3px}
+.short-video-item{display:grid;gap:5px}

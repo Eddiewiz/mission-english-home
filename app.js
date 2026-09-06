@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.31";
+const HOME_RELEASE_VERSION = "v1.6.33";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.31";
+const APP_VERSION = "Home v1.6.33";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -87,7 +87,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.31 — dynamic Dashboard homework + teacher message";
+const CONTENT_VERSION = "Mission English Home v1.6.33 — dynamic Dashboard homework + teacher message";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1662,6 +1662,12 @@ function findHomeStudentSimple(identifier, lastName, grade) {
   const ng = normalizeText(grade).replace(/[^0-9a-z]/g, "");
   if (!wanted || !ng) return { student:null, ambiguous:false };
 
+  const wantedTokens = wanted.split(" ").filter(Boolean).sort();
+  const sameTokens = value => {
+    const tokens = normalizeText(value).split(" ").filter(Boolean).sort();
+    return tokens.length === wantedTokens.length && tokens.every((v,i)=>v===wantedTokens[i]);
+  };
+
   let matches = rosterStudents().filter(student => {
     const sg = normalizeText(student.grade).replace(/[^0-9a-z]/g, "");
     if (sg !== ng) return false;
@@ -1677,16 +1683,27 @@ function findHomeStudentSimple(identifier, lastName, grade) {
       wanted === firstToken ||
       (nick && wanted === nick) ||
       wanted === display ||
-      wanted === official;
+      wanted === official ||
+      sameTokens(student.officialName || "") ||
+      sameTokens(student.displayName || "");
   });
 
-  if (surname) {
-    matches = matches.filter(student => {
+  // "Apellido (si hace falta)" must truly remain optional.
+  // If the first name/nickname already identifies exactly one student, a misspelled
+  // optional surname must not lock that student out of Home.
+  if (matches.length === 1) {
+    return { student:matches[0], ambiguous:false };
+  }
+
+  if (surname && matches.length > 1) {
+    const narrowed = matches.filter(student => {
       const parts = splitOfficialName(student);
       const fullLast = normalizeText(parts.last);
       const lastTokens = fullLast.split(" ").filter(Boolean);
       return fullLast === surname || lastTokens.includes(surname);
     });
+    if (narrowed.length === 1) return { student:narrowed[0], ambiguous:false };
+    if (narrowed.length > 1) return { student:null, ambiguous:true };
   }
 
   return {
@@ -1694,7 +1711,6 @@ function findHomeStudentSimple(identifier, lastName, grade) {
     ambiguous: matches.length > 1
   };
 }
-
 function resetState() {
   localStorage.removeItem(STORAGE_KEY);
   state = freshState();
@@ -2126,6 +2142,7 @@ function homePracticeForYouHtml() {
   if (!id) return "";
 
   const topics = {};
+  const missionFallback = {};
   const sources = [
     { weight: 3, data: bootstrapData.classroomProgress?.[id] || {} },
     { weight: 1, data: bootstrapData.homeProgress?.[id] || {} }
@@ -2133,30 +2150,56 @@ function homePracticeForYouHtml() {
 
   sources.forEach(source => {
     Object.values(source.data).forEach(mission => {
-      Object.entries(mission.reviewCounts || {}).forEach(([topic,count]) => {
-        topics[topic] = (topics[topic] || 0) + Number(count || 0) * source.weight;
+      const missionNo=Number(mission.missionNumber||mission.number||0)||null;
+      const reviewEntries=Object.entries(mission.reviewCounts || {});
+      reviewEntries.forEach(([topic,count]) => {
+        const key=String(topic||"").trim();
+        if(!key)return;
+        if(!topics[key])topics[key]={score:0,missions:new Set()};
+        topics[key].score += Number(count || 0) * source.weight;
+        if(missionNo)topics[key].missions.add(missionNo);
       });
+
+      // Some activities record a weak result but no named concept.
+      // In that case recommend the Mission itself instead of showing an empty panel.
+      const best = mission.bestPercent!==undefined && mission.bestPercent!==null
+        ? Number(mission.bestPercent)
+        : (mission.possible ? Math.round(Number(mission.bestEarned||0)/Number(mission.possible)*100) : null);
+      const priority=Number(mission.practicePriority||0);
+      if(missionNo && !reviewEntries.length && ((Number.isFinite(best)&&best<85)||priority>=15)){
+        missionFallback[missionNo]=(missionFallback[missionNo]||0)+Math.max(1,priority||Math.max(0,85-best))*source.weight;
+      }
     });
   });
 
-  const list = Object.entries(topics)
-    .sort((a,b) => b[1] - a[1])
+  const topicList = Object.entries(topics)
+    .map(([topic,obj])=>({topic,score:obj.score,missions:[...obj.missions].sort((a,b)=>a-b)}))
+    .sort((a,b) => b.score - a.score || a.topic.localeCompare(b.topic))
     .slice(0,5);
 
-  if (!list.length) {
+  const missionList = Object.entries(missionFallback)
+    .map(([mission,score])=>({mission:Number(mission),score}))
+    .sort((a,b)=>b.score-a.score||a.mission-b.mission);
+
+  if (!topicList.length && !missionList.length) {
     return `<div class="practice-for-you">
       <strong>🌱 Practice for you · Práctica para vos</strong>
-      <p class="small">Cuando tengas algo que reforzar, aparecerá acá. <strong>Pero siempre podés elegir cualquier misión disponible.</strong></p>
+      <p class="small">Por ahora no hay nada específico que necesites reforzar según tus resultados registrados. <strong>Pero siempre podés elegir cualquier misión disponible.</strong></p>
     </div>`;
   }
 
+  const chips=[
+    ...topicList.map(x=>`<span><b>${escapeHtml(x.topic)}</b><small>${x.missions.length?`Volvé a practicar: Mission ${x.missions.join(", Mission ")}`:escapeHtml(missionLabelForPracticeTopic_(x.topic))}</small></span>`),
+    ...missionList.filter(x=>!topicList.some(t=>t.missions.includes(x.mission))).slice(0,Math.max(0,5-topicList.length))
+      .map(x=>`<span><b>Mission ${x.mission}</b><small>Conviene volver a practicar esta Mission.</small></span>`)
+  ].slice(0,5);
+
   return `<div class="practice-for-you">
     <strong>🌱 Practice for you · Práctica para vos</strong>
-    <p class="small">Según lo que practicaste, estos temas conviene repasarlos un poco más. Para decidirlo, Classroom tiene más peso que Home:</p>
-    <div class="practice-chips">${list.map(x=>`<span><b>${escapeHtml(x[0])}</b><small>Volvé a practicar: ${escapeHtml(missionLabelForPracticeTopic_(x[0]))}</small></span>`).join("")}</div>
+    <p class="small">Según lo que practicaste, estos temas conviene repasarlos un poco más. Classroom tiene más peso que Home:</p>
+    <div class="practice-chips">${chips.join("")}</div>
   </div>`;
 }
-
 
 // Weekly Quick Vote reminder belongs in ESL Teacher Manager; Home only renders the active weekly poll.
 

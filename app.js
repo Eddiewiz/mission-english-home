@@ -1,8 +1,8 @@
 
-const HOME_RELEASE_VERSION = "v1.6.33";
+const HOME_RELEASE_VERSION = "v1.6.34";
 
 function homeworkReminderKey_(){
-  const sid=String(state?.student?.id||state?.student?.displayName||"student").trim()||"student";
+  const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
   const task=currentHomeTask_();
   const signature=task ? `${task.id||""}|${task.updatedAt||task.createdAt||""}|${task.dueAt||""}` : "no-task";
   let hash=0;
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.33";
+const APP_VERSION = "Home v1.6.34";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -65,9 +65,9 @@ async function testerPinIndex_(value){
   return HOME_TESTER_PIN_HASHES.indexOf(hex);
 }
 const HOME_TESTERS = [
-  {id:"TESTER-HOME-01",officialName:"Tester Home 1",displayName:"Tester Home 1",nickname:"Tester 1",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:false},
-  {id:"TESTER-HOME-02",officialName:"Tester Home 2",displayName:"Tester Home 2",nickname:"Tester 2",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true},
-  {id:"TESTER-HOME-03",officialName:"Tester Home 3",displayName:"Tester Home 3",nickname:"Tester 3",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true}
+  {id:"TESTER-HOME-01",officialName:"Tester Home 1",nickname:"Tester 1",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:false},
+  {id:"TESTER-HOME-02",officialName:"Tester Home 2",nickname:"Tester 2",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true},
+  {id:"TESTER-HOME-03",officialName:"Tester Home 3",nickname:"Tester 3",grade:"6",division:"TEST",schoolYear:"2026",institution:"Mission English Testing",isTester:true,recordBackend:true}
 ];
 function testerBackendTrackingEnabled_(){ return !isHomeTester_() || state.student?.recordBackend===true; }
 function isHomeTester_(){ return !!state.student?.isTester || String(state.student?.id||"").startsWith("TESTER-HOME-"); }
@@ -76,18 +76,14 @@ function homeworkPanelHtml_(){
   const task=currentHomeTask_();
   if(!task) return "";
   const due=homeTaskDueLabel_();
-  const missionLis=homeTaskMissionItems_().map(m=>`<li><strong>Mission ${escapeHtml(m.number)}</strong> · ${escapeHtml(m.title)}</li>`).join("");
-  const exploreLis=(Array.isArray(task.explorePractice)?task.explorePractice:[]).map(x=>`<li>✓ ${homeTaskExploreLine_(x)}</li>`).join("");
-  const message=task.teacherMessage?`<div class="homework-teacher-message"><strong>💬 Teacher Eddie:</strong> ${escapeHtml(task.teacherMessage)}</div>`:"";
   return `<section class="home-assignment-card">
     <div class="assignment-title">📌 ${escapeHtml(homeTaskTitle_())} <span class="home-new-feature-badge">¡Nueva función!</span></div>
     ${due?`<div class="assignment-deadline">⏰ ${escapeHtml(due)}</div>`:""}
-    <ul>${missionLis}${exploreLis}</ul>
-    ${message}
+    ${homeTaskListHtml_()}
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.33 — dynamic Dashboard homework + teacher message";
+const CONTENT_VERSION = "Mission English Home v1.6.34 — consolidated tasks + name model + recommendations";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -171,7 +167,7 @@ function quickVoteCacheKey_(pollId){
 let pendingQuickVoteChoices = [];
 // Mission IDs are stable content identifiers. Display numbers may change without rewriting historical results.
 const SYNC_ENDPOINT = "https://script.google.com/macros/s/AKfycbyUt9Wm6VS9NQoCuc6hBhH6QgJHzv6KFETQX7or9YJg6WdQvkDlMddlm-fub5FyF6soRg/exec"; // Mission English Classroom receiver.
-const LOCAL_STUDENTS = [{"id":"ALU-4-001","officialName":"Almada, Francisco","displayName":"Almada, Francisco","nickname":"","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-002","officialName":"Alvarez, Iker Mariano","displayName":"Alvarez, Iker Mariano","nickname":"Iker","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-003","officialName":"Churaira, Alison Tamara","displayName":"Churaira, Alison Tamara","nickname":"Alison","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-004","officialName":"Cruz, Angel Alexis","displayName":"Cruz, Angel Alexis","nickname":"Angel","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-005","officialName":"Gonzalez Reyes, Maria Pia","displayName":"Gonzalez Reyes, Maria Pia","nickname":"Pia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-006","officialName":"Hualpa Diaz, Sofia Alisson","displayName":"Hualpa Diaz, Sofia Alisson","nickname":"Sofia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-007","officialName":"Lobos, Alexis Agustin","displayName":"Lobos, Alexis Agustin","nickname":"Alexis","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-008","officialName":"Lopez Bustamante, Julieta Tatiana","displayName":"Lopez Bustamante, Julieta Tatiana","nickname":"Julieta","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-009","officialName":"Lujan Cabrera, Milo Santino","displayName":"Lujan Cabrera, Milo Santino","nickname":"Milo","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-010","officialName":"Marcelo La Cruz, Wendy Nicole","displayName":"Marcelo La Cruz, Wendy Nicole","nickname":"Wendy","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-011","officialName":"Munoz Massa, Noah German","displayName":"Munoz Massa, Noah German","nickname":"Noah","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-012","officialName":"Nievas, Santino Benjamin","displayName":"Nievas, Santino Benjamin","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-013","officialName":"Ocampo, Ivan Hernan","displayName":"Ocampo, Ivan Hernan","nickname":"Ivan","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-014","officialName":"Ontivero, Alina Yasmin","displayName":"Ontivero, Alina Yasmin","nickname":"Alina","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-015","officialName":"Peredo Corrales, Abril Britany","displayName":"Peredo Corrales, Abril Britany","nickname":"Abril","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-016","officialName":"Perez Miranda, Morena Yuliana","displayName":"Perez Miranda, Morena Yuliana","nickname":"Morena","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-017","officialName":"Ramallo Ledesma, Agustin S","displayName":"Ramallo Ledesma, Agustin S","nickname":"Agustin","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-018","officialName":"Reyes, Santino Leonel","displayName":"Reyes, Santino Leonel","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-019","officialName":"Tabares, Laureano","displayName":"Tabares, Laureano","nickname":"Laureano","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-020","officialName":"Traico, Nicole Franchesca","displayName":"Traico, Nicole Franchesca","nickname":"Nicole","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-021","officialName":"Villegas, Aylen Melodi","displayName":"Villegas, Aylen Melodi","nickname":"Aylen","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-5-001","officialName":"Acuña Cabral, Paz","displayName":"Acuña Cabral, Paz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-002","officialName":"Andrada, Noha Valentino","displayName":"Andrada, Noha Valentino","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-003","officialName":"Andrada Moreyra, Theo Yeremias","displayName":"Andrada Moreyra, Theo Yeremias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-004","officialName":"Andreo, Alvaro Benjamin","displayName":"Andreo, Alvaro Benjamin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-005","officialName":"Ariza Rojas, Benjamin","displayName":"Ariza Rojas, Benjamin","nickname":"Benja","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-006","officialName":"Bastidos Cerron, Dilan","displayName":"Bastidos Cerron, Dilan","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-007","officialName":"Caceres, Misael Ezequias","displayName":"Caceres, Misael Ezequias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-008","officialName":"De Toro Romero, Thiago Valentin","displayName":"De Toro Romero, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-009","officialName":"Faotto, Eliseo Damian","displayName":"Faotto, Eliseo Damian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-010","officialName":"Faraig, Franchesca Charlot","displayName":"Faraig, Franchesca Charlot","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-011","officialName":"Ferreyra, Benjamin Nicolas","displayName":"Ferreyra, Benjamin Nicolas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-012","officialName":"Garcia, Mirko Alejandro","displayName":"Garcia, Mirko Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-013","officialName":"Ignacio Champi, Rishell Briana","displayName":"Ignacio Champi, Rishell Briana","nickname":"Briana","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-014","officialName":"Lopez, Francisco Tomas","displayName":"Lopez, Francisco Tomas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-015","officialName":"Lopez, Ian Alejandro","displayName":"Lopez, Ian Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-016","officialName":"Lopez, Sofia Luz","displayName":"Lopez, Sofia Luz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-017","officialName":"Mantilla Anchante, Iker Sebastian","displayName":"Mantilla Anchante, Iker Sebastian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-018","officialName":"Olivera, Noa","displayName":"Olivera, Noa","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-019","officialName":"Pagnetto, Lara Jazmin","displayName":"Pagnetto, Lara Jazmin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-020","officialName":"Palomino Checcllo, Damaris Avigai","displayName":"Palomino Checcllo, Damaris Avigai","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-021","officialName":"Rios Tejeda, Angel Rodrigo","displayName":"Rios Tejeda, Angel Rodrigo","nickname":"Rodrigo","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-022","officialName":"Rodriguez, Catalehia","displayName":"Rodriguez, Catalehia","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-023","officialName":"Rodriguez, Luz Victoria","displayName":"Rodriguez, Luz Victoria","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-024","officialName":"Saldano, Jeremias Simon","displayName":"Saldano, Jeremias Simon","nickname":"Simon","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-025","officialName":"Traico, Onur Boran Jesus","displayName":"Traico, Onur Boran Jesus","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-6-001","officialName":"Agustin","displayName":"Agustin","nickname":"Agus","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-002","officialName":"Allamano, Dylan Francisco","displayName":"Allamano, Dylan Francisco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-003","officialName":"Andrada, Ruben Bautista","displayName":"Andrada, Ruben Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-004","officialName":"Arguello, Melody Nahiara","displayName":"Arguello, Melody Nahiara","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-005","officialName":"Britez Allauca, Yamile Mercedes","displayName":"Britez Allauca, Yamile Mercedes","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-006","officialName":"Contreras Corbalan, Theo Azahel","displayName":"Contreras Corbalan, Theo Azahel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-007","officialName":"Drago Traico, Thiago Isaias","displayName":"Drago Traico, Thiago Isaias","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-008","officialName":"Escobar Centeno, Samira","displayName":"Escobar Centeno, Samira","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-009","officialName":"Faotto, Felipe David","displayName":"Faotto, Felipe David","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-010","officialName":"Gonzales Gallardo, Mayco","displayName":"Gonzales Gallardo, Mayco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-011","officialName":"Gonzalez Reyes, Martina","displayName":"Gonzalez Reyes, Martina","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-012","officialName":"Gutierrez Domingo, Mateo Ismael","displayName":"Gutierrez Domingo, Mateo Ismael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-013","officialName":"Guzman Rinaldi, Thiago Franco","displayName":"Guzman Rinaldi, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-014","officialName":"Lopez Ronaldo, Augusto","displayName":"Lopez Ronaldo, Augusto","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-015","officialName":"Mamani Arze, Thiago Franco","displayName":"Mamani Arze, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-016","officialName":"Marcelo La Cruz, Andres","displayName":"Marcelo La Cruz, Andres","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-017","officialName":"Marigliano, Valentino Emmanuel","displayName":"Marigliano, Valentino Emmanuel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-018","officialName":"Moreyra, Eimi Antonella","displayName":"Moreyra, Eimi Antonella","nickname":"Antonella","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-019","officialName":"Ortiz, Josefina Paz","displayName":"Ortiz, Josefina Paz","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-020","officialName":"Pavez, Ruth Abigael","displayName":"Pavez, Ruth Abigael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-021","officialName":"Perez, Felipe Javier","displayName":"Perez, Felipe Javier","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-022","officialName":"Pistoia, Isabella","displayName":"Pistoia, Isabella","nickname":"Isa","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-023","officialName":"Pucheta, Lorenzo Bautista","displayName":"Pucheta, Lorenzo Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-024","officialName":"Reyes, Thiago Valentin","displayName":"Reyes, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-025","officialName":"Salas, Cecile Guadalupe","displayName":"Salas, Cecile Guadalupe","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-026","officialName":"Santillan Gonzales, Lucas Simon","displayName":"Santillan Gonzales, Lucas Simon","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-027","officialName":"Tabares, Julian","displayName":"Tabares, Julian","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-028","officialName":"Traico, Miguel Angel","displayName":"Traico, Miguel Angel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-029","officialName":"Vedia Soto, Rosalinda","displayName":"Vedia Soto, Rosalinda","nickname":"","schoolYear":"2026","grade":"6","division":""}];
+const LOCAL_STUDENTS = [{"id":"ALU-4-001","officialName":"Almada, Francisco","nickname":"","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-002","officialName":"Alvarez, Iker Mariano","nickname":"Iker","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-003","officialName":"Churaira, Alison Tamara","nickname":"Alison","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-004","officialName":"Cruz, Angel Alexis","nickname":"Angel","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-005","officialName":"Gonzalez Reyes, Maria Pia","nickname":"Pia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-006","officialName":"Hualpa Diaz, Sofia Alisson","nickname":"Sofia","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-007","officialName":"Lobos, Alexis Agustin","nickname":"Alexis","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-008","officialName":"Lopez Bustamante, Julieta Tatiana","nickname":"Julieta","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-009","officialName":"Lujan Cabrera, Milo Santino","nickname":"Milo","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-010","officialName":"Marcelo La Cruz, Wendy Nicole","nickname":"Wendy","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-011","officialName":"Munoz Massa, Noah German","nickname":"Noah","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-012","officialName":"Nievas, Santino Benjamin","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-013","officialName":"Ocampo, Ivan Hernan","nickname":"Ivan","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-014","officialName":"Ontivero, Alina Yasmin","nickname":"Alina","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-015","officialName":"Peredo Corrales, Abril Britany","nickname":"Abril","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-016","officialName":"Perez Miranda, Morena Yuliana","nickname":"Morena","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-017","officialName":"Ramallo Ledesma, Agustin S","nickname":"Agustin","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-018","officialName":"Reyes, Santino Leonel","nickname":"Santino","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-019","officialName":"Tabares, Laureano","nickname":"Laureano","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-020","officialName":"Traico, Nicole Franchesca","nickname":"Nicole","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-4-021","officialName":"Villegas, Aylen Melodi","nickname":"Aylen","schoolYear":"2026","grade":"4","division":"A"},{"id":"ALU-5-001","officialName":"Acuña Cabral, Paz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-002","officialName":"Andrada, Noha Valentino","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-003","officialName":"Andrada Moreyra, Theo Yeremias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-004","officialName":"Andreo, Alvaro Benjamin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-005","officialName":"Ariza Rojas, Benjamin","nickname":"Benja","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-006","officialName":"Bastidos Cerron, Dilan","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-007","officialName":"Caceres, Misael Ezequias","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-008","officialName":"De Toro Romero, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-009","officialName":"Faotto, Eliseo Damian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-010","officialName":"Faraig, Franchesca Charlot","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-011","officialName":"Ferreyra, Benjamin Nicolas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-012","officialName":"Garcia, Mirko Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-013","officialName":"Ignacio Champi, Rishell Briana","nickname":"Briana","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-014","officialName":"Lopez, Francisco Tomas","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-015","officialName":"Lopez, Ian Alejandro","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-016","officialName":"Lopez, Sofia Luz","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-017","officialName":"Mantilla Anchante, Iker Sebastian","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-018","officialName":"Olivera, Noa","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-019","officialName":"Pagnetto, Lara Jazmin","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-020","officialName":"Palomino Checcllo, Damaris Avigai","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-021","officialName":"Rios Tejeda, Angel Rodrigo","nickname":"Rodrigo","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-022","officialName":"Rodriguez, Catalehia","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-023","officialName":"Rodriguez, Luz Victoria","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-024","officialName":"Saldano, Jeremias Simon","nickname":"Simon","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-5-025","officialName":"Traico, Onur Boran Jesus","nickname":"","schoolYear":"2026","grade":"5","division":""},{"id":"ALU-6-001","officialName":"Agustin","nickname":"Agus","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-002","officialName":"Allamano, Dylan Francisco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-003","officialName":"Andrada, Ruben Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-004","officialName":"Arguello, Melody Nahiara","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-005","officialName":"Britez Allauca, Yamile Mercedes","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-006","officialName":"Contreras Corbalan, Theo Azahel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-007","officialName":"Drago Traico, Thiago Isaias","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-008","officialName":"Escobar Centeno, Samira","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-009","officialName":"Faotto, Felipe David","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-010","officialName":"Gonzales Gallardo, Mayco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-011","officialName":"Gonzalez Reyes, Martina","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-012","officialName":"Gutierrez Domingo, Mateo Ismael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-013","officialName":"Guzman Rinaldi, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-014","officialName":"Lopez Ronaldo, Augusto","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-015","officialName":"Mamani Arze, Thiago Franco","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-016","officialName":"Marcelo La Cruz, Andres","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-017","officialName":"Marigliano, Valentino Emmanuel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-018","officialName":"Moreyra, Eimi Antonella","nickname":"Antonella","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-019","officialName":"Ortiz, Josefina Paz","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-020","officialName":"Pavez, Ruth Abigael","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-021","officialName":"Perez, Felipe Javier","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-022","officialName":"Pistoia, Isabella","nickname":"Isa","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-023","officialName":"Pucheta, Lorenzo Bautista","nickname":"Bautista","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-024","officialName":"Reyes, Thiago Valentin","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-025","officialName":"Salas, Cecile Guadalupe","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-026","officialName":"Santillan Gonzales, Lucas Simon","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-027","officialName":"Tabares, Julian","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-028","officialName":"Traico, Miguel Angel","nickname":"","schoolYear":"2026","grade":"6","division":""},{"id":"ALU-6-029","officialName":"Vedia Soto, Rosalinda","nickname":"","schoolYear":"2026","grade":"6","division":""}];
 
 const missions = [
   {
@@ -1492,15 +1488,48 @@ function currentHomeTask_(){
   return homeTaskState.loaded ? homeTaskState.task : null;
 }
 
-function homeTaskMissionItems_(){
+function homeTaskMissionItems_(kind="required"){
   const task=currentHomeTask_();
-  if(!task || !Array.isArray(task.missions)) return [];
+  if(!task) return [];
+  const source=kind==="recommended" ? task.recommendedMissions : task.missions;
+  if(!Array.isArray(source)) return [];
   const catalog=studentMissionCatalog_();
-  return task.missions.map(num=>{
+  return source.map(num=>{
     const m=catalog.find(x=>Number(x.number)===Number(num));
     const title=m ? String(m.title||"").replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"") : `Mission ${num}`;
     return {number:Number(num),title};
   });
+}
+
+function homeTaskEvidenceStart_(task=currentHomeTask_()){
+  const raw=String(task?.updatedAt||task?.createdAt||"").trim();
+  if(!raw)return null;
+  const d=new Date(raw);
+  return isNaN(d)?null:d;
+}
+
+function homeTaskMissionEvidence_(missionNumber){
+  const sid=String(state.student?.id||"").trim();
+  if(!sid)return {completed:false,completedAt:""};
+  const records=Object.values(bootstrapData.homeProgress?.[sid]||{});
+  const record=records.find(x=>Number(x?.missionNumber||x?.number||0)===Number(missionNumber));
+  if(!record)return {completed:false,completedAt:""};
+  const raw=record.lastCompletedAt||record.firstCompletedAt||"";
+  const done=raw?new Date(raw):null;
+  const start=homeTaskEvidenceStart_();
+  const completed=!!done && !isNaN(done) && (!start || done>=start);
+  return {completed,completedAt:completed?raw:""};
+}
+
+function homeTaskMissionLine_(m,kind){
+  const evidence=homeTaskMissionEvidence_(m.number);
+  const recommended=kind==="recommended";
+  const mark=evidence.completed?"✓":"○";
+  const status=evidence.completed?(recommended?"Practicada":"Hecha"):(recommended?"Opcional":"Por hacer");
+  return `<div class="homework-task-item ${recommended?"recommended":"required"} ${evidence.completed?"completed":"pending"}">
+    <span class="homework-task-mark" aria-hidden="true">${mark}</span>
+    <span class="homework-task-copy"><strong>Mission ${escapeHtml(m.number)}</strong> · ${escapeHtml(m.title)} <small class="homework-task-status">${status}</small></span>
+  </div>`;
 }
 
 function homeTaskExploreLine_(name){
@@ -1512,8 +1541,28 @@ function homeTaskExploreLine_(name){
   if(key.includes("listen")) return `Escuchar el audio · <strong>Listening</strong>`;
   if(key.includes("short")&&key.includes("video")) return `Ver el video · <strong>Short Video</strong>`;
   if(key==="practice"||key.includes("practice")) return `Completar · <strong>Practice</strong>`;
+  if(key.includes("kahoot")) return `Practicar · <strong>Kahoots</strong>`;
   if(key.includes("assistant")) return `Usar · <strong>Mission English Assistant</strong>`;
   return `${escapeHtml(raw)}`;
+}
+
+function homeTaskExploreItems_(){
+  const task=currentHomeTask_();
+  const rawExplore=Array.isArray(task?.explorePractice)?task.explorePractice:[];
+  const items=[];
+  rawExplore.forEach(x=>{
+    const raw=String(x||"").trim();
+    if(!raw)return;
+    if(explorePracticeCatalog.some(a=>String(a.id)===raw)) items.push(raw);
+    else raw.split(/\n|;|,(?=\s*\S)/).map(v=>v.trim()).filter(Boolean).forEach(v=>items.push(v));
+  });
+  return items;
+}
+
+function homeTaskExploreItemHtml_(x){
+  // v1.6.34 deliberately does not show a completion check for Explore & Practice:
+  // backend v6.8 does not yet expose reliable per-item completion evidence to Home.
+  return `<div class="homework-task-item explore assigned"><span class="homework-task-mark" aria-hidden="true">•</span><span class="homework-task-copy">${homeTaskExploreLine_(x)} <small class="homework-task-status">Asignado</small></span></div>`;
 }
 
 function homeTaskDueLabel_(){
@@ -1534,20 +1583,17 @@ function homeTaskTitle_(){
 function homeTaskListHtml_(){
   const task=currentHomeTask_();
   if(!task) return "";
-  const missionLines=homeTaskMissionItems_().map(m=>`<div class="homework-task-item">✓ <span>Mission ${escapeHtml(m.number)} · ${escapeHtml(m.title)}</span></div>`).join("");
-  const rawExplore=Array.isArray(task.explorePractice)?task.explorePractice:[];
-  const exploreItems=[];
-  rawExplore.forEach(x=>{
-    const raw=String(x||"").trim();
-    if(!raw)return;
-    if(explorePracticeCatalog.some(a=>String(a.id)===raw)) exploreItems.push(raw);
-    else raw.split(/\n|;|,(?=\s*\S)/).map(s=>s.trim()).filter(Boolean).forEach(s=>exploreItems.push(s));
-  });
-  const exploreLines=exploreItems.map(x=>`<div class="homework-task-item">✓ <span>${homeTaskExploreLine_(x)}</span></div>`).join("");
+  const required=homeTaskMissionItems_("required").map(m=>homeTaskMissionLine_(m,"required")).join("");
+  const recommended=homeTaskMissionItems_("recommended").map(m=>homeTaskMissionLine_(m,"recommended")).join("");
+  const explore=homeTaskExploreItems_().map(homeTaskExploreItemHtml_).join("");
+  const sections=[];
+  if(required) sections.push(`<div class="homework-task-group required-group"><div class="homework-task-group-title">Obligatorio</div>${required}</div>`);
+  if(recommended) sections.push(`<div class="homework-task-group recommended-group"><div class="homework-task-group-title">Recomendado · opcional</div>${recommended}</div>`);
+  if(explore) sections.push(`<div class="homework-task-group explore-group"><div class="homework-task-group-title">Explore & Practice</div>${explore}</div>`);
   const msg=task.teacherMessage ? `<div class="homework-teacher-message"><strong>💬 Teacher Eddie:</strong> ${escapeHtml(task.teacherMessage)}</div>` : "";
   const due=homeTaskDueLabel_();
   const deadline=due ? `<div class="homework-deadline"><strong>📅 Deadline / Fecha límite:</strong><br>${escapeHtml(due)}</div>` : "";
-  return `<div class="homework-task-list">${missionLines}${exploreLines}</div>${msg}${deadline}`;
+  return `<div class="homework-task-list">${sections.join("")}</div>${msg}${deadline}`;
 }
 
 function loadHomeTask(force=false){
@@ -1602,7 +1648,7 @@ function loadHomeTask(force=false){
 function freshState() {
   return {
     route: "home",
-    student: { id:"", firstName:"", lastName:"", officialName:"", displayName:"", nickname:"", institution:"", grade:"", level:"", schoolYear:String(new Date().getFullYear()), mode:"individual", partnerId:"", partner:"" },
+    student: { id:"", firstName:"", lastName:"", officialName:"", nickname:"", institution:"", grade:"", level:"", schoolYear:String(new Date().getFullYear()), mode:"individual", partnerId:"", partner:"" },
     identityError:"", selectedGradeKey:"", currentMission:0, answers:{}, optionOrders:{}, questionVariants:{}, missionStartedAt:"",
     reviewConfirmed:false, missionExitCount:0, inactivityLogged:false, sessionNotice:"", lastMissionResult:null, forceHomeIntro:false,
     teacher:"Teacher Eddie", contentVersion:CONTENT_VERSION
@@ -1654,7 +1700,7 @@ function firstNameOrNickname(student) {
   if (!student) return "";
   if (student.nickname) return student.nickname;
   const parts = splitOfficialName(student);
-  return (parts.first.split(/\s+/)[0] || student.displayName || student.officialName || "").trim();
+  return (parts.first.split(/\s+/)[0] || student.officialName || "").trim();
 }
 function findHomeStudentSimple(identifier, lastName, grade) {
   const wanted = normalizeText(identifier);
@@ -1676,16 +1722,13 @@ function findHomeStudentSimple(identifier, lastName, grade) {
     const firstFull = normalizeText(parts.first);
     const firstToken = firstFull.split(" ")[0] || "";
     const nick = normalizeText(student.nickname || "");
-    const display = normalizeText(student.displayName || "");
     const official = normalizeText(student.officialName || "");
 
     return wanted === firstFull ||
       wanted === firstToken ||
       (nick && wanted === nick) ||
-      wanted === display ||
       wanted === official ||
-      sameTokens(student.officialName || "") ||
-      sameTokens(student.displayName || "");
+      sameTokens(student.officialName || "");
   });
 
   // "Apellido (si hace falta)" must truly remain optional.
@@ -1728,6 +1771,7 @@ function rosterStudents() {
 
 function splitOfficialName(student) {
   const raw = String(student?.officialName || "").trim();
+  if (!raw.includes(",")) return { last:"", first:raw };
   const parts = raw.split(",");
   return {
     last: (parts[0] || "").trim(),
@@ -1749,8 +1793,7 @@ function findHomeStudent(firstName, lastName, grade) {
     const fullFirst = normalizeText(name.first);
     const firstToken = fullFirst.split(" ")[0] || "";
     const nick = normalizeText(student.nickname || "");
-    const display = normalizeText(student.displayName || "");
-    return nf === fullFirst || nf === firstToken || (nick && nf === nick) || display === nf;
+    return nf === fullFirst || nf === firstToken || (nick && nf === nick);
   });
 
   return matches.length === 1 ? matches[0] : null;
@@ -2106,14 +2149,14 @@ function firstPendingMissionIndex() {
 function greetingForStudent() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-  const first = state.student.nickname || state.student.displayName || state.student.officialName.split(/[ ,]/)[0];
+  const first = state.student.nickname || firstNameOrNickname(state.student) || state.student.officialName || "";
   const partnerRaw = state.student.partner || "";
   const partner = partnerRaw ? partnerRaw.split(",")[1]?.trim().split(" ")[0] || partnerRaw.split(" ")[0] : "";
   return partner ? `${greeting}, ${first} and ${partner}!` : `${greeting}, ${first}!`;
 }
 
 function sessionCheckView() {
-  const name = state.student?.nickname || state.student?.firstName || state.student?.displayName || state.student?.officialName || "";
+  const name = state.student?.nickname || state.student?.firstName || firstNameOrNickname(state.student) || state.student?.officialName || "";
   return `<section class="card identity-card">
     <div class="eyebrow">Home</div>
     <h2>👋 Hi${name ? `, ${escapeHtml(name)}` : ""}! Is this you?</h2>
@@ -2847,7 +2890,6 @@ function mapView() {
           ${currentHomeTask_()?`
             <strong>${escapeHtml(homeTaskTitle_())} · ${escapeHtml(gradeLabel(state.student.grade))}</strong>
             <div class="homework-mini-list">
-              <div><strong>Obligatorio:</strong></div>
               ${homeTaskListHtml_()}
             </div>`
           :`<strong>Tu tarea</strong><div class="homework-mini-list"><div>${homeTaskState.loading?"Actualizando tarea…":"No hay una tarea asignada en este momento."}</div></div>`}
@@ -3392,7 +3434,7 @@ function bindEvents() {
 
       const tester=HOME_TESTERS[requestedTester]||HOME_TESTERS[0];
       const testerGrade=String(document.getElementById("testerGradeSelect")?.value||"6");
-      state.student={...tester,grade:testerGrade,firstName:tester.displayName,lastName:"",level:"Tester",mode:"individual",partnerId:"",partner:"",isTester:true};
+      state.student={...tester,grade:testerGrade,firstName:firstNameOrNickname(tester),lastName:"",level:"Tester",mode:"individual",partnerId:"",partner:"",isTester:true};
       // Testers must see the homework reminder on every new tester login so the
       // assigned-task experience can always be verified. Real students still see
       // it only once per assignment.

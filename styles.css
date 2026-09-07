@@ -2446,3 +2446,20 @@ body{background:#edf5fb}
 
 .explore-activity-dates{display:block;font-size:10px;color:#667085;margin-top:3px}
 .short-video-item{display:grid;gap:5px}
+\n\n/* Home v1.6.34 · consolidated task semantics */
+.homework-task-group{display:grid;gap:.3rem;padding:.45rem .5rem;border-radius:10px;background:rgba(255,255,255,.68)}
+.homework-task-group+.homework-task-group{margin-top:.4rem}
+.homework-task-group-title{font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.035em;color:#496070}
+.homework-task-item{padding:.16rem 0}
+.homework-task-mark{width:1.15rem;flex:0 0 1.15rem;text-align:center;font-weight:900}
+.homework-task-copy{flex:1}
+.homework-task-status{display:inline-block;margin-left:.35rem;padding:.08rem .38rem;border-radius:999px;font-size:.68rem;font-weight:800;white-space:nowrap}
+.homework-task-item.required.completed .homework-task-mark{color:#25834f}
+.homework-task-item.required.pending .homework-task-mark{color:#a46a00}
+.homework-task-item.required.completed .homework-task-status{background:#e5f6ec;color:#17633b}
+.homework-task-item.required.pending .homework-task-status{background:#fff3d5;color:#7b5100}
+.homework-task-item.recommended .homework-task-status{background:#edf1ff;color:#465b9b}
+.homework-task-item.explore .homework-task-status{background:#eef4f7;color:#506470}
+.recommended-group{border:1px solid rgba(94,111,173,.18)}
+.required-group{border:1px solid rgba(223,166,40,.24)}
+.explore-group{border:1px solid rgba(67,125,142,.16)}

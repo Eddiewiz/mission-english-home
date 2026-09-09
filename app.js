@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.34";
+const HOME_RELEASE_VERSION = "v1.6.35";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.34";
+const APP_VERSION = "Home v1.6.35";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.34 — consolidated tasks + name model + recommendations";
+const CONTENT_VERSION = "Mission English Home v1.6.35 — recommendations + homework assignment reminder";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1524,7 +1524,8 @@ function homeTaskMissionEvidence_(missionNumber){
 function homeTaskMissionLine_(m,kind){
   const evidence=homeTaskMissionEvidence_(m.number);
   const recommended=kind==="recommended";
-  const mark=evidence.completed?"✓":"○";
+  // The mark means "assigned by the teacher", not "completed by the student".
+  const mark=recommended?"◇":"✓";
   const status=evidence.completed?(recommended?"Practicada":"Hecha"):(recommended?"Opcional":"Por hacer");
   return `<div class="homework-task-item ${recommended?"recommended":"required"} ${evidence.completed?"completed":"pending"}">
     <span class="homework-task-mark" aria-hidden="true">${mark}</span>
@@ -1560,9 +1561,8 @@ function homeTaskExploreItems_(){
 }
 
 function homeTaskExploreItemHtml_(x){
-  // v1.6.34 deliberately does not show a completion check for Explore & Practice:
-  // backend v6.8 does not yet expose reliable per-item completion evidence to Home.
-  return `<div class="homework-task-item explore assigned"><span class="homework-task-mark" aria-hidden="true">•</span><span class="homework-task-copy">${homeTaskExploreLine_(x)} <small class="homework-task-status">Asignado</small></span></div>`;
+  // The check means this item was assigned. Completion is a separate status.
+  return `<div class="homework-task-item explore assigned"><span class="homework-task-mark" aria-hidden="true">✓</span><span class="homework-task-copy">${homeTaskExploreLine_(x)} <small class="homework-task-status">Asignado</small></span></div>`;
 }
 
 function homeTaskDueLabel_(){
@@ -2180,6 +2180,20 @@ function missionLabelForPracticeTopic_(topic){
   return "Mission to review";
 }
 
+function homeworkStillPending_(){
+  const task=currentHomeTask_(); if(!task)return false;
+  const required=homeTaskMissionItems_("required");
+  if(required.some(m=>!homeTaskMissionEvidence_(m.number).completed))return true;
+  return homeTaskExploreItems_().length>0;
+}
+function noteVoluntaryMissionCompletion_(missionNumber){
+  const task=currentHomeTask_(); if(!task||!homeworkStillPending_())return;
+  const assigned=new Set([...(task.missions||[]),...(task.recommendedMissions||[])].map(Number));
+  if(assigned.has(Number(missionNumber)))return;
+  state.nonHomeworkCompletedThisSession=Number(state.nonHomeworkCompletedThisSession||0)+1;
+  if(state.nonHomeworkCompletedThisSession>=2 && !state.homeworkNudgeShownThisSession)state.homeworkNudgePending=true;
+}
+
 function homePracticeForYouHtml() {
   const id = state.student?.id;
   if (!id) return "";
@@ -2209,7 +2223,9 @@ function homePracticeForYouHtml() {
         ? Number(mission.bestPercent)
         : (mission.possible ? Math.round(Number(mission.bestEarned||0)/Number(mission.possible)*100) : null);
       const priority=Number(mission.practicePriority||0);
-      if(missionNo && !reviewEntries.length && ((Number.isFinite(best)&&best<85)||priority>=15)){
+      const hasIncorrect=Array.isArray(mission.incorrectExamples)&&mission.incorrectExamples.length>0;
+      const lastPct=Number(mission.lastPercent);
+      if(missionNo && !reviewEntries.length && ((Number.isFinite(best)&&best<85)||(Number.isFinite(lastPct)&&lastPct<85)||priority>=15||hasIncorrect)){
         missionFallback[missionNo]=(missionFallback[missionNo]||0)+Math.max(1,priority||Math.max(0,85-best))*source.weight;
       }
     });
@@ -2865,6 +2881,18 @@ function mapView() {
   const missionCards = existingMissionCards;
 
   return `<section class="home-dashboard">
+    ${(state.homeworkNudgePending&&!homeworkReminderNeedsPopup_())?`
+    <div class="homework-reminder-overlay" role="dialog" aria-modal="true" aria-labelledby="homeworkNudgeTitle">
+      <div class="homework-reminder-card">
+        <div class="homework-reminder-icon">🚀</div>
+        <h2 id="homeworkNudgeTitle">Great job practicing!</h2>
+        <p>Está buenísimo que practiques otras Missions. <strong>Recordá que también tenés tarea pendiente.</strong></p>
+        <div class="button-row">
+          <button type="button" class="homework-reminder-close" data-action="homework-nudge-task">Ir a mi tarea</button>
+          <button type="button" class="secondary-button" data-action="homework-nudge-continue">Seguir practicando</button>
+        </div>
+      </div>
+    </div>`:""}
     ${homeworkReminderNeedsPopup_()?`
     <div class="homework-reminder-overlay" role="dialog" aria-modal="true" aria-labelledby="homeworkReminderTitle">
       <div class="homework-reminder-card">
@@ -3319,6 +3347,17 @@ function bindEvents() {
       closeHomeworkReminder_();
       document.querySelector(".homework-reminder-overlay")?.remove();
       document.querySelector(".homework-mini-trigger")?.focus();
+      return;
+    }
+    if (action === "homework-nudge-task") {
+      state.homeworkNudgePending=false; state.homeworkNudgeShownThisSession=true; saveState();
+      document.querySelector(".homework-reminder-overlay")?.remove();
+      const panel=document.getElementById("homeworkMiniPopover"); if(panel)panel.hidden=false;
+      return;
+    }
+    if (action === "homework-nudge-continue") {
+      state.homeworkNudgePending=false; state.homeworkNudgeShownThisSession=true; saveState();
+      document.querySelector(".homework-reminder-overlay")?.remove();
       return;
     }
     if (action === "toggle-homework-mini") {
@@ -3798,6 +3837,7 @@ function bindEvents() {
       saveLocalMissionProgress(result);
       clearMissionDraft_(result.mission.id);
       enqueueResult(result);
+      noteVoluntaryMissionCompletion_(result.mission?.number);
       state.route = "mission-result";
       saveState(); render();
       syncQueue(false);

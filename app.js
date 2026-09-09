@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.36";
+const HOME_RELEASE_VERSION = "v1.6.37";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.36";
+const APP_VERSION = "Home v1.6.37";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.36 — Grade 5 + Grade 6 Home access";
+const CONTENT_VERSION = "Mission English Home v1.6.37 — Compact Homework + inline Explore assignment status";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1592,7 +1592,7 @@ function homeTaskListHtml_(){
   if(explore) sections.push(`<div class="homework-task-group explore-group"><div class="homework-task-group-title">Explore & Practice</div>${explore}</div>`);
   const msg=task.teacherMessage ? `<div class="homework-teacher-message"><strong>💬 Teacher Eddie:</strong> ${escapeHtml(task.teacherMessage)}</div>` : "";
   const due=homeTaskDueLabel_();
-  const deadline=due ? `<div class="homework-deadline"><strong>📅 Deadline / Fecha límite:</strong><br>${escapeHtml(due)}</div>` : "";
+  const deadline=due ? `<div class="homework-deadline"><strong>📅 Deadline:</strong> ${escapeHtml(due)}</div>` : "";
   return `<div class="homework-task-list">${sections.join("")}</div>${msg}${deadline}`;
 }
 

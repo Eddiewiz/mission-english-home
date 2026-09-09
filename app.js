@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.35";
+const HOME_RELEASE_VERSION = "v1.6.36";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,13 +26,13 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.35";
+const APP_VERSION = "Home v1.6.36";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
 const HOME_ASSIGNMENT = {
   enabled: true,
-  allowedGrades: ["6"],
+  allowedGrades: ["5","6"],
   title: "📌 Tarea de Mission English Home · 6.º grado",
   requiredMissionIds: ["m2","classroom-objects-g6-v1"],
   requireQuickVote: true,
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.35 — recommendations + homework assignment reminder";
+const CONTENT_VERSION = "Mission English Home v1.6.36 — Grade 5 + Grade 6 Home access";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -2004,7 +2004,7 @@ function studentsForSelectedCourse() {
 }
 
 function identifyView() {
-  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="6"))]
+  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="5"||g==="6"))]
     .sort((a,b) => a.localeCompare(b, "es", { numeric:true }));
   const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
   const schoolValue = state.student.institution || savedHomeSchool();
@@ -2013,7 +2013,7 @@ function identifyView() {
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
     <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
-    <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>Por ahora, el acceso de alumnos está habilitado únicamente para 6.º grado.</strong></div>
+    <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso de alumnos está habilitado para 5.º y 6.º grado.</strong></div>
 
     ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
 
@@ -3762,8 +3762,8 @@ function bindEvents() {
     const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
     const grade = String(form.get("grade") || "").trim();
 
-    if (grade !== "6") {
-      state.identityError = "Por ahora Mission English Home está habilitado solamente para 6.º grado.";
+    if (grade !== "5" && grade !== "6") {
+      state.identityError = "Mission English Home está habilitado para 5.º y 6.º grado.";
       saveState(); render(); return;
     }
 

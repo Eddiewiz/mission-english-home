@@ -2463,3 +2463,162 @@ body{background:#edf5fb}
 .recommended-group{border:1px solid rgba(94,111,173,.18)}
 .required-group{border:1px solid rgba(223,166,40,.24)}
 .explore-group{border:1px solid rgba(67,125,142,.16)}
+
+
+/* Home v1.6.37 — compact Homework panel.
+   Keep assignment status inline with the activity title and prioritize Teacher message visibility. */
+.homework-popover{
+  width:300px!important;
+  padding:.55rem .62rem!important;
+  font-size:.76rem!important;
+  line-height:1.18!important;
+}
+.homework-popover>strong{margin-bottom:.24rem!important;line-height:1.15!important}
+.homework-mini-list{gap:.16rem!important;font-size:.76rem!important}
+.homework-task-list{gap:.16rem!important}
+.homework-task-group{
+  gap:.08rem!important;
+  padding:.24rem .34rem!important;
+  border-radius:8px!important;
+}
+.homework-task-group+.homework-task-group{margin-top:.18rem!important}
+.homework-task-group-title{
+  font-size:.62rem!important;
+  line-height:1.05!important;
+  margin-bottom:.03rem!important;
+}
+.homework-task-item{
+  align-items:center!important;
+  gap:.22rem!important;
+  padding:.04rem 0!important;
+  line-height:1.14!important;
+}
+.homework-task-mark{width:.9rem!important;flex:0 0 .9rem!important}
+.homework-task-copy{display:inline!important;line-height:1.14!important}
+/* Earlier global .homework-popover strong rule made activity titles block-level.
+   This keeps "Short Videos · Cloudy  Asignado" on the same line. */
+.homework-task-copy strong{display:inline!important;margin:0!important}
+.homework-task-status{
+  display:inline-block!important;
+  margin-left:.24rem!important;
+  padding:.03rem .28rem!important;
+  font-size:.59rem!important;
+  line-height:1.2!important;
+  vertical-align:baseline!important;
+}
+.homework-teacher-message{
+  margin-top:.24rem!important;
+  padding:.34rem .42rem!important;
+  border-radius:8px!important;
+  font-size:.7rem!important;
+  line-height:1.2!important;
+}
+.homework-teacher-message strong{display:inline!important;margin:0!important}
+.homework-mini-list .homework-deadline{
+  margin-top:.2rem!important;
+  padding-top:.18rem!important;
+  font-size:.68rem!important;
+  line-height:1.15!important;
+}
+.homework-mini-list .homework-deadline strong{display:inline!important;margin:0!important}
+@media (max-width:600px){
+  .homework-popover.mobile-safe-popover{
+    left:8px!important;right:8px!important;
+    max-height:calc(100vh - 16px)!important;
+    padding:.46rem .5rem!important;
+  }
+  .homework-task-group{padding:.2rem .3rem!important}
+  .homework-teacher-message{margin-top:.2rem!important;padding:.3rem .36rem!important}
+}
+
+/* Home v1.6.38 — mobile-specific compact Homework layout.
+   Keep status at the right edge and preserve Teacher message visibility. */
+.homework-task-item{
+  display:grid!important;
+  grid-template-columns:.9rem minmax(0,1fr) auto!important;
+  align-items:center!important;
+  column-gap:.22rem!important;
+}
+.homework-task-mark{grid-column:1!important}
+.homework-task-copy{
+  grid-column:2!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.homework-task-status{
+  grid-column:3!important;
+  margin-left:.18rem!important;
+  justify-self:end!important;
+}
+
+@media (max-width:600px){
+  .homework-popover.mobile-safe-popover{
+    left:6px!important;
+    right:6px!important;
+    width:auto!important;
+    max-height:calc(100vh - 12px)!important;
+    padding:.34rem .38rem!important;
+    font-size:.7rem!important;
+    line-height:1.08!important;
+  }
+  .homework-popover.mobile-safe-popover>strong{
+    margin-bottom:.14rem!important;
+    font-size:.72rem!important;
+    line-height:1.08!important;
+  }
+  .homework-mini-list{gap:.1rem!important;font-size:.7rem!important}
+  .homework-task-list{gap:.08rem!important}
+  .homework-task-group{
+    gap:.03rem!important;
+    padding:.14rem .2rem!important;
+    border-radius:6px!important;
+  }
+  .homework-task-group+.homework-task-group{margin-top:.08rem!important}
+  .homework-task-group-title{
+    font-size:.55rem!important;
+    line-height:1!important;
+    margin:0 0 .01rem!important;
+    letter-spacing:.025em!important;
+  }
+  .homework-task-item{
+    grid-template-columns:.72rem minmax(0,1fr) auto!important;
+    column-gap:.14rem!important;
+    padding:.01rem 0!important;
+    min-height:1.18rem!important;
+    line-height:1.05!important;
+  }
+  .homework-task-mark{
+    width:.72rem!important;
+    font-size:.68rem!important;
+    line-height:1!important;
+  }
+  .homework-task-copy{
+    display:block!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    line-height:1.05!important;
+  }
+  .homework-task-copy strong{font-size:.69rem!important}
+  .homework-task-status{
+    margin-left:.1rem!important;
+    padding:.01rem .22rem!important;
+    font-size:.53rem!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+  }
+  .homework-teacher-message{
+    margin-top:.1rem!important;
+    padding:.22rem .26rem!important;
+    border-radius:6px!important;
+    font-size:.64rem!important;
+    line-height:1.12!important;
+  }
+  .homework-mini-list .homework-deadline{
+    margin-top:.08rem!important;
+    padding-top:.08rem!important;
+    font-size:.61rem!important;
+    line-height:1.08!important;
+  }
+}

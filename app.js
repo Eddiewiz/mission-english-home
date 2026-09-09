@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.37";
+const HOME_RELEASE_VERSION = "v1.6.39";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.37";
+const APP_VERSION = "Home v1.6.39";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.37 — Compact Homework + inline Explore assignment status";
+const CONTENT_VERSION = "Mission English Home v1.6.39 — Reliable Homework loading + mobile compact layout";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1529,7 +1529,8 @@ function homeTaskMissionLine_(m,kind){
   const status=evidence.completed?(recommended?"Practicada":"Hecha"):(recommended?"Opcional":"Por hacer");
   return `<div class="homework-task-item ${recommended?"recommended":"required"} ${evidence.completed?"completed":"pending"}">
     <span class="homework-task-mark" aria-hidden="true">${mark}</span>
-    <span class="homework-task-copy"><strong>Mission ${escapeHtml(m.number)}</strong> · ${escapeHtml(m.title)} <small class="homework-task-status">${status}</small></span>
+    <span class="homework-task-copy"><strong>Mission ${escapeHtml(m.number)}</strong> · ${escapeHtml(m.title)}</span>
+    <small class="homework-task-status">${status}</small>
   </div>`;
 }
 
@@ -1562,7 +1563,7 @@ function homeTaskExploreItems_(){
 
 function homeTaskExploreItemHtml_(x){
   // The check means this item was assigned. Completion is a separate status.
-  return `<div class="homework-task-item explore assigned"><span class="homework-task-mark" aria-hidden="true">✓</span><span class="homework-task-copy">${homeTaskExploreLine_(x)} <small class="homework-task-status">Asignado</small></span></div>`;
+  return `<div class="homework-task-item explore assigned"><span class="homework-task-mark" aria-hidden="true">✓</span><span class="homework-task-copy">${homeTaskExploreLine_(x)}</span><small class="homework-task-status">Asignado</small></div>`;
 }
 
 function homeTaskDueLabel_(){
@@ -1596,6 +1597,13 @@ function homeTaskListHtml_(){
   return `<div class="homework-task-list">${sections.join("")}</div>${msg}${deadline}`;
 }
 
+function homeTaskStatusMessage_(){
+  if(homeTaskState.loading || !homeTaskState.loaded) return "Cargando tu tarea…";
+  if(homeTaskState.error==="offline") return "Sin conexión. La tarea se cargará cuando vuelva Internet.";
+  if(homeTaskState.error) return "No pudimos cargar tu tarea. Volvé a abrir Tarea en unos segundos.";
+  return "No hay una tarea asignada en este momento.";
+}
+
 function loadHomeTask(force=false){
   const sid=String(state.student?.id||"").trim();
   if(!sid || isHomeTester_()){
@@ -1605,43 +1613,69 @@ function loadHomeTask(force=false){
   if(homeTaskState.loading && !force) return Promise.resolve(homeTaskState);
   if(homeTaskState.loaded && !force) return Promise.resolve(homeTaskState);
   if(!navigator.onLine){
-    homeTaskState.error="offline";
+    homeTaskState={...homeTaskState,loaded:true,loading:false,error:"offline"};
+    if(state.route==="map"||state.route==="home") render();
     return Promise.resolve(homeTaskState);
   }
 
-  homeTaskState.loading=true;
-  homeTaskState.error="";
-  return jsonpRequestHome("homeTask",{studentId:sid})
-    .then(data=>{
-      if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
-      explorePracticeCatalog=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog:[];
-      quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
-      setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
-        const list=document.getElementById("shortVideoList");
-        if(list){list.innerHTML=shortVideosHtml();bindEvents();}
-      }),350);
-      if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
-        selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
-      }
-      activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
-      quickVoteStats=quickVoteStatsByPoll[quickVoteCacheKey_(selectedQuickVotePollId)]||{total:0,choices:{},myChoice:"",myChoices:[],maxSelections:Number(activeQuickVote?.maxSelections||1)};
-      homeTaskState={
-        task:data.task||null,
-        loaded:true,
-        loading:false,
-        error:"",
-        generatedAt:String(data.generatedAt||"")
-      };
-      if(state.route==="map"||state.route==="home") render();
-      return homeTaskState;
-    })
-    .catch(error=>{
-      homeTaskState.loading=false;
-      homeTaskState.loaded=false;
-      homeTaskState.error=String(error?.message||error||"No se pudo cargar la tarea.");
-      console.error("Mission English Home task error:",homeTaskState.error);
-      return homeTaskState;
-    });
+  // Do not show a false "no homework" state while the backend request is still pending.
+  homeTaskState={...homeTaskState,loaded:false,loading:true,error:""};
+  if(state.route==="map"||state.route==="home") render();
+
+  const applyCatalog_=(data)=>{
+    explorePracticeCatalog=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog:[];
+    quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
+    setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
+      const list=document.getElementById("shortVideoList");
+      if(list){list.innerHTML=shortVideosHtml();bindEvents();}
+    }),350);
+    if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
+      selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
+    }
+    activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
+    quickVoteStats=quickVoteStatsByPoll[quickVoteCacheKey_(selectedQuickVotePollId)]||{total:0,choices:{},myChoice:"",myChoices:[],maxSelections:Number(activeQuickVote?.maxSelections||1)};
+  };
+
+  const attempt=(remainingRetries)=>
+    jsonpRequestHome("homeTask",{studentId:sid})
+      .then(data=>{
+        if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
+        applyCatalog_(data);
+
+        // A transient empty response was observed on mobile. Confirm it before
+        // telling a student there is no homework, so a manual refresh is unnecessary.
+        if(!data.task && remainingRetries>0 && navigator.onLine){
+          return new Promise(resolve=>setTimeout(resolve,900))
+            .then(()=>attempt(remainingRetries-1));
+        }
+
+        homeTaskState={
+          task:data.task||null,
+          loaded:true,
+          loading:false,
+          error:"",
+          generatedAt:String(data.generatedAt||"")
+        };
+        if(state.route==="map"||state.route==="home") render();
+        return homeTaskState;
+      })
+      .catch(error=>{
+        if(remainingRetries>0 && navigator.onLine){
+          return new Promise(resolve=>setTimeout(resolve,900))
+            .then(()=>attempt(remainingRetries-1));
+        }
+        homeTaskState={
+          ...homeTaskState,
+          loaded:true,
+          loading:false,
+          error:String(error?.message||error||"No se pudo cargar la tarea.")
+        };
+        console.error("Mission English Home task error:",homeTaskState.error);
+        if(state.route==="map"||state.route==="home") render();
+        return homeTaskState;
+      });
+
+  return attempt(2);
 }
 
 
@@ -2920,7 +2954,7 @@ function mapView() {
             <div class="homework-mini-list">
               ${homeTaskListHtml_()}
             </div>`
-          :`<strong>Tu tarea</strong><div class="homework-mini-list"><div>${homeTaskState.loading?"Actualizando tarea…":"No hay una tarea asignada en este momento."}</div></div>`}
+          :`<strong>Tu tarea</strong><div class="homework-mini-list"><div>${escapeHtml(homeTaskStatusMessage_())}</div></div>`}
         </div>
       </div>
       <details class="account-menu">

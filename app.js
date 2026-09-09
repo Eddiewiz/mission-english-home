@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.39";
+const HOME_RELEASE_VERSION = "v1.6.40";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.39";
+const APP_VERSION = "Home v1.6.40";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -1484,6 +1484,13 @@ let homeTaskState = {
   generatedAt: ""
 };
 
+// Keep only one Home Task request active for the current student. Mobile browsers can
+// fire startup/focus/visibility refreshes almost at the same time; without this guard,
+// older responses can arrive later and overwrite a valid task with a transient empty one.
+let homeTaskRequestSeq = 0;
+let homeTaskInFlight = null;
+let homeTaskInFlightStudentId = "";
+
 function currentHomeTask_(){
   return homeTaskState.loaded ? homeTaskState.task : null;
 }
@@ -1607,22 +1614,36 @@ function homeTaskStatusMessage_(){
 function loadHomeTask(force=false){
   const sid=String(state.student?.id||"").trim();
   if(!sid || isHomeTester_()){
+    homeTaskRequestSeq++;
+    homeTaskInFlight=null;
+    homeTaskInFlightStudentId="";
     homeTaskState={task:null,loaded:true,loading:false,error:"",generatedAt:""};
     return Promise.resolve(homeTaskState);
   }
-  if(homeTaskState.loading && !force) return Promise.resolve(homeTaskState);
+
+  // A forced refresh must not start a second request while the same student's
+  // homework is already loading. Reuse the active request instead.
+  if(homeTaskInFlight && homeTaskInFlightStudentId===sid) return homeTaskInFlight;
   if(homeTaskState.loaded && !force) return Promise.resolve(homeTaskState);
+
   if(!navigator.onLine){
     homeTaskState={...homeTaskState,loaded:true,loading:false,error:"offline"};
     if(state.route==="map"||state.route==="home") render();
     return Promise.resolve(homeTaskState);
   }
 
-  // Do not show a false "no homework" state while the backend request is still pending.
-  homeTaskState={...homeTaskState,loaded:false,loading:true,error:""};
-  if(state.route==="map"||state.route==="home") render();
+  const requestId=++homeTaskRequestSeq;
+  homeTaskInFlightStudentId=sid;
+  const isCurrentRequest_=()=>requestId===homeTaskRequestSeq && String(state.student?.id||"").trim()===sid;
+
+  // Keep an already valid task visible while checking for a fresher copy. Only a
+  // first-time load uses the loading state. This prevents visible task flicker.
+  const hadTask=!!currentHomeTask_();
+  homeTaskState={...homeTaskState,loaded:hadTask,loading:true,error:""};
+  if((state.route==="map"||state.route==="home") && !hadTask) render();
 
   const applyCatalog_=(data)=>{
+    if(!isCurrentRequest_()) return;
     explorePracticeCatalog=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog:[];
     quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
     setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
@@ -1640,15 +1661,15 @@ function loadHomeTask(force=false){
     jsonpRequestHome("homeTask",{studentId:sid})
       .then(data=>{
         if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
+        if(!isCurrentRequest_()) return homeTaskState;
         applyCatalog_(data);
 
-        // A transient empty response was observed on mobile. Confirm it before
-        // telling a student there is no homework, so a manual refresh is unnecessary.
         if(!data.task && remainingRetries>0 && navigator.onLine){
           return new Promise(resolve=>setTimeout(resolve,900))
             .then(()=>attempt(remainingRetries-1));
         }
 
+        if(!isCurrentRequest_()) return homeTaskState;
         homeTaskState={
           task:data.task||null,
           loaded:true,
@@ -1660,24 +1681,34 @@ function loadHomeTask(force=false){
         return homeTaskState;
       })
       .catch(error=>{
+        if(!isCurrentRequest_()) return homeTaskState;
         if(remainingRetries>0 && navigator.onLine){
           return new Promise(resolve=>setTimeout(resolve,900))
             .then(()=>attempt(remainingRetries-1));
         }
+        // If a previously loaded task is already on screen, keep it instead of
+        // replacing it with an error/empty state after a background refresh failure.
         homeTaskState={
           ...homeTaskState,
           loaded:true,
           loading:false,
-          error:String(error?.message||error||"No se pudo cargar la tarea.")
+          error:homeTaskState.task?"":String(error?.message||error||"No se pudo cargar la tarea.")
         };
-        console.error("Mission English Home task error:",homeTaskState.error);
+        console.error("Mission English Home task error:",String(error?.message||error||"No se pudo cargar la tarea."));
         if(state.route==="map"||state.route==="home") render();
         return homeTaskState;
       });
 
-  return attempt(2);
+  const promise=attempt(2).finally(()=>{
+    if(requestId===homeTaskRequestSeq){
+      homeTaskInFlight=null;
+      homeTaskInFlightStudentId="";
+      if(homeTaskState.loading) homeTaskState={...homeTaskState,loading:false};
+    }
+  });
+  homeTaskInFlight=promise;
+  return promise;
 }
-
 
 function freshState() {
   return {

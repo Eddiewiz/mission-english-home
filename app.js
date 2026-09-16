@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.40";
+const HOME_RELEASE_VERSION = "v1.6.42";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.40";
+const APP_VERSION = "Home v1.6.57";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.39 — Reliable Homework loading + mobile compact layout";
+const CONTENT_VERSION = "Mission English Home v1.6.57 — Renovación · reliable homework + Explore";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -275,7 +275,7 @@ const missions = [
       },
       {
         "title": "👀 Observa",
-        "html": "<img class=\"greetings-observe-image\" src=\"images/home-missions/approved-cards/m2-greetings.jpg\" alt=\"Good morning, good afternoon, good evening and good night\"><div class=\"greetings-recap-row\"><span><strong>Good morning</strong><small>Buenos días</small></span><span><strong>Good afternoon</strong><small>Buenas tardes</small></span><span><strong>Good evening</strong><small>Buenas tardes/noches al saludar</small></span><span><strong>Good night</strong><small>Buenas noches al despedirse</small></span></div>"
+        "html": "<img class=\"greetings-observe-image\" src=\"images/home-missions/approved-cards/m2-greetings-home-1653.jpg\" alt=\"Good morning, good afternoon, good evening and good night\"><div class=\"greetings-recap-row\"><span><strong>Good morning</strong><small>Buenos días</small></span><span><strong>Good afternoon</strong><small>Buenas tardes</small></span><span><strong>Good evening</strong><small>Buenas tardes/noches al saludar</small></span><span><strong>Good night</strong><small>Buenas noches al despedirse</small></span></div>"
       },
       {
         "title": "🌟 ¿Sabías que...?",
@@ -457,7 +457,7 @@ const missions = [
       },
       {
         "title": "👀 Observa",
-        "html": "<div class=\"notice\"><strong>🙋 Excuse me. Can I go to the restroom / toilet, please?</strong></div>\n        <img class=\"school-places-image\" src=\"images/home-missions/approved-cards/m4-permission-dashboard.jpg\" alt=\"Restroom, office, library and kitchen at school\">\n        <p>Podés usar la misma estructura con distintos lugares de la escuela: <strong>Can I go to the office / library / kitchen, please?</strong></p>\n        <p>👍 <strong>Yes, you can.</strong> → Sí, puedes. También podés responder simplemente <strong>Yes.</strong><br>\n        ✋ <strong>No, please wait.</strong> → No, por favor espera. También podés responder simplemente <strong>No.</strong></p>"
+        "html": "<div class=\"notice\"><strong>🙋 Excuse me. Can I go to the restroom / toilet, please?</strong></div>\n        <img class=\"school-places-image\" src=\"images/home-missions/approved-cards/m4-permission-home-1653.jpg\" alt=\"Restroom, office, library and kitchen at school\">\n        <p>Podés usar la misma estructura con distintos lugares de la escuela: <strong>Can I go to the office / library / kitchen, please?</strong></p>\n        <p>👍 <strong>Yes, you can.</strong> → Sí, puedes. También podés responder simplemente <strong>Yes.</strong><br>\n        ✋ <strong>No, please wait.</strong> → No, por favor espera. También podés responder simplemente <strong>No.</strong></p>"
       },
       {
         "title": "🌟 ¿Sabías que...?",
@@ -1494,6 +1494,9 @@ let homeTaskInFlightStudentId = "";
 function currentHomeTask_(){
   return homeTaskState.loaded ? homeTaskState.task : null;
 }
+function homeTaskCacheKey_(sid){return `mew_home_task_cache_${String(sid||"")}`;}
+function cachedHomeTask_(sid){try{return JSON.parse(localStorage.getItem(homeTaskCacheKey_(sid))||"null");}catch{return null;}}
+function cacheHomeTask_(sid,task){if(!sid||!task)return;try{localStorage.setItem(homeTaskCacheKey_(sid),JSON.stringify(task));}catch{}}
 
 function homeTaskMissionItems_(kind="required"){
   const task=currentHomeTask_();
@@ -1644,11 +1647,17 @@ function loadHomeTask(force=false){
 
   const applyCatalog_=(data)=>{
     if(!isCurrentRequest_()) return;
-    explorePracticeCatalog=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog:[];
-    quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
+    if(Array.isArray(data.explorePracticeCatalog)){
+      const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
+      data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
+      explorePracticeCatalog=[...byId.values()].filter(a=>a&&a.active!==false);
+    }
+    quickVotePolls=explorePracticeCatalog.filter(a=>a.category==="Quick Vote");
     setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
       const list=document.getElementById("shortVideoList");
       if(list){list.innerHTML=shortVideosHtml();bindEvents();}
+      refreshQuickVotePanelDom_();
+      if(state.route==="map"||state.route==="home") render();
     }),350);
     if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
       selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
@@ -1658,7 +1667,7 @@ function loadHomeTask(force=false){
   };
 
   const attempt=(remainingRetries)=>
-    jsonpRequestHome("homeTask",{studentId:sid})
+    jsonpRequestHome("homeStudent",{studentId:sid})
       .then(data=>{
         if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
         if(!isCurrentRequest_()) return homeTaskState;
@@ -1670,8 +1679,10 @@ function loadHomeTask(force=false){
         }
 
         if(!isCurrentRequest_()) return homeTaskState;
+        const resolvedTask=data.task||currentHomeTask_()||cachedHomeTask_(sid)||null;
+        if(data.task)cacheHomeTask_(sid,data.task);
         homeTaskState={
-          task:data.task||null,
+          task:resolvedTask,
           loaded:true,
           loading:false,
           error:"",
@@ -1954,9 +1965,9 @@ function render() {
 
 function homeView() {
   return `<section class="home-landing-approved" aria-label="Mission English Home">
-    <img src="images/approved/home-landing-approved.jpg" alt="Mission English Home" class="home-approved-image">
-    <button class="home-hotspot home-hotspot-start" data-action="start-home" aria-label="Iniciar sesión">
-      <span>INICIAR SESIÓN</span>
+    <img src="images/approved/home-landing-approved-v2.png" alt="Mission English Home" class="home-approved-image">
+    <button class="home-hotspot home-hotspot-start" data-action="start-home" aria-label="Iniciar Misión">
+      <span>INICIAR MISIÓN</span>
     </button>
     <button class="home-hotspot home-hotspot-first" data-action="first-time-home" aria-label="Primera vez">
       <span>¿PRIMERA VEZ?</span>
@@ -2472,7 +2483,7 @@ function jsonpRequestHome(action, params={}) {
     const search = new URLSearchParams({ action, callback:callbackName, t:String(Date.now()), ...params });
     script.onerror = () => finish(new Error("No se pudo consultar Mission English World."));
     script.src = `${SYNC_ENDPOINT}?${search.toString()}`;
-    const timer = setTimeout(() => finish(new Error("La consulta tardó demasiado.")), 8000);
+    const timer = setTimeout(() => finish(new Error("La consulta tardó demasiado.")), 30000);
     document.head.appendChild(script);
   });
 }
@@ -2526,11 +2537,11 @@ function loadHomeMissionPermissions(force=false) {
 
 
 const HOME_MISSION_VISUALS = {
-  "m1": {base:"images/home-missions/approved-cards/m1-date.jpg", grade6:"images/home-missions/approved-cards/m1-date.jpg"},
-  "m2": {base:"images/home-missions/approved-cards/m2-greetings.jpg", grade6:"images/home-missions/approved-cards/m2-greetings.jpg"},
-  "m3": {base:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg"},
-  "m4": {base:"images/home-missions/approved-cards/m4-permission-dashboard.jpg", grade6:"images/home-missions/approved-cards/m4-permission-dashboard.jpg"},
-  "review-1-4-v1": {base:"images/home-missions/approved-cards/m5-review.jpg", grade6:"images/home-missions/approved-cards/m5-review.jpg"},
+  "m1": {base:"images/home-missions/approved-cards/m1-date-home-1653.jpg", grade6:"images/home-missions/approved-cards/m1-date-home-1653.jpg"},
+  "m2": {base:"images/home-missions/approved-cards/m2-greetings-home-1653.jpg", grade6:"images/home-missions/approved-cards/m2-greetings-home-1653.jpg"},
+  "m3": {base:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg"},
+  "m4": {base:"images/home-missions/approved-cards/m4-permission-home-1653.jpg", grade6:"images/home-missions/approved-cards/m4-permission-home-1653.jpg"},
+  "review-1-4-v1": {base:"images/home-missions/approved-cards/m5-review-home-1653.jpg", grade6:"images/home-missions/approved-cards/m5-review-home-1653.jpg"},
   "colors-v1": {base:"images/home-missions/approved-cards/m6-colors-dashboard.jpg", grade6:"images/home-missions/approved-cards/m6-colors-dashboard.jpg"},
   "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg", grade6:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg"},
   "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-weather-dashboard.jpg", grade6:"images/home-missions/approved-cards/m8-weather-dashboard.jpg"},
@@ -2541,7 +2552,7 @@ const HOME_MISSION_VISUALS = {
   "parts-face-g45-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
   "parts-body-g45-v1": {base:"images/home-missions/approved-cards/m14-body-dashboard.jpg"},
   "review-11-14-g45-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
-  "classroom-objects-g6-v1": {base:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-dashboard.jpg"},
+  "classroom-objects-g6-v1": {base:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg"},
   "verb-it-g6-v1": {base:"images/home-missions/approved-cards/m14-it.jpg", grade6:"images/home-missions/approved-cards/m14-it.jpg"},
   "review-11-14-g6-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg", grade6:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
   "size-colors-g6-v1": {base:"images/home-missions/approved-cards/m16-size-dashboard.jpg", grade6:"images/home-missions/approved-cards/m16-size-dashboard.jpg"},
@@ -2785,8 +2796,13 @@ function renderExploreVideo_(host,video){
     (url.match(/drive\.google\.com\/file\/d\/([^/]+)/)||[])[1] || "";
 
   if(driveId){
+    // Uploaded Drive videos: use the file stream directly first. This avoids the
+    // Drive preview iframe asking the student to open/authorize another Google view.
+    const direct=`https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}`;
     const preview=`https://drive.google.com/file/d/${encodeURIComponent(driveId)}/preview`;
-    host.innerHTML=`<iframe src="${preview}" title="${title}" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px"></iframe>`;
+    host.innerHTML=`<video controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px;background:#111" data-drive-preview="${preview}"><source src="${direct}" type="${escapeHtml(video.mediaMime||"video/mp4")}"></video><div class="video-fallback-note" hidden><button type="button" class="secondary-button" data-action="drive-video-fallback" data-preview-url="${preview}">Abrir reproductor alternativo</button></div>`;
+    const el=host.querySelector("video"),note=host.querySelector(".video-fallback-note");
+    if(el&&note) el.addEventListener("error",()=>{note.hidden=false;},{once:true});
     return true;
   }
 
@@ -2832,8 +2848,15 @@ function refreshExplorePracticeCatalog_(){
   if(!state.student?.id)return Promise.resolve(explorePracticeCatalog);
   return jsonpRequestHome("explorePracticeCatalog",{studentId:state.student.id}).then(data=>{
     if(data?.ok&&Array.isArray(data.explorePracticeCatalog)){
-      explorePracticeCatalog=data.explorePracticeCatalog;
-      quickVotePolls=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Quick Vote");
+      // Never let a transient/partial response erase activities already received.
+      const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
+      data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
+      explorePracticeCatalog=[...byId.values()].filter(a=>a&&a.active!==false);
+      quickVotePolls=explorePracticeCatalog.filter(a=>a.category==="Quick Vote");
+      if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
+        selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[0].pollId:"";
+      }
+      activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
     }
     return explorePracticeCatalog;
   }).catch(()=>explorePracticeCatalog);
@@ -2930,11 +2953,9 @@ function mapView() {
       : missionsText_("🔒 Locked","🔒 Bloqueada");
     const statusClass=enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked";
     const title=m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"");
-    return `<article class="dashboard-mission-card ${enabled?"available":"future-card"}">
-      <div class="mission-card-heading">
-        <div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div>
-        <h3>${escapeHtml(title)}</h3>
-      </div>
+    const renewedCard=Number(m.number)>=1 && Number(m.number)<=5;
+    return `<article class="dashboard-mission-card ${enabled?"available":"future-card"} ${renewedCard?"renewed-mission-card":""}">
+      ${renewedCard?"":`<div class="mission-card-heading"><div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div><h3>${escapeHtml(title)}</h3></div>`}
       <div class="mission-card-image">
         ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", !enabled)}
       </div>
@@ -3009,7 +3030,7 @@ function mapView() {
     </nav>
 
     <section class="missions-panel" id="missionsPanel">
-      <div class="missions-title-row"><div><h2>🎯 Missions</h2><p>${missionsText_("Choose a Mission to start learning.","Elegí una misión para empezar a aprender.")}</p></div></div>
+      <div class="missions-title-row"><div><h2>🎯 Missions <span class="missions-renewal-sign">✨ ${missionsText_("Renewal","Renovación")}</span></h2><p>${missionsText_("Choose a Mission to start learning.","Elegí una misión para empezar a aprender.")}</p></div></div>
       <div class="dashboard-mission-grid">${missionCards}</div>
     </section>
 
@@ -3477,10 +3498,15 @@ function bindEvents() {
       const panel=document.getElementById(id);
       if(panel){
         panel.hidden=!panel.hidden;event.currentTarget.focus({preventScroll:true});
-        if(!panel.hidden&&(id==="shortVideosPanel"||id==="listeningPanel")){
+        if(!panel.hidden&&(id==="shortVideosPanel"||id==="listeningPanel"||id==="quickVotePanel")){
           refreshExplorePracticeCatalog_().then(()=>{
             if(id==="shortVideosPanel"){const list=document.getElementById("shortVideoList");if(list){list.innerHTML=shortVideosHtml();bindEvents();}}
-            else{const list=panel.querySelector(".dynamic-listening-catalog");if(list)list.innerHTML=exploreListeningHtml_();}
+            else if(id==="listeningPanel"){const list=panel.querySelector(".dynamic-listening-catalog");if(list)list.innerHTML=exploreListeningHtml_();}
+            else if(id==="quickVotePanel"){
+              if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)) selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
+              activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
+              refreshQuickVotePanelDom_();
+            }
             requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:"auto"}));
           });
         }
@@ -3510,6 +3536,12 @@ function bindEvents() {
     if (action === "open-local-video") {
       const panel=document.getElementById("shortVideoPlayer"), title=document.getElementById("shortVideoTitle"), host=document.getElementById("shortVideoFrameHost");
       if(panel&&host){ if(title) title.textContent=event.currentTarget.dataset.videoTitle||"Short Video"; renderMissionVideo_(host,event.currentTarget.dataset.videoSrc||""); panel.hidden=false; panel.scrollIntoView({behavior:"smooth",block:"center"}); sendActivityEvent("short_video_opened",{detail:`Short Video abierto: ${event.currentTarget.dataset.videoTitle||"Short Video"}`}); }
+      return;
+    }
+    if (action === "drive-video-fallback") {
+      const url=String(target.dataset.previewUrl||"");
+      const host=document.getElementById("shortVideoFrameHost");
+      if(host&&url) host.innerHTML=`<iframe src="${escapeHtml(url)}" title="Mission English Short Video" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px"></iframe>`;
       return;
     }
     if (action === "close-explore-panels") { document.querySelectorAll(".explore-detail").forEach(el=>el.hidden=true); return; }

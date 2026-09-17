@@ -2849,3 +2849,8 @@ body{background:#edf5fb}
 .renewed-mission-card .mission-card-image{width:100%!important;aspect-ratio:3/2!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;background:transparent!important;}
 .renewed-mission-card .mission-card-image>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important;object-fit:fill!important;object-position:center!important;border-radius:10px 10px 0 0!important;}
 .renewed-mission-card .mission-status-strip{width:100%!important;height:31px!important;min-height:31px!important;margin:0!important;}
+
+
+/* Home v1.6.58 — Renovación Missions 1–10: preserve complete 3:2 artwork. */
+.dashboard-mission-card.renewed-mission-card .mission-card-image{aspect-ratio:3/2!important;width:100%!important;height:auto!important;overflow:hidden!important;background:#fff!important;}
+.dashboard-mission-card.renewed-mission-card .mission-card-image>img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;margin:0!important;padding:0!important;}

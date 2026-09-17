@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.57";
+const APP_VERSION = "Home v1.6.58";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.57 — Renovación · reliable homework + Explore";
+const CONTENT_VERSION = "Mission English Home v1.6.58 — Renovación · Missions 6–10 + Home fixes";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -2542,11 +2542,11 @@ const HOME_MISSION_VISUALS = {
   "m3": {base:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg"},
   "m4": {base:"images/home-missions/approved-cards/m4-permission-home-1653.jpg", grade6:"images/home-missions/approved-cards/m4-permission-home-1653.jpg"},
   "review-1-4-v1": {base:"images/home-missions/approved-cards/m5-review-home-1653.jpg", grade6:"images/home-missions/approved-cards/m5-review-home-1653.jpg"},
-  "colors-v1": {base:"images/home-missions/approved-cards/m6-colors-dashboard.jpg", grade6:"images/home-missions/approved-cards/m6-colors-dashboard.jpg"},
-  "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg", grade6:"images/home-missions/approved-cards/m7-numbers-dashboard.jpg"},
-  "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-weather-dashboard.jpg", grade6:"images/home-missions/approved-cards/m8-weather-dashboard.jpg"},
-  "numbers-11-20-v1": {base:"images/home-missions/approved-cards/m9-numbers-11-20-dashboard.jpg", grade6:"images/home-missions/approved-cards/m9-numbers-11-20-dashboard.jpg"},
-  "mixed-review-colors-numbers-weather-v1": {base:"images/home-missions/approved-cards/m10-review.jpg", grade6:"images/home-missions/approved-cards/m10-review.jpg"},
+  "colors-v1": {base:"images/home-missions/approved-cards/m6-colors-renovacion.jpg", grade6:"images/home-missions/approved-cards/m6-colors-renovacion.jpg"},
+  "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-numbers-renovacion.jpg", grade6:"images/home-missions/approved-cards/m7-numbers-renovacion.jpg"},
+  "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-weather-renovacion.jpg", grade6:"images/home-missions/approved-cards/m8-weather-renovacion.jpg"},
+  "numbers-11-20-v1": {base:"images/home-missions/approved-cards/m9-numbers-renovacion.jpg", grade6:"images/home-missions/approved-cards/m9-numbers-renovacion.jpg"},
+  "mixed-review-colors-numbers-weather-v1": {base:"images/home-missions/approved-cards/m10-review-renovacion.jpg", grade6:"images/home-missions/approved-cards/m10-review-renovacion.jpg"},
   "days-of-week-v1": {base:"images/home-missions/approved-cards/m11-days-dashboard.jpg", grade6:"images/home-missions/approved-cards/m11-days-dashboard.jpg"},
   "months-of-year-v1": {base:"images/home-missions/approved-cards/m12-months-dashboard.jpg", grade6:"images/home-missions/approved-cards/m12-months-dashboard.jpg"},
   "parts-face-g45-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
@@ -2868,7 +2868,7 @@ function exploreListeningHtml_(){
 }
 
 function shortVideosHtml() {
-  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
+  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&(a.url||a.driveFileId));
   const dynamic=exploreVideos.map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong><span class="small">${v.mission?`Mission ${escapeHtml(v.mission)} · `:""}${escapeHtml(v.instructions||"")}</span>${exploreActivityDateHtml_(v)}<button class="primary-button" data-action="open-explore-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
   const teacherVideos=homeVideosForStudent().map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong>${v.translation?`<span class="small">(${escapeHtml(v.translation)})</span>`:""}${v.note?`<span class="small">${escapeHtml(v.note)}</span>`:""}<span class="explore-activity-dates">Activa · Desde — · Hasta Sin fecha límite</span><button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
   const empty=(!dynamic&&!teacherVideos)?`<div class="short-video-empty"><strong>No hay videos activos para este alumno.</strong></div>`:"";
@@ -2953,7 +2953,7 @@ function mapView() {
       : missionsText_("🔒 Locked","🔒 Bloqueada");
     const statusClass=enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked";
     const title=m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"");
-    const renewedCard=Number(m.number)>=1 && Number(m.number)<=5;
+    const renewedCard=Number(m.number)>=1 && Number(m.number)<=10;
     return `<article class="dashboard-mission-card ${enabled?"available":"future-card"} ${renewedCard?"renewed-mission-card":""}">
       ${renewedCard?"":`<div class="mission-card-heading"><div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div><h3>${escapeHtml(title)}</h3></div>`}
       <div class="mission-card-image">

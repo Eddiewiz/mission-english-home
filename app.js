@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.58";
+const APP_VERSION = "Home v1.6.86";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -77,13 +77,13 @@ function homeworkPanelHtml_(){
   if(!task) return "";
   const due=homeTaskDueLabel_();
   return `<section class="home-assignment-card">
-    <div class="assignment-title">📌 ${escapeHtml(homeTaskTitle_())} <span class="home-new-feature-badge">¡Nueva función!</span></div>
+    <div class="assignment-title">📌 ${escapeHtml(homeTaskTitle_())} <span class="home-new-feature-badge">¡Nueva tarea!</span></div>
     ${due?`<div class="assignment-deadline">⏰ ${escapeHtml(due)}</div>`:""}
     ${homeTaskListHtml_()}
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.58 — Renovación · Missions 6–10 + Home fixes";
+const CONTENT_VERSION = "Mission English Home v1.6.86 — Pre-publication test";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1197,7 +1197,7 @@ const GRADE6_EXTENDED_MISSIONS = [
  {id:"m13-q6",topic:"Glue",review:"glue",points:1,text:'Which option is the one we normally use? <span class="small">(¿Cuál es la forma que usamos normalmente?)</span>',options:["glue","a glue","an glue"],correct:"glue"},
  {id:"m13-q7",topic:"Furniture",review:"table chair desk",points:1,text:'Which three words are classroom furniture? <span class="small">(¿Cuáles tres palabras son muebles del aula?)</span>',options:["table · chair · desk","pen · paper · book","glue · ruler · scissors"],correct:"table · chair · desk"},
  {id:"m13-q8",topic:"Recognition",review:"colored pencil",points:1,type:"truefalse",visual:"🟦✏️",text:'This can be a colored pencil. <span class="small">(Esto puede ser un lápiz de color.)</span>',correct:"True"}]},
-  {id:"verb-it-g6-v1",number:14,title:"MISIÓN 14 – Verb To Be · It",visual:"it-be",defaultLocked:true,sections:[],questions:[]},
+  {id:"verb-it-g6-v1",number:14,title:"MISIÓN 14 – Verb To Be · It",visual:"it-be",defaultLocked:true,intro:"Usamos It is / It’s para hablar de una cosa, un objeto, un animal o una situación.",sections:[{title:"✏️ It is / It’s",html:'<p><strong>It is</strong> = Es / Está. <strong>It\'s</strong> es la forma corta.</p><p><strong>It is a pencil.</strong> · Es un lápiz.<br><strong>It\'s blue.</strong> · Es azul.</p><p>Para preguntar: <strong>Is it...?</strong> · ¿Es...?</p>'}],questions:[{id:"m14q1",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It is a book.","It am a book.","It are a book."],correct:"It is a book."},{id:"m14q2",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the short form of <strong>It is</strong>. <span class="small">(Elegí la forma corta.)</span>',options:["It’s","Its are","I’m"],correct:"It’s"},{id:"m14q3",topic:"Verb To Be – It",review:"Is it...?",points:1,text:'Complete: ___ it a pencil? <span class="small">(Completá la pregunta.)</span>',options:["Is","Am","Are"],correct:"Is"},{id:"m14q4",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'A ruler is green. Choose the correct sentence. <span class="small">(Una regla es verde. Elegí la oración correcta.)</span>',options:["It is green.","He is green.","I am green."],correct:"It is green."},{id:"m14q5",topic:"Verb To Be – It",review:"Is it...?",points:1,text:'Is it an eraser? <span class="small">(¿Es una goma?)</span>',options:["Yes, it is.","Yes, I am.","Yes, she is."],correct:"Yes, it is."},{id:"m14q6",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It’s a blue notebook.","It are a blue notebook.","It am a blue notebook."],correct:"It’s a blue notebook."}],closing:"🎉 ¡Muy bien! Practicaste It is, It’s e Is it...?"},
   {id:"review-11-14-g6-v1",number:15,title:"MISIÓN 15 – Review Missions 11–14",contentKey:"review-11-14-g6",revision:2,icon:"✅",visual:"review-11-14",defaultLocked:true,intro:"Repaso de Days of the Week, Months of the Year, Classroom Objects y Verb To Be · It.",sections:[{title:"🧠 Review",html:'<div class="review-topics-grid"><span>📅 <strong>Days</strong></span><span>🗓️ <strong>Months</strong></span><span>🎒 <strong>Classroom Objects</strong></span><span>✏️ <strong>It is / It\'s</strong></span></div><p>Usá lo que aprendiste en Missions 11–14. Esta Mission tiene más práctica para 6.º.</p>'}],questions:[{id:"r15g61",topic:"Days",review:"Days of the Week",points:1,text:'Is Wednesday a day or a month? <span class="small">(¿Wednesday es un día o un mes?)</span>',options:["A day","A month"],correct:"A day"},{id:"r15g62",topic:"Months",review:"Months of the Year",points:1,text:'Which one is a month? <span class="small">(¿Cuál es un mes?)</span>',options:["September","Saturday","pencil"],correct:"September"},{id:"r15g63",topic:"Classroom Objects",review:"Classroom Objects",points:1,text:'Which object is used to erase? <span class="small">(¿Qué objeto se usa para borrar?)</span>',options:["eraser","ruler","book"],correct:"eraser"},{id:"r15g64",topic:"Verb To Be It",review:"It is / It\'s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It is a pen.","It am a pen.","It are a pen."],correct:"It is a pen."},{id:"r15g65",topic:"OR question",review:"Classroom Objects + It",points:1,text:'Is it a pencil or a ruler? ✏️ <span class="small">(¿Es un lápiz o una regla?)</span>',options:["It is a pencil.","It is a ruler."],correct:"It is a pencil."},{id:"r15g66",topic:"Transfer",review:"Missions 11–14",points:1,text:'Choose the sentence that describes a classroom object. <span class="small">(Elegí la oración que describe un objeto del aula.)</span>',options:["It\'s a blue book.","Tuesday is a month.","January is a ruler."],correct:"It\'s a blue book."}],closing:"🎉 ¡Review completado! Seguí practicando lo que necesites de Missions 11–14."},
   {id:"size-colors-g6-v1",number:16,title:"MISIÓN 16 – Adjectives: Size + Colors",visual:"size-colors",defaultLocked:true,sections:[],questions:[]},
   {id:"this-that-g6-v1",number:17,title:"MISIÓN 17 – This and That",visual:"this-that",defaultLocked:true,sections:[],questions:[]},
@@ -1522,9 +1522,16 @@ function homeTaskMissionEvidence_(missionNumber){
   const sid=String(state.student?.id||"").trim();
   if(!sid)return {completed:false,completedAt:""};
   const records=Object.values(bootstrapData.homeProgress?.[sid]||{});
-  const record=records.find(x=>Number(x?.missionNumber||x?.number||0)===Number(missionNumber));
+  let record=records.find(x=>Number(x?.missionNumber||x?.number||0)===Number(missionNumber));
+  // A Mission just completed in Home is available locally before the next server refresh.
+  // Include it so assignment completion feedback can appear immediately.
+  if(!record){
+    const mission=studentMissionCatalog_().find(x=>Number(x.number)===Number(missionNumber));
+    const local=mission ? getLocalProgress()?.[sid]?.[mission.id] : null;
+    if(local) record={missionNumber:Number(missionNumber),lastCompletedAt:local.completedAt||""};
+  }
   if(!record)return {completed:false,completedAt:""};
-  const raw=record.lastCompletedAt||record.firstCompletedAt||"";
+  const raw=record.lastCompletedAt||record.firstCompletedAt||record.completedAt||"";
   const done=raw?new Date(raw):null;
   const start=homeTaskEvidenceStart_();
   const completed=!!done && !isNaN(done) && (!start || done>=start);
@@ -1616,11 +1623,16 @@ function homeTaskStatusMessage_(){
 
 function loadHomeTask(force=false){
   const sid=String(state.student?.id||"").trim();
-  if(!sid || isHomeTester_()){
-    homeTaskRequestSeq++;
-    homeTaskInFlight=null;
-    homeTaskInFlightStudentId="";
+  if(!sid){
+    homeTaskRequestSeq++; homeTaskInFlight=null; homeTaskInFlightStudentId="";
     homeTaskState={task:null,loaded:true,loading:false,error:"",generatedAt:""};
+    return Promise.resolve(homeTaskState);
+  }
+  if(isHomeTester_()){
+    // Tester-only assignment: lets us verify the homework-complete popup locally
+    // without writing student data to the backend. Complete Mission 1 to trigger it.
+    homeTaskRequestSeq++; homeTaskInFlight=null; homeTaskInFlightStudentId="";
+    homeTaskState={task:{title:"Tester completion check",missions:[1],recommendedMissions:[],exploreItems:[],createdAt:"2026-09-18T00:00:00",updatedAt:"tester-v1681"},loaded:true,loading:false,error:"",generatedAt:new Date().toISOString()};
     return Promise.resolve(homeTaskState);
   }
 
@@ -1647,6 +1659,8 @@ function loadHomeTask(force=false){
 
   const applyCatalog_=(data)=>{
     if(!isCurrentRequest_()) return;
+    if(data.classroomProgress && typeof data.classroomProgress === "object") bootstrapData.classroomProgress[sid]=data.classroomProgress;
+    if(data.homeProgress && typeof data.homeProgress === "object") bootstrapData.homeProgress[sid]=data.homeProgress;
     if(Array.isArray(data.explorePracticeCatalog)){
       const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
       data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
@@ -1928,6 +1942,7 @@ function render() {
   const previousRoute=__lastRenderedRoute;
   const currentRoute=state.route;
   const preserveY=(previousRoute===currentRoute)?window.scrollY:null;
+  const preserveMissionsScroll=(previousRoute===currentRoute)?(document.getElementById("missionsPanel")?.scrollTop||0):0;
   const openExplore=document.querySelector(".explore-detail:not([hidden])")?.id||"";
   const app = document.getElementById("app");
   if (state.route === "home") app.innerHTML = homeView();
@@ -1955,9 +1970,8 @@ function render() {
       const panel=document.getElementById(openExplore);
       if(panel)panel.hidden=false;
     }
-    if(preserveY!==null){
-      requestAnimationFrame(()=>window.scrollTo({top:preserveY,left:0,behavior:"auto"}));
-    }
+    // Never force the page back to a saved scroll position during background refreshes.
+    // The browser keeps the student's current viewport; Home does not call scrollTo here.
   }else if (["about-home","home-intro","mission-intro","mission","mission-result","map"].includes(state.route)) {
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
   }
@@ -2262,6 +2276,30 @@ function homeworkStillPending_(){
   if(required.some(m=>!homeTaskMissionEvidence_(m.number).completed))return true;
   return homeTaskExploreItems_().length>0;
 }
+function homeworkRequiredComplete_(){
+  const required=homeTaskMissionItems_("required");
+  return !!required.length && required.every(m=>homeTaskMissionEvidence_(m.number).completed);
+}
+function homeworkCompletionKey_(){
+  const task=currentHomeTask_();
+  return `mew_homework_complete_popup_${state.student?.id||""}_${String(task?.updatedAt||task?.createdAt||task?.title||"")}`;
+}
+function showHomeworkCompletePopupIfNeeded_(){
+  if(!homeworkRequiredComplete_())return;
+  const key=homeworkCompletionKey_();
+  // Tester can repeat this visual completion check on every assigned Mission run.
+  // Real students see the celebration once per assigned task.
+  if(!isHomeTester_()){
+    if(localStorage.getItem(key)==="1")return;
+    localStorage.setItem(key,"1");
+  }
+  setTimeout(()=>{const el=document.getElementById("homeworkCompletePopup");if(el){el.hidden=false;setTimeout(()=>{el.hidden=true;},4200);}},120);
+}
+function showQuickSurveyComplete_(){
+  const el=document.getElementById("quickSurveyCompletePopup");
+  if(el){el.hidden=false;setTimeout(()=>{el.hidden=true;},2300);}
+}
+
 function noteVoluntaryMissionCompletion_(missionNumber){
   const task=currentHomeTask_(); if(!task||!homeworkStillPending_())return;
   const assigned=new Set([...(task.missions||[]),...(task.recommendedMissions||[])].map(Number));
@@ -2278,8 +2316,24 @@ function homePracticeForYouHtml() {
   const missionFallback = {};
   const sources = [
     { weight: 3, data: bootstrapData.classroomProgress?.[id] || {} },
-    { weight: 1, data: bootstrapData.homeProgress?.[id] || {} }
+    { weight: 1, data: bootstrapData.homeProgress?.[id] || {} },
+    { weight: 2, data: bootstrapData.progress?.[id] || {} }
   ];
+
+  // Immediate Home evidence: make the recommendation react to the Mission the
+  // student has just finished, even before backend sync/refresh. This is also
+  // what makes Tester 1 useful although it intentionally does not write backend data.
+  const recent=state.lastMissionResult;
+  if(recent && String(recent.student?.id||"")===String(id) && recent.mission){
+    const missionNo=Number(recent.mission.number||0);
+    const reviewCounts={};
+    (recent.details||[]).filter(d=>!d.correct).forEach(d=>{
+      const key=String(d.review||d.topic||"").trim();
+      if(key)reviewCounts[key]=(reviewCounts[key]||0)+1;
+    });
+    const pct=recent.possible?Math.round(Number(recent.earned||0)/Number(recent.possible)*100):null;
+    sources.push({weight:1,data:{recent:{missionNumber:missionNo,reviewCounts,bestPercent:pct,lastPercent:pct,practicePriority:Number.isFinite(pct)?Math.max(0,85-pct):0,incorrectExamples:(recent.details||[]).filter(d=>!d.correct)}}});
+  }
 
   sources.forEach(source => {
     Object.values(source.data).forEach(mission => {
@@ -2309,8 +2363,7 @@ function homePracticeForYouHtml() {
 
   const topicList = Object.entries(topics)
     .map(([topic,obj])=>({topic,score:obj.score,missions:[...obj.missions].sort((a,b)=>a-b)}))
-    .sort((a,b) => b.score - a.score || a.topic.localeCompare(b.topic))
-    .slice(0,5);
+    .sort((a,b) => b.score - a.score || a.topic.localeCompare(b.topic));
 
   const missionList = Object.entries(missionFallback)
     .map(([mission,score])=>({mission:Number(mission),score}))
@@ -2319,34 +2372,87 @@ function homePracticeForYouHtml() {
   if (!topicList.length && !missionList.length) {
     return `<div class="practice-for-you">
       <strong>🌱 Practice for you · Práctica para vos</strong>
-      <p class="small">Por ahora no hay nada específico que necesites reforzar según tus resultados registrados. <strong>Pero siempre podés elegir cualquier misión disponible.</strong></p>
+      <p class="small"><strong>${missionsText_("Not enough review information yet.","Todavía no hay suficiente información para recomendar un repaso específico.")}</strong> ${missionsText_("You can still choose any available Mission to practice.","Igualmente podés elegir cualquier Mission disponible para practicar.")}</p>
     </div>`;
   }
 
-  const chips=[
-    ...topicList.map(x=>`<span><b>${escapeHtml(x.topic)}</b><small>${x.missions.length?`Volvé a practicar: Mission ${x.missions.join(", Mission ")}`:escapeHtml(missionLabelForPracticeTopic_(x.topic))}</small></span>`),
-    ...missionList.filter(x=>!topicList.some(t=>t.missions.includes(x.mission))).slice(0,Math.max(0,5-topicList.length))
-      .map(x=>`<span><b>Mission ${x.mission}</b><small>Conviene volver a practicar esta Mission.</small></span>`)
-  ].slice(0,5);
-
+  const maxScore=Math.max(1,...topicList.map(x=>x.score),...missionList.map(x=>x.score));
+  const missionScores={};
+  topicList.forEach(x=>x.missions.forEach(m=>missionScores[m]=(missionScores[m]||0)+x.score));
+  missionList.forEach(x=>missionScores[x.mission]=(missionScores[x.mission]||0)+x.score);
+  const missions=Object.entries(missionScores).map(([mission,score])=>({mission:Number(mission),score})).sort((a,b)=>b.score-a.score||a.mission-b.mission);
+  const high=missions.filter(x=>x.score>=maxScore*.70).slice(0,2);
+  const review=missions.filter(x=>!high.some(h=>h.mission===x.mission) && x.score>=maxScore*.30).slice(0,3);
+  const reminderTopics=topicList.filter(x=>x.score<maxScore*.70 || x.missions.some(m=>review.some(r=>r.mission===m))).slice(0,5);
+  const missionTitle=n=>{const m=studentMissionCatalog_().find(x=>Number(x.number)===Number(n));return m?String(m.title||"").replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,""):"";};
+  const rows=[];
+  if(high.length)rows.push(`<div class="practice-priority-row high"><b>🔴 Prioridad alta</b>${high.map(x=>`<span>Mission ${x.mission}${missionTitle(x.mission)?` · ${escapeHtml(missionTitle(x.mission))}`:""}</span>`).join("")}</div>`);
+  if(review.length)rows.push(`<div class="practice-priority-row review"><b>🟠 Conviene repasar</b>${review.map(x=>`<span>Mission ${x.mission}${missionTitle(x.mission)?` · ${escapeHtml(missionTitle(x.mission))}`:""}</span>`).join("")}</div>`);
+  if(reminderTopics.length)rows.push(`<div class="practice-priority-row reminder"><b>🟢 Recordatorio</b><span>${reminderTopics.map(x=>escapeHtml(x.topic)).join(" · ")}</span></div>`);
   return `<div class="practice-for-you">
     <strong>🌱 Practice for you · Práctica para vos</strong>
-    <p class="small">Según lo que practicaste, estos temas conviene repasarlos un poco más. Classroom tiene más peso que Home:</p>
-    <div class="practice-chips">${chips.join("")}</div>
+    <p class="small practice-recommend-intro"><strong>Se recomienda practicar lo siguiente:</strong></p>
+    <div class="practice-priority-list">${rows.join("")}</div>
   </div>`;
 }
 
 // Weekly Quick Vote reminder belongs in ESL Teacher Manager; Home only renders the active weekly poll.
 
+
+let reviewExpansionOpen_ = false;
+let reviewColorsOpen_ = false;
+
+function preferenceSurveyKey_(){
+  return `mewPreferenceSurvey:${state.student?.id||"anonymous"}`;
+}
+function preferenceSurveyValues_(){
+  try{
+    const v=JSON.parse(localStorage.getItem(preferenceSurveyKey_())||"[]");
+    return Array.isArray(v)?v.slice(0,3):[];
+  }catch{return [];}
+}
+function normalizePreferenceAnswer_(value){
+  return String(value||"").replace(/[^\p{L} ]/gu,"").replace(/\s+/g," ").slice(0,10);
+}
+function preferenceSurveyHtml_(){
+  const values=preferenceSurveyValues_();
+  return `<div class="preference-survey-box">
+    <strong>⭐ Pick your favorite / Elegí tus favoritos</strong>
+    <p class="favorite-question"><strong>Write 3 favorites: singers, actors, football players or teams, cartoon characters, or any characters you like.</strong><br><span>Escribí 3 favoritos: cantantes, actores, jugadores o equipos de fútbol, personajes de dibujos animados o cualquier personaje que te guste.</span></p>
+    <p class="small">${missionsText_("Up to 10 characters per answer, including spaces.","Hasta 10 caracteres por respuesta, incluyendo espacios.")}</p>
+    <div class="preference-survey-fields">
+      ${[0,1,2].map(i=>`<input type="text" inputmode="text" maxlength="10" data-preference-answer="${i}" value="${escapeHtml(values[i]||"")}" placeholder="${i+1}. ${missionsText_("Your answer","Tu respuesta")}" aria-label="${missionsText_("Preference","Preferencia")} ${i+1}">`).join("")}
+    </div>
+    <button type="button" class="secondary-button preference-survey-save" data-action="save-preference-survey">${missionsText_("Send","Enviar")}</button>
+    <span class="preference-survey-status small" id="preferenceSurveyStatus"></span>
+  </div>`;
+}
+function quickVoteDisplayOptions_(poll){
+  const opts=Array.isArray(poll?.options)?[...poll.options]:[];
+  const text=`${poll?.title||""} ${poll?.question||""} ${poll?.instructions||""}`.toLowerCase();
+  const missionLike=opts.length>=5 && opts.every(x=>/mission\s*\d+/i.test(String(x)) || /^\d+$/.test(String(x)));
+  const reviewLike=missionLike || (text.includes("mission") && text.includes("review"));
+  if(reviewLike){
+    const style=opts.some(x=>/mission/i.test(String(x)))?"mission":"number";
+    return Array.from({length:15},(_,i)=>style==="mission"?`Mission ${i+1}`:String(i+1));
+  }
+  return opts;
+}
 function quickVotePanelInnerHtml_(){
   return `
-    <div class="explore-detail-head"><strong>📣 Quick Vote</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
-    ${quickVotePolls.length>1?`<div class="quick-vote-poll-selector">${quickVotePolls.map(p=>`<button type="button" class="secondary-button quick-vote-poll-button ${p.pollId===selectedQuickVotePollId?"selected":""}" data-action="select-quick-vote" data-poll-id="${escapeHtml(p.pollId)}"><strong>${escapeHtml(p.title||p.question||"Quick Vote")}</strong><small>${escapeHtml(quickVoteDateLabel_(p))}</small></button>`).join("")}</div>`:""}
+    <div class="explore-detail-head"><strong>📣 Quick Survey</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
+    <div class="quick-survey-heading-option"><strong>Quick Vote</strong><small>${missionsText_("Pick your vote","Elegí tu voto")}</small></div>
+    <div class="quick-vote-poll-selector quick-survey-assigned-row">
+      ${[...quickVotePolls].sort((a,b)=>String(a.visibleFrom||a.displayFrom||a.createdAt||"").localeCompare(String(b.visibleFrom||b.displayFrom||b.createdAt||""))).map(p=>`<button type="button" class="secondary-button quick-vote-poll-button ${p.pollId===selectedQuickVotePollId?"selected":""}" data-action="select-quick-vote" data-poll-id="${escapeHtml(p.pollId)}"><strong>${escapeHtml(p.title||p.question||"Quick Vote")}</strong><small>${escapeHtml(quickVoteDateLabel_(p))}</small></button>`).join("")}
+      <button type="button" class="secondary-button quick-vote-poll-button" data-action="show-quick-survey-favorite"><strong>⭐ Pick your favorite</strong><small>${missionsText_("Write 3 favorites","Escribí 3 favoritos")}</small></button>
+    </div>
+    <div id="quickSurveyFavorite" hidden>${preferenceSurveyHtml_()}</div>
+    <div id="quickSurveyVote">
     ${activeQuickVote?`
       <div class="quick-vote-meta"><span>● ${escapeHtml(quickVoteDateLabel_(activeQuickVote))}</span></div>
       <p><strong>${escapeHtml(activeQuickVote.question||activeQuickVote.title||"Quick Vote")}</strong>${activeQuickVote.instructions?`<br><span class="small">${escapeHtml(activeQuickVote.instructions)}</span>`:""}</p>
       <div class="quick-vote-rule"><strong>${Number(activeQuickVote.maxSelections||1)>1?`Podés elegir hasta ${Number(activeQuickVote.maxSelections||1)} Missions. Marcá las que quieras repasar y después presioná Votar.`:"Cada persona puede votar una sola vez."}</strong></div>
-      <div class="poll-buttons">${(activeQuickVote.options||[]).map(c=>{
+      <div class="poll-buttons">${quickVoteDisplayOptions_(activeQuickVote).map(c=>{
         const multi=Number(activeQuickVote.maxSelections||1)>1;
         const selected=pendingQuickVoteChoices.includes(String(c));
         const voted=(quickVoteStats.myChoices||[]).length||quickVoteStats.myChoice;
@@ -2355,6 +2461,7 @@ function quickVotePanelInnerHtml_(){
       ${Number(activeQuickVote.maxSelections||1)>1 && !((quickVoteStats.myChoices||[]).length||quickVoteStats.myChoice)?`<button type="button" class="primary-button quick-vote-submit" data-action="poll-submit" ${pendingQuickVoteChoices.length?"":"disabled"}>Votar${pendingQuickVoteChoices.length?` (${pendingQuickVoteChoices.length})`:""}</button>`:""}
       <div id="quickVoteResults">${quickVoteResultsHtml()}</div>`
       :`<p class="small">No hay una encuesta activa en este momento.</p>`}
+    </div>
   `;
 }
 function refreshQuickVotePanelDom_(){
@@ -2379,11 +2486,9 @@ function quickVoteDateLabel_(poll){
   return "Activa";
 }
 function renderQuickVotePreserve_(){
-  const y=window.scrollY;
   render();
   const panel=document.getElementById("quickVotePanel");
   if(panel)panel.hidden=false;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:"auto"})));
 }
 function quickVoteResultsHtml() {
   const mine=Array.isArray(quickVoteStats.myChoices)&&quickVoteStats.myChoices.length?quickVoteStats.myChoices:(quickVoteStats.myChoice?[quickVoteStats.myChoice]:[]);
@@ -2436,7 +2541,7 @@ function submitQuickVote(choiceOrChoices) {
   if (isHomeTester_() && !testerBackendTrackingEnabled_()) {
     quickVoteStats.myChoices=choices; quickVoteStats.myChoice=choices[0]||"";
     quickVoteStatsByPoll[quickVoteCacheKey_(activeQuickVote.pollId)]=quickVoteStats;
-    refreshQuickVotePanelDom_(); return;
+    refreshQuickVotePanelDom_(); showQuickSurveyComplete_(); return;
   }
 
   const payload={
@@ -2461,6 +2566,7 @@ function submitQuickVote(choiceOrChoices) {
   quickVoteStatsByPoll[quickVoteCacheKey_(activeQuickVote.pollId)]=quickVoteStats;
   pendingQuickVoteChoices=[];
   refreshQuickVotePanelDom_();
+  showQuickSurveyComplete_();
   setTimeout(()=>refreshQuickVoteResults().then(()=>refreshQuickVotePanelDom_()),700);
 }
 
@@ -2542,25 +2648,25 @@ const HOME_MISSION_VISUALS = {
   "m3": {base:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg"},
   "m4": {base:"images/home-missions/approved-cards/m4-permission-home-1653.jpg", grade6:"images/home-missions/approved-cards/m4-permission-home-1653.jpg"},
   "review-1-4-v1": {base:"images/home-missions/approved-cards/m5-review-home-1653.jpg", grade6:"images/home-missions/approved-cards/m5-review-home-1653.jpg"},
-  "colors-v1": {base:"images/home-missions/approved-cards/m6-colors-renovacion.jpg", grade6:"images/home-missions/approved-cards/m6-colors-renovacion.jpg"},
-  "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-numbers-renovacion.jpg", grade6:"images/home-missions/approved-cards/m7-numbers-renovacion.jpg"},
-  "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-weather-renovacion.jpg", grade6:"images/home-missions/approved-cards/m8-weather-renovacion.jpg"},
-  "numbers-11-20-v1": {base:"images/home-missions/approved-cards/m9-numbers-renovacion.jpg", grade6:"images/home-missions/approved-cards/m9-numbers-renovacion.jpg"},
-  "mixed-review-colors-numbers-weather-v1": {base:"images/home-missions/approved-cards/m10-review-renovacion.jpg", grade6:"images/home-missions/approved-cards/m10-review-renovacion.jpg"},
-  "days-of-week-v1": {base:"images/home-missions/approved-cards/m11-days-dashboard.jpg", grade6:"images/home-missions/approved-cards/m11-days-dashboard.jpg"},
-  "months-of-year-v1": {base:"images/home-missions/approved-cards/m12-months-dashboard.jpg", grade6:"images/home-missions/approved-cards/m12-months-dashboard.jpg"},
+  "colors-v1": {base:"images/home-missions/approved-cards/m6-approved-1676.jpg", grade6:"images/home-missions/approved-cards/m6-approved-1676.jpg"},
+  "numbers-1-10-v1": {base:"images/home-missions/approved-cards/m7-approved-1676.jpg", grade6:"images/home-missions/approved-cards/m7-approved-1676.jpg"},
+  "weather-temperature-v1": {base:"images/home-missions/approved-cards/m8-approved-1676.jpg", grade6:"images/home-missions/approved-cards/m8-approved-1676.jpg"},
+  "numbers-11-20-v1": {base:"images/home-missions/approved-cards/m9-approved-1676.jpg", grade6:"images/home-missions/approved-cards/m9-approved-1676.jpg"},
+  "mixed-review-colors-numbers-weather-v1": {base:"images/home-missions/approved-cards/m10-approved-1676.jpg", grade6:"images/home-missions/approved-cards/m10-approved-1676.jpg"},
+  "days-of-week-v1": {base:"images/home-missions/approved-cards/m11-days-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m11-days-renovacion-1661.png"},
+  "months-of-year-v1": {base:"images/home-missions/approved-cards/m12-months-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m12-months-renovacion-1661.png"},
   "parts-face-g45-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
   "parts-body-g45-v1": {base:"images/home-missions/approved-cards/m14-body-dashboard.jpg"},
   "review-11-14-g45-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
-  "classroom-objects-g6-v1": {base:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg", grade6:"images/home-missions/approved-cards/m3-classroom-home-1653.jpg"},
-  "verb-it-g6-v1": {base:"images/home-missions/approved-cards/m14-it.jpg", grade6:"images/home-missions/approved-cards/m14-it.jpg"},
-  "review-11-14-g6-v1": {base:"images/home-missions/approved-cards/m15-review-11-14.jpg", grade6:"images/home-missions/approved-cards/m15-review-11-14.jpg"},
-  "size-colors-g6-v1": {base:"images/home-missions/approved-cards/m16-size-dashboard.jpg", grade6:"images/home-missions/approved-cards/m16-size-dashboard.jpg"},
-  "this-that-g6-v1": {base:"images/home-missions/approved-cards/m17-this-that.jpg", grade6:"images/home-missions/approved-cards/m17-this-that.jpg"},
-  "parts-face-g6-v1": {base:"images/home-missions/approved-cards/m13-face-dashboard.jpg", grade6:"images/home-missions/approved-cards/m13-face-dashboard.jpg"},
-  "parts-body-g6-v1": {base:"images/home-missions/approved-cards/m14-body-dashboard.jpg", grade6:"images/home-missions/approved-cards/m14-body-dashboard.jpg"},
-  "review-16-19-g6-v1": {base:"images/home-missions/approved-cards/m20-review-16-19.jpg", grade6:"images/home-missions/approved-cards/m20-review-16-19.jpg"},
-  "verb-to-be-g6-v1": {base:"images/home-missions/approved-cards/m21-to-be.jpg", grade6:"images/home-missions/approved-cards/m21-to-be.jpg"}
+  "classroom-objects-g6-v1": {base:"images/home-missions/approved-cards/m13-classroom-objects-renovacion-1661.jpg", grade6:"images/home-missions/approved-cards/m13-classroom-objects-renovacion-1661.jpg"},
+  "verb-it-g6-v1": {base:"images/home-missions/approved-cards/m14-verb-it-renovacion-1661.jpg", grade6:"images/home-missions/approved-cards/m14-verb-it-renovacion-1661.jpg"},
+  "review-11-14-g6-v1": {base:"images/home-missions/approved-cards/m15-review-11-14-renovacion-1661.jpg", grade6:"images/home-missions/approved-cards/m15-review-11-14-renovacion-1661.jpg"},
+  "size-colors-g6-v1": {base:"images/home-missions/approved-cards/m16-size-color-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m16-size-color-renovacion-1661.png"},
+  "this-that-g6-v1": {base:"images/home-missions/approved-cards/m17-this-that-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m17-this-that-renovacion-1661.png"},
+  "parts-face-g6-v1": {base:"images/home-missions/approved-cards/m18-head-face-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m18-head-face-renovacion-1661.png"},
+  "parts-body-g6-v1": {base:"images/home-missions/approved-cards/m19-body-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m19-body-renovacion-1661.png"},
+  "review-16-19-g6-v1": {base:"images/home-missions/approved-cards/m20-review-16-19-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m20-review-16-19-renovacion-1661.png"},
+  "verb-to-be-g6-v1": {base:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png"}
 };
 
 const GRADE6_EXTRA_QUESTIONS = {
@@ -2795,6 +2901,14 @@ function renderExploreVideo_(host,video){
   const driveId=String(video.driveFileId||"").trim() ||
     (url.match(/drive\.google\.com\/file\/d\/([^/]+)/)||[])[1] || "";
 
+  // “How are you?” is packaged with Home as a local MP4. Keep the teacher/catalog
+  // metadata unchanged, but bypass Google Drive playback for this one known video.
+  // This avoids Drive preview/permission behavior while preserving all other videos.
+  if(driveId==="1W7lHKg41Jo3C0nYKg9wAb6yQGSsUmcDb" || String(video.title||"").trim().toLowerCase()==="how are you?"){
+    host.innerHTML=`<video controls playsinline preload="metadata" style="width:100%;max-height:70vh;border-radius:12px;background:#111"><source src="./How-are-you.mp4" type="video/mp4"></video>`;
+    return true;
+  }
+
   if(driveId){
     // Uploaded Drive videos: use the file stream directly first. This avoids the
     // Drive preview iframe asking the student to open/authorize another Google view.
@@ -2868,7 +2982,7 @@ function exploreListeningHtml_(){
 }
 
 function shortVideosHtml() {
-  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&(a.url||a.driveFileId));
+  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
   const dynamic=exploreVideos.map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong><span class="small">${v.mission?`Mission ${escapeHtml(v.mission)} · `:""}${escapeHtml(v.instructions||"")}</span>${exploreActivityDateHtml_(v)}<button class="primary-button" data-action="open-explore-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
   const teacherVideos=homeVideosForStudent().map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong>${v.translation?`<span class="small">(${escapeHtml(v.translation)})</span>`:""}${v.note?`<span class="small">${escapeHtml(v.note)}</span>`:""}<span class="explore-activity-dates">Activa · Desde — · Hasta Sin fecha límite</span><button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
   const empty=(!dynamic&&!teacherVideos)?`<div class="short-video-empty"><strong>No hay videos activos para este alumno.</strong></div>`:"";
@@ -2953,7 +3067,7 @@ function mapView() {
       : missionsText_("🔒 Locked","🔒 Bloqueada");
     const statusClass=enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked";
     const title=m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"");
-    const renewedCard=Number(m.number)>=1 && Number(m.number)<=10;
+    const renewedCard=Number(m.number)>=1 && Number(m.number)<=21;
     return `<article class="dashboard-mission-card ${enabled?"available":"future-card"} ${renewedCard?"renewed-mission-card":""}">
       ${renewedCard?"":`<div class="mission-card-heading"><div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div><h3>${escapeHtml(title)}</h3></div>`}
       <div class="mission-card-image">
@@ -2999,7 +3113,7 @@ function mapView() {
         <div><strong>¡Hola, ${escapeHtml(studentName)}!</strong><span>${String(grade).trim().startsWith("6")?'<span class="grade-cap">🎓</span> ':""}${escapeHtml(grade)}</span></div>
       </div>
       <div class="homework-mini-wrap">
-        <button type="button" class="homework-mini-trigger ${homeworkReminderApplies_()?"tarea-assigned":""}" data-action="toggle-homework-mini" aria-expanded="false">📋 Tarea ${homeworkReminderApplies_()?'<span class="home-new-feature-badge">¡Nueva función!</span>':""}</button>
+        <button type="button" class="homework-mini-trigger ${homeworkReminderApplies_()?"tarea-assigned":""}" data-action="toggle-homework-mini" aria-expanded="false">📋 Tarea ${homeworkReminderApplies_()?'<span class="home-new-feature-badge">¡Nueva tarea!</span>':""}</button>
         <div id="homeworkMiniPopover" class="homework-popover" hidden>
           ${currentHomeTask_()?`
             <strong>${escapeHtml(homeTaskTitle_())} · ${escapeHtml(gradeLabel(state.student.grade))}</strong>
@@ -3021,7 +3135,7 @@ function mapView() {
     <nav class="home-dashboard-nav" aria-label="Navegación de Mission English Home">
       <button data-action="dashboard-home"><span class="nav-home-logo-crop"><img src="images/ui/home-tab-house.png" alt=""></span><span>Home</span></button>
       <button class="active" data-action="dashboard-missions"><span class="nav-icon">🎯</span> <span>Missions</span></button>
-      <button data-action="dashboard-explore"><img class="nav-icon-img" src="images/ui/rocket.svg" alt=""><span>${missionsText_("Explore & Practice","Explorar y Practicar")}</span></button>
+      <button data-action="dashboard-review-expansion"><span class="nav-icon review-expansion-nav-icon">↻</span><span>${missionsText_("Review & Expansion","Repaso y Expansión")}</span><b class="review-new-badge">NEW</b></button>
       <div class="mission-language-switch" aria-label="Mission page language">
         <button type="button" class="${missionsPageLanguage_()==="en"?"selected":""}" data-action="mission-language" data-lang="en">EN</button>
         <span>|</span>
@@ -3029,8 +3143,28 @@ function mapView() {
       </div>
     </nav>
 
+    <div class="review-expansion-overlay" id="reviewExpansionModal" ${reviewExpansionOpen_?"":"hidden"} role="dialog" aria-modal="true" aria-labelledby="reviewExpansionTitle">
+      <div class="review-expansion-modal">
+        <button type="button" class="review-expansion-close" data-action="close-review-expansion" aria-label="Close">×</button>
+        <h2 id="reviewExpansionTitle"><span class="review-expansion-title-icon">↻</span> ${missionsText_("Review & Expansion","Repaso y Expansión")} <span class="review-new-badge">NEW</span></h2>
+        <p>${missionsText_("Choose a topic to review or, if you want, learn a little more.","Elegí un tema para repasar o, si querés, aprender un poco más.")}</p>
+        <div class="review-expansion-sections">
+          <section class="review-expansion-section">
+            <div class="review-expansion-section-head"><strong>↻ Review &amp; Expansion · Repaso y Expansión</strong><small>Review what you learned and add a little more. · Repasá lo aprendido y agregá un poco más.</small></div>
+            <button type="button" class="review-topic-card" data-action="open-review-colors"><strong>🎨 Colors</strong><span>${missionsText_("Review colors + light and dark","Repaso de colores + light y dark")}</span></button>
+          </section>
+          <section class="review-expansion-section expansion-coming-section">
+            <div class="review-expansion-section-head"><strong>＋ ${missionsText_("Expansion","Expansión")}</strong><small>${missionsText_("Only for students who want to learn a little more.","Solo para quienes quieran aprender un poco más.")}</small></div>
+            <div class="expansion-coming-card"><div class="coming-soon-stack"><span class="coming-soon-pill">¡COMING SOON!</span><span class="coming-soon-pill coming-soon-es">¡PRÓXIMAMENTE!</span></div><span>Verb To Be · Have · Auxiliary Do · examples + useful vocabulary<br>Verb To Be · Have · Auxiliar Do · ejemplos + vocabulario útil</span></div>
+          </section>
+        </div>
+        <div class="review-colors-content review-colors-page" id="reviewColorsContent" ${reviewColorsOpen_?"":"hidden"}><button type="button" class="review-colors-back" data-action="close-review-colors">← ${missionsText_("Back","Volver")}</button><h2>🎨 Colors · Colores</h2><div class="review-phone-landscape-note">📱 ${missionsText_("On a phone, turn it sideways for a better view.","En el celular, giralo de costado para verlo mejor.")}</div><img class="review-colors-approved-image" src="images/review-expansion-colors-approved.png" alt="Review & Expansion — Colors"></div>
+      </div>
+    </div>
+
     <section class="missions-panel" id="missionsPanel">
-      <div class="missions-title-row"><div><h2>🎯 Missions <span class="missions-renewal-sign">✨ ${missionsText_("Renewal","Renovación")}</span></h2><p>${missionsText_("Choose a Mission to start learning.","Elegí una misión para empezar a aprender.")}</p></div></div>
+      <div class="missions-title-row"><div><h2>🎯 Missions <span class="missions-renewal-sign">✨ ${missionsText_("Renewal","Renovación")}</span></h2><p>${missionsText_("Choose a Mission to start learning.","Elegí una misión para empezar a aprender.")}</p></div><div class="missions-practice-control"><button type="button" class="missions-practice-summary-button" data-action="toggle-practice-summary">🌱 ${missionsText_("Practice for you","Práctica para vos")}</button><b class="review-new-badge missions-practice-new">NEW</b></div></div>
+      <div class="missions-practice-popover" id="missionsPracticePopover" hidden>${homePracticeForYouHtml()}</div>
       <div class="dashboard-mission-grid">${missionCards}</div>
     </section>
 
@@ -3039,7 +3173,7 @@ function mapView() {
       <div class="dashboard-extra-grid">
         <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="listeningPanel"><img src="images/ui/headphones.svg" alt=""><span><strong>Listening</strong><small>${missionsText_("Listen and understand","Escuchar y comprender")}</small></span></button>
         <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="quickVotePanel"><img src="images/ui/megaphone.svg" alt=""><span><strong>Quick Vote</strong><small>${missionsText_("Your opinion counts","Tu opinión cuenta")}</small></span></button>
-        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="practicePanel"><img src="images/ui/target.svg" alt=""><span><strong>Practice</strong><small>${missionsText_("Practice at your pace","Practicá a tu ritmo")}</small></span></button>
+        <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="practicePanel"><img src="images/ui/target.svg" alt=""><span><strong>Practice</strong><small>${missionsText_("Listen, look and recognize","Escuchá, mirá y reconocé")}</small></span></button>
         <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="shortVideosPanel"><img src="images/ui/video.svg" alt=""><span><strong>Short Videos</strong><small>${missionsText_("Watch, enjoy and learn","Mirá, disfrutá y aprendé")}</small></span></button>
         <button class="explore-launcher" data-action="toggle-explore-panel" data-panel="kahootPanel"><img src="images/ui/kahoot.svg" alt=""><span><strong>Kahoots</strong><small>${missionsText_("Play and review","Jugá y repasá")}</small></span></button>
       </div>
@@ -3059,7 +3193,6 @@ function mapView() {
       <div class="explore-detail" id="quickVotePanel" hidden>${quickVotePanelInnerHtml_()}</div>
       <div class="explore-detail" id="practicePanel" hidden>
         <div class="explore-detail-head"><strong>🎯 Practice</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
-        <div class="practice-for-you">${homePracticeForYouHtml()}</div>
         <div class="extra-practice-box">
           <div class="extra-practice-heading"><span aria-hidden="true">🎨 1·2·3</span><div><strong>Prácticas extras</strong><small>Colores y números para practicar mirando y escuchando. Cualquier alumno puede usarlas.</small></div></div>
           <div class="differentiated-choice-grid extra-practice-grid">
@@ -3085,6 +3218,9 @@ function mapView() {
         </div><p class="kahoot-deadline">⏰ Estos juegos vencen el sábado 5 de septiembre al mediodía.</p>
       </div>
     </section>
+
+    <div class="favorite-complete-overlay" id="quickSurveyCompletePopup" hidden role="status" aria-live="polite"><div class="favorite-complete-card quick-survey-done"><div class="mission-face" aria-hidden="true"><i></i><i></i><b></b></div><strong>Excellent! / ¡Excelente!</strong><span>Quick Survey completed. / Encuesta completada.</span></div></div>
+    <div class="favorite-complete-overlay homework-face-overlay" id="homeworkCompletePopup" hidden role="status" aria-label="Homework complete"><div class="homework-finish-wrap"><div class="mission-face homework-finish-face" aria-hidden="true"><i></i><i></i><b></b></div><strong>¡Tarea completa!</strong><span>Terminaste toda la tarea asignada.</span><small>Homework complete! You finished the whole assigned task.</small></div></div>
 
     <div class="dashboard-footer-note"><span class="footer-left">🌎 Mission: Learn English everyday.</span><span class="footer-center">Powered by <strong>WizPro</strong></span><span class="footer-right">Versión ${escapeHtml(APP_VERSION.replace("Home ",""))}</span></div>
   </section>`;
@@ -3331,7 +3467,8 @@ function missionResultView() {
       ? "Puedes continuar. El envío se completa automáticamente."
       : "Se enviará automáticamente cuando vuelva Internet.";
   }
-  return `<section class="card result-card">
+  const completionCelebration=state.homeworkCompletionCelebration?`<div class="favorite-complete-overlay homework-face-overlay mission-result-homework-celebration" id="missionResultHomeworkCelebration" role="status" aria-label="Homework complete"><div class="homework-finish-wrap"><div class="mission-face homework-finish-face" aria-hidden="true"><i></i><i></i><b></b></div><strong>¡Tarea completa!</strong><span>Terminaste toda la tarea asignada.</span><small>Homework complete! You finished the whole assigned task.</small></div></div>`:"";
+  return `${completionCelebration}<section class="card result-card">
     <p class="teacher-message"><strong>Teacher Eddie dice:</strong><br>${msg}</p>
 
     <div class="result-summary">
@@ -3467,24 +3604,26 @@ function bindEvents() {
       document.getElementById("missionsPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
       return;
     }
-    if (action === "dashboard-explore") {
-      document.querySelectorAll(".home-dashboard-nav > button").forEach(b=>b.classList.toggle("active",b.dataset.action==="dashboard-explore"));
-      const panel=document.getElementById("explorePanel");
-      if(panel){
-        const mobileHome=window.matchMedia("(max-width:1024px)").matches;
-        /* On phones/tablets use one deliberate navigation only. Do not combine it with
-           focus or layout scrolls, because mobile browsers can otherwise jump back into Missions. */
-        panel.classList.remove("explore-focus");
-        if(mobileHome){
-          requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"start"}));
-        }else{
-          panel.scrollIntoView({behavior:"smooth",block:"end"});
-          void panel.offsetWidth;
-          panel.classList.add("explore-focus");
-          setTimeout(()=>panel.classList.remove("explore-focus"),900);
-        }
-        setTimeout(()=>panel.querySelector(".explore-launcher")?.focus({preventScroll:true}),250);
-      }
+    if (action === "dashboard-review-expansion") {
+      const modal=document.getElementById("reviewExpansionModal");
+      if(modal){reviewExpansionOpen_=true;modal.hidden=false;document.body.classList.add("review-modal-open");}
+      return;
+    }
+    if (action === "close-review-expansion") {
+      const modal=document.getElementById("reviewExpansionModal");
+      reviewExpansionOpen_=false; reviewColorsOpen_=false;
+      if(modal)modal.hidden=true;
+      document.body.classList.remove("review-modal-open");
+      return;
+    }
+    if (action === "open-review-colors") {
+      const content=document.getElementById("reviewColorsContent");
+      if(content){reviewColorsOpen_=true;content.hidden=false;document.body.classList.add("review-colors-page-open");}
+      return;
+    }
+    if (action === "close-review-colors") {
+      const content=document.getElementById("reviewColorsContent");
+      reviewColorsOpen_=false;if(content)content.hidden=true;document.body.classList.remove("review-colors-page-open");
       return;
     }
     if (action === "mission-language") {
@@ -3492,8 +3631,13 @@ function bindEvents() {
       render();
       return;
     }
+    if (action === "toggle-practice-summary") {
+      const p=document.getElementById("missionsPracticePopover");
+      if(p)p.hidden=!p.hidden;
+      return;
+    }
     if (action === "toggle-explore-panel") {
-      const id=event.currentTarget.dataset.panel,keepY=window.scrollY;
+      const id=event.currentTarget.dataset.panel;
       document.querySelectorAll(".explore-detail").forEach(el=>{if(el.id!==id)el.hidden=true;});
       const panel=document.getElementById(id);
       if(panel){
@@ -3507,10 +3651,37 @@ function bindEvents() {
               activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
               refreshQuickVotePanelDom_();
             }
-            requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:"auto"}));
           });
         }
-        requestAnimationFrame(()=>window.scrollTo({top:keepY,left:0,behavior:"auto"}));
+      }
+      return;
+    }
+    if (action === "show-quick-survey-favorite") {
+      const vote=document.getElementById("quickSurveyVote");
+      const favorite=document.getElementById("quickSurveyFavorite");
+      if(vote)vote.hidden=true;
+      if(favorite)favorite.hidden=false;
+      return;
+    }
+    if (action === "show-quick-survey-vote") {
+      const vote=document.getElementById("quickSurveyVote");
+      const favorite=document.getElementById("quickSurveyFavorite");
+      if(favorite)favorite.hidden=true;
+      if(vote)vote.hidden=false;
+      return;
+    }
+    if (action === "save-preference-survey") {
+      const inputs=[...document.querySelectorAll("[data-preference-answer]")];
+      const answers=inputs.map(el=>normalizePreferenceAnswer_(el.value)).filter(Boolean).slice(0,3);
+      inputs.forEach(el=>{el.value=normalizePreferenceAnswer_(el.value);});
+      localStorage.setItem(preferenceSurveyKey_(),JSON.stringify(answers));
+      const status=document.getElementById("preferenceSurveyStatus");
+      if(status)status.textContent=missionsText_("Sent.","Enviado.");
+      showQuickSurveyComplete_();
+      // Best-effort submission. Existing backend remains untouched in this local test.
+      if(state.student?.id && !(isHomeTester_()&&!testerBackendTrackingEnabled_())){
+        const payload={type:"preferenceSurvey",id:crypto.randomUUID?crypto.randomUUID():`pref-${Date.now()}`,createdAt:new Date().toISOString(),origin:"Home",answers,avatar:savedAvatar_(state.student)||"",student:state.student,device:{computerName:"Home",location:"Fuera del aula"}};
+        try{fetch(SYNC_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),keepalive:true});}catch{}
       }
       return;
     }
@@ -3935,8 +4106,19 @@ function bindEvents() {
       clearMissionDraft_(result.mission.id);
       enqueueResult(result);
       noteVoluntaryMissionCompletion_(result.mission?.number);
+      // Evaluate after saving local progress, before rendering the result screen.
+      // This avoids background refreshes destroying the completion celebration.
+      state.homeworkCompletionCelebration = homeworkRequiredComplete_();
       state.route = "mission-result";
       saveState(); render();
+      if(state.homeworkCompletionCelebration){
+        setTimeout(()=>{
+          const el=document.getElementById("missionResultHomeworkCelebration");
+          if(el)el.hidden=true;
+          state.homeworkCompletionCelebration=false;
+          saveState();
+        },4200);
+      }
       syncQueue(false);
     });
   }

@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.6.86";
+const APP_VERSION = "Home v1.7.08";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.6.86 — Pre-publication test";
+const CONTENT_VERSION = "Mission English Home v1.7.08 — deployment/cache + homework popup + Quick Survey fixes";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1125,22 +1125,23 @@ const missions = [
 
 
 const PARTS_FACE_BASE = {
-  contentKey:"parts-head-face", revision:1, icon:"🙂",
-  intro:"Vamos a aprender y repasar las partes de la cabeza y la cara.",
+  contentKey:"parts-head-face", revision:5, icon:"",
+  intro:"Vamos a repasar las partes de la cabeza y la cara. Después vas a aprender una palabra nueva.",
   sections:[
-    {title:"📖 Aprende",html:'<div class="face-vocab-grid"><span>Head <small>cabeza</small></span><span>Face <small>cara</small></span><span>Hair <small>cabello</small></span><span>Eyes <small>ojos</small></span><span>Nose <small>nariz</small></span><span>Mouth <small>boca</small></span><span>Teeth <small>dientes</small></span><span>Ears <small>orejas</small></span></div><div class="mission-context-tip"><strong>💡 ¿Sabías que...?</strong> Un diente se dice <strong>tooth</strong>; varios dientes se dicen <strong>teeth</strong>. Además, <strong>eyebrows</strong> significa <strong>cejas</strong>: es una palabra nueva para sumar al vocabulario.</div>'},
-    {title:"👀 Observa",html:'<div class="mission-character-observe face-character-observe"><div class="face-character-crop"><img src="parts-head-face-card.jpg" alt="Personaje de Mission English para Parts of the Head and Face"></div><div class="character-word-list"><b>head · cabeza</b><b>face · cara</b><b>hair · cabello</b><b>eyes · ojos</b><b>nose · nariz</b><b>mouth · boca</b><b>teeth · dientes</b><b>ears · orejas</b><b class="bonus-word">eyebrows · cejas</b></div></div><p class="small">Observá la cabeza y la cara del personaje de Mission English y relacioná cada palabra con la parte correspondiente.</p>'}
+    {title:"Aprende",html:`<p class="mission-bilingual-instruction"><strong>Look, listen and repeat.</strong> · Mirá, escuchá y repetí.</p><div class="m18-vocab-grid">${[["head","Head","cabeza"],["face","Face","cara"],["hair","Hair","cabello"],["eyes","Eye","ojo"],["ears","Ear","oreja"],["nose","Nose","nariz"],["mouth","Mouth","boca"],["teeth","Teeth","dientes"]].map(([k,en,es])=>`<div class="m18-vocab-card"><img src="images/mission18-v1702/${k}.jpg" alt="${en}"><b>${en}</b><small>${es}</small><button type="button" class="word-audio" data-action="m18-speak" data-word="${en.toLowerCase()}">🔊</button></div>`).join("")}</div>
+      <div class="m18-number-note"><strong>One or two / Uno o dos</strong><div><span><b>one eye</b> → two eyes</span><span><b>one ear</b> → two ears</span></div><p>Cuando hay dos, normalmente agregamos <strong>-s</strong>: eye → eyes · ear → ears.</p></div>
+      <div class="m18-tooth-note"><strong>One tooth → two or more teeth</strong><p><b>tooth</b> = un diente · <b>teeth</b> = dientes.</p></div>`},
+    {title:"Palabra nueva",html:`<div class="m18-newword"><img src="images/mission18-v1702/eyebrow.jpg" alt="Eyebrow"><div><strong>Eyebrow</strong><small>ceja</small><p>Ahora sumamos una palabra nueva: <strong>eyebrow</strong>.</p><p><b>one eyebrow</b> → <b>two eyebrows</b></p></div><button type="button" class="word-audio" data-action="m18-speak" data-word="eyebrow">🔊</button></div>`}
   ],
   questions:[
-    {id:"faceq1",topic:"Eyes",review:"parts of the face",points:1,text:'Which word means ojos? <span class="small">(¿Qué palabra significa ojos?)</span>',options:["eyes","ears","teeth"],correct:"eyes"},
-    {id:"faceq2",topic:"Nose",review:"parts of the face",points:1,text:'Which part do you use to smell? <span class="small">(¿Qué parte usás para oler?)</span>',options:["nose","mouth","teeth"],correct:"nose"},
-    {id:"faceq3",topic:"Mouth",review:"parts of the face",points:1,text:'Choose boca in English. <span class="small">(Elegí boca en inglés.)</span>',options:["mouth","face","teeth"],correct:"mouth"},
-    {id:"faceq4",topic:"Ears",review:"parts of the face",points:1,text:'Which word means orejas? <span class="small">(¿Qué palabra significa orejas?)</span>',options:["ears","eyes","head"],correct:"ears"},
-    {id:"faceq5",topic:"Teeth",review:"parts of the face",points:1,text:'One tooth or many teeth? <span class="small">(¿Un diente o varios dientes?)</span>',options:["One tooth","Many teeth"],correct:"Many teeth"}
-  ],
-  closing:"🎉 ¡Muy bien! Repasaste las partes de la cabeza y la cara."
+    {id:"faceDrag",type:"face-dragdrop",topic:"Head and Face",review:"parts of the head and face",points:5,text:'Drag the words to the correct boxes. <span class="small">(Arrastrá las palabras a los casilleros correctos. En celular también podés tocar una palabra y después su casillero.)</span>',correct:"complete",items:["head","face","hair","eyebrow","eye","ear","nose","mouth","teeth"]},
+    {id:"faceq1",type:"face-image",image:"eyes",topic:"Eye",review:"singular and plural",points:1,text:'What is it? <span class="small">(¿Qué es?)</span>',options:["eye","ear","eyes"],correct:"eye"},
+    {id:"faceq2",type:"face-image",image:"ears",topic:"Ear",review:"singular and plural",points:1,text:'What is it? <span class="small">(¿Qué es?)</span>',options:["ears","ear","eye"],correct:"ear"},
+    {id:"faceq3",type:"face-image",image:"eyebrow",topic:"Eyebrow",review:"singular and plural",points:1,text:'What is it? <span class="small">(¿Qué es?)</span>',options:["eyebrow","eyebrows","eye"],correct:"eyebrow"},
+    {id:"faceq4",type:"face-image",image:"teeth",topic:"Teeth",review:"tooth and teeth",points:1,text:'Look at the picture. Choose the correct word. <span class="small">(Mirá la imagen. Elegí la palabra correcta.)</span>',options:["tooth","teeth","mouth"],correct:"teeth"},
+    {id:"faceq5",type:"face-image",image:"nose",topic:"Nose",review:"parts of the face",points:1,text:'What is it? <span class="small">(¿Qué es?)</span>',options:["nose","mouth","ear"],correct:"nose"}
+  ], closing:"🎉 ¡Muy bien! Repasaste Head & Face, singular y plural, y aprendiste eyebrow."
 };
-
 const PARTS_BODY_BASE = {
   contentKey:"parts-body", revision:2, icon:"🧍",
   intro:"Vamos a aprender las partes principales del cuerpo y, al mismo tiempo, repasar algunas palabras de Head and Face.",
@@ -1206,9 +1207,41 @@ const GRADE6_EXTENDED_MISSIONS = [
   {id:"review-16-19-g6-v1",number:20,title:"MISIÓN 20 – Review Missions 16–19",visual:"review-16-19",defaultLocked:true,sections:[],questions:[]},
   {id:"verb-to-be-g6-v1",number:21,title:"MISIÓN 21 – Verb To Be",visual:"to-be",defaultLocked:true,sections:[],questions:[]}
 ];
+const NUMBERS_20_100_MISSION = {
+  id:"numbers-20-100-g56-v1", number:22, grades:["5","6"],
+  title:"MISIÓN 22 – Numbers 20–100", icon:"", visual:"numbers100", defaultLocked:false, temporarilyDisabled:false,
+  intro:"Vamos a aprender y practicar los números del 20 al 100 en inglés. Igual que en español, primero aprendemos las decenas y después agregamos los números que ya conocemos.",
+  sections:[{title:"Numbers 20–100 / Números 20–100",html:`
+    <p class="mission-bilingual-instruction"><strong>Look, listen and repeat.</strong> · Mirá, escuchá y repetí.</p>
+    <div class="m22-tens">${[[20,"twenty","veinte"],[30,"thirty","treinta"],[40,"forty","cuarenta"],[50,"fifty","cincuenta"],[60,"sixty","sesenta"],[70,"seventy","setenta"],[80,"eighty","ochenta"],[90,"ninety","noventa"]].map(([n,en,es],i)=>`<div class="m22-num n${i}"><b>${n}</b><strong>${en}</strong><small>${es}</small><button type="button" data-action="m18-speak" data-word="${en}">🔊</button></div>`).join("")}</div>
+    <div class="m22-rule"><strong>Look for -ty / Mirá -ty</strong><p><strong>twenty, thirty, forty, fifty, sixty, seventy, eighty, ninety</strong> terminan en <strong>-ty</strong>.</p></div>
+    <div class="m22-hundred"><b>100</b><div><strong>one hundred / a hundred</strong><small>cien</small><p>Para 100 usamos <strong>one hundred</strong> o <strong>a hundred</strong>.</p></div><button type="button" data-action="m18-speak" data-word="one hundred">🔊</button></div>
+    <h3>Build the number / Formá el número</h3><p>Si ya sabés <strong>twenty</strong>, agregás <strong>one, two, three...</strong>: <strong>twenty-one</strong>, <strong>twenty-two</strong>, <strong>twenty-three</strong>. Hacemos lo mismo con <strong>thirty, forty, fifty...</strong></p>
+    <div class="m22-girl-tip"><img src="images/m22-hyphen-girl-v1703.png" alt="Mission World student explaining the hyphen"><div><strong>Hyphen / Guion</strong><p>Del 21 al 99 usamos un guion entre la decena y la unidad.</p><p><strong>Example / Ejemplo: forty-seven.</strong></p></div></div>
+    <h3>Listen carefully / Escuchá con atención</h3><p>Estos números se pueden confundir porque suenan parecidos. Escuchá especialmente la terminación: <strong>-teen es más larga</strong>. Compará <strong>thirTEEN</strong> (13) con <strong>THIRty</strong> (30), y <strong>fourTEEN</strong> (14) con <strong>FORty</strong> (40).</p>
+    <div class="m22-listen"><button type="button" data-action="m18-speak" data-word="thirteen">🔊 13 · thirteen</button><button type="button" data-action="m18-speak" data-word="thirty">🔊 30 · thirty</button><button type="button" data-action="m18-speak" data-word="fourteen">🔊 14 · fourteen</button><button type="button" data-action="m18-speak" data-word="forty">🔊 40 · forty</button></div>`}],
+  questions:[
+    {id:"m22q1",topic:"Numbers 20–100",review:"tens",points:1,text:'Which number is <strong>twenty</strong>? <span class="small">(¿Cuál número es twenty?)</span>',options:["20","12","30"],correct:"20"},
+    {id:"m22q2",topic:"Numbers 20–100",review:"tens",points:1,text:'Choose <strong>thirty</strong>. <span class="small">(Elegí thirty.)</span>',options:["13","30","33"],correct:"30"},
+    {id:"m22q3",topic:"Numbers 20–100",review:"forty",points:1,text:'How do we write <strong>40</strong> in English? <span class="small">(¿Cómo escribimos 40 en inglés?)</span>',options:["forty","fourteen","fifty"],correct:"forty"},
+    {id:"m22q4",topic:"Numbers 20–100",review:"combined numbers",points:1,text:'Which number is <strong>fifty-six</strong>? <span class="small">(¿Cuál número es fifty-six?)</span>',options:["65","56","50"],correct:"56"},
+    {id:"m22q5",topic:"Numbers 20–100",review:"combined numbers",points:1,text:'How do we say <strong>72</strong>? <span class="small">(¿Cómo decimos 72?)</span>',options:["seventy-two","twenty-seven","seventy"],correct:"seventy-two"},
+    {id:"m22q6",topic:"Numbers 20–100",review:"tens",points:1,text:'Which number is <strong>eighty</strong>? <span class="small">(¿Cuál número es eighty?)</span>',options:["18","80","88"],correct:"80"},
+    {id:"m22q7",topic:"Numbers 20–100",review:"combined numbers",points:1,text:'Choose the correct English for <strong>99</strong>.',options:["ninety-nine","nineteen","ninety"],correct:"ninety-nine"},
+    {id:"m22q8",topic:"Numbers 20–100",review:"one hundred",points:1,text:'What is <strong>100</strong> in English?',options:["one hundred","ninety","one thousand"],correct:"one hundred"}
+  ], closing:"🎉 ¡Muy bien! Practicaste los números del 20 al 100."
+};
+const FUTURE_CONSTRUCTION_MISSIONS = [23,24,25].map(number=>({
+  id:`future-mission-${number}`, number, grades:["5","6"],
+  title:`MISIÓN ${number} – Under construction / En construcción`,
+  visual:"construction", underConstruction:true, defaultLocked:true, sections:[], questions:[]
+}));
 function studentMissionCatalog_(){
-  const grade6=String(state.student?.grade||"").trim()==="6";
-  return [...missions,...(grade6?GRADE6_EXTENDED_MISSIONS:GRADE45_EXTENDED_MISSIONS)];
+  const grade=String(state.student?.grade||"").trim();
+  const grade6=grade==="6";
+  const extended=grade6?GRADE6_EXTENDED_MISSIONS:GRADE45_EXTENDED_MISSIONS;
+  const future=["5","6"].includes(grade)?[NUMBERS_20_100_MISSION,...FUTURE_CONSTRUCTION_MISSIONS]:[];
+  return [...missions,...extended,...future];
 }
 
 
@@ -1639,6 +1672,18 @@ function loadHomeTask(force=false){
   // A forced refresh must not start a second request while the same student's
   // homework is already loading. Reuse the active request instead.
   if(homeTaskInFlight && homeTaskInFlightStudentId===sid) return homeTaskInFlight;
+
+  // v1.6.88: hydrate the last confirmed task BEFORE waiting for the network.
+  // The server request below still runs when force=true, so a newly assigned or
+  // edited task replaces this cached copy as soon as the backend responds.
+  if(!currentHomeTask_()){
+    const cached=cachedHomeTask_(sid);
+    if(cached){
+      homeTaskState={task:cached,loaded:true,loading:false,error:"",generatedAt:"cached"};
+      render();
+    }
+  }
+
   if(homeTaskState.loaded && !force) return Promise.resolve(homeTaskState);
 
   if(!navigator.onLine){
@@ -1661,6 +1706,8 @@ function loadHomeTask(force=false){
     if(!isCurrentRequest_()) return;
     if(data.classroomProgress && typeof data.classroomProgress === "object") bootstrapData.classroomProgress[sid]=data.classroomProgress;
     if(data.homeProgress && typeof data.homeProgress === "object") bootstrapData.homeProgress[sid]=data.homeProgress;
+    savePracticeCache_(sid);
+    refreshPracticeForYouDom_();
     if(Array.isArray(data.explorePracticeCatalog)){
       const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
       data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
@@ -1724,7 +1771,7 @@ function loadHomeTask(force=false){
         return homeTaskState;
       });
 
-  const promise=attempt(2).finally(()=>{
+  const promise=attempt(0).finally(()=>{
     if(requestId===homeTaskRequestSeq){
       homeTaskInFlight=null;
       homeTaskInFlightStudentId="";
@@ -1970,8 +2017,15 @@ function render() {
       const panel=document.getElementById(openExplore);
       if(panel)panel.hidden=false;
     }
-    // Never force the page back to a saved scroll position during background refreshes.
-    // The browser keeps the student's current viewport; Home does not call scrollTo here.
+    // Background data can rebuild the same route. Restore the exact viewport after
+    // the new DOM has been laid out so students browsing later Missions never jump upward.
+    if(Number.isFinite(preserveY)){
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(__lastRenderedRoute===currentRoute) window.scrollTo({top:preserveY,left:0,behavior:"instant"});
+      }));
+    }
+    const mp=document.getElementById("missionsPanel");
+    if(mp && preserveMissionsScroll>0) mp.scrollTop=preserveMissionsScroll;
   }else if (["about-home","home-intro","mission-intro","mission","mission-result","map"].includes(state.route)) {
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
   }
@@ -2200,9 +2254,13 @@ function saveLocalMissionProgress(result) {
   localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(all));
 }
 function studentProgress() {
-  const server = bootstrapData.progress[state.student.id] || {};
-  const local = getLocalProgress()[state.student.id] || {};
-  return { ...server, ...local };
+  const sid=state.student?.id;
+  const server = bootstrapData.progress?.[sid] || {};
+  const homeServer = bootstrapData.homeProgress?.[sid] || {};
+  const local = getLocalProgress()?.[sid] || {};
+  // v1.6.89: Home's confirmed server progress is an explicit source of truth.
+  // Local progress still makes a just-finished Mission visible immediately.
+  return { ...server, ...homeServer, ...local };
 }
 function getMissionDrafts() {
   try { return JSON.parse(localStorage.getItem(MISSION_DRAFTS_KEY)) || {}; }
@@ -2308,9 +2366,43 @@ function noteVoluntaryMissionCompletion_(missionNumber){
   if(state.nonHomeworkCompletedThisSession>=2 && !state.homeworkNudgeShownThisSession)state.homeworkNudgePending=true;
 }
 
+const PRACTICE_CACHE_PREFIX="mew_practice_cache_v1695_";
+function practiceCacheKey_(sid){return PRACTICE_CACHE_PREFIX+String(sid||"").trim();}
+function savePracticeCache_(sid){
+  sid=String(sid||"").trim(); if(!sid)return;
+  try{
+    localStorage.setItem(practiceCacheKey_(sid),JSON.stringify({
+      classroomProgress:bootstrapData.classroomProgress?.[sid]||{},
+      homeProgress:bootstrapData.homeProgress?.[sid]||{},
+      progress:bootstrapData.progress?.[sid]||{},
+      savedAt:new Date().toISOString()
+    }));
+  }catch{}
+}
+function hydratePracticeCache_(sid){
+  sid=String(sid||"").trim(); if(!sid)return false;
+  try{
+    const cached=JSON.parse(localStorage.getItem(practiceCacheKey_(sid))||"null");
+    if(!cached)return false;
+    if(!Object.keys(bootstrapData.classroomProgress?.[sid]||{}).length && cached.classroomProgress) bootstrapData.classroomProgress[sid]=cached.classroomProgress;
+    if(!Object.keys(bootstrapData.homeProgress?.[sid]||{}).length && cached.homeProgress) bootstrapData.homeProgress[sid]=cached.homeProgress;
+    if(!Object.keys(bootstrapData.progress?.[sid]||{}).length && cached.progress) bootstrapData.progress[sid]=cached.progress;
+    return true;
+  }catch{return false;}
+}
+function refreshPracticeForYouDom_(){
+  const pop=document.getElementById("missionsPracticePopover");
+  if(!pop)return;
+  const wasHidden=pop.hidden;
+  pop.innerHTML=homePracticeForYouHtml();
+  pop.hidden=wasHidden;
+}
+
 function homePracticeForYouHtml() {
   const id = state.student?.id;
   if (!id) return "";
+  // Show the last known recommendations immediately; fresh server data replaces them in background.
+  hydratePracticeCache_(id);
 
   const topics = {};
   const missionFallback = {};
@@ -2412,16 +2504,16 @@ function preferenceSurveyValues_(){
   }catch{return [];}
 }
 function normalizePreferenceAnswer_(value){
-  return String(value||"").replace(/[^\p{L} ]/gu,"").replace(/\s+/g," ").slice(0,10);
+  return String(value||"").replace(/[^\p{L}\p{N} .&'’-]/gu,"").replace(/\s+/g," ").trim().slice(0,30);
 }
 function preferenceSurveyHtml_(){
   const values=preferenceSurveyValues_();
   return `<div class="preference-survey-box">
     <strong>⭐ Pick your favorite / Elegí tus favoritos</strong>
     <p class="favorite-question"><strong>Write 3 favorites: singers, actors, football players or teams, cartoon characters, or any characters you like.</strong><br><span>Escribí 3 favoritos: cantantes, actores, jugadores o equipos de fútbol, personajes de dibujos animados o cualquier personaje que te guste.</span></p>
-    <p class="small">${missionsText_("Up to 10 characters per answer, including spaces.","Hasta 10 caracteres por respuesta, incluyendo espacios.")}</p>
+    <p class="small">${missionsText_("Up to 30 characters per answer.","Hasta 30 caracteres por respuesta.")}</p>
     <div class="preference-survey-fields">
-      ${[0,1,2].map(i=>`<input type="text" inputmode="text" maxlength="10" data-preference-answer="${i}" value="${escapeHtml(values[i]||"")}" placeholder="${i+1}. ${missionsText_("Your answer","Tu respuesta")}" aria-label="${missionsText_("Preference","Preferencia")} ${i+1}">`).join("")}
+      ${[0,1,2].map(i=>`<input type="text" inputmode="text" maxlength="30" data-preference-answer="${i}" value="${escapeHtml(values[i]||"")}" placeholder="${i+1}. ${missionsText_("Your answer","Tu respuesta")}" aria-label="${missionsText_("Preference","Preferencia")} ${i+1}">`).join("")}
     </div>
     <button type="button" class="secondary-button preference-survey-save" data-action="save-preference-survey">${missionsText_("Send","Enviar")}</button>
     <span class="preference-survey-status small" id="preferenceSurveyStatus"></span>
@@ -2434,7 +2526,9 @@ function quickVoteDisplayOptions_(poll){
   const reviewLike=missionLike || (text.includes("mission") && text.includes("review"));
   if(reviewLike){
     const style=opts.some(x=>/mission/i.test(String(x)))?"mission":"number";
-    return Array.from({length:15},(_,i)=>style==="mission"?`Mission ${i+1}`:String(i+1));
+    const grade=String(state.student?.grade||"").trim();
+    const maxMission=grade.startsWith("6")?15:grade.startsWith("5")?10:opts.length;
+    return Array.from({length:Math.max(1,maxMission)},(_,i)=>style==="mission"?`Mission ${i+1}`:String(i+1));
   }
   return opts;
 }
@@ -2468,8 +2562,13 @@ function refreshQuickVotePanelDom_(){
   const panel=document.getElementById("quickVotePanel");
   if(!panel)return;
   const wasHidden=panel.hidden;
+  const favoriteWasOpen=!!document.getElementById("quickSurveyFavorite")&&!document.getElementById("quickSurveyFavorite").hidden;
   panel.innerHTML=quickVotePanelInnerHtml_();
   panel.hidden=wasHidden;
+  if(favoriteWasOpen){
+    const vote=document.getElementById("quickSurveyVote"),favorite=document.getElementById("quickSurveyFavorite");
+    if(vote)vote.hidden=true; if(favorite)favorite.hidden=false;
+  }
   bindEvents();
 }
 
@@ -2666,7 +2765,11 @@ const HOME_MISSION_VISUALS = {
   "parts-face-g6-v1": {base:"images/home-missions/approved-cards/m18-head-face-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m18-head-face-renovacion-1661.png"},
   "parts-body-g6-v1": {base:"images/home-missions/approved-cards/m19-body-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m19-body-renovacion-1661.png"},
   "review-16-19-g6-v1": {base:"images/home-missions/approved-cards/m20-review-16-19-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m20-review-16-19-renovacion-1661.png"},
-  "verb-to-be-g6-v1": {base:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png"}
+  "verb-to-be-g6-v1": {base:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png", grade6:"images/home-missions/approved-cards/m21-verb-to-be-renovacion-1661.png"},
+  "numbers-20-100-g56-v1": {base:"images/home-missions/approved-cards/m22-numbers-20-100-final.jpg", grade6:"images/home-missions/approved-cards/m22-numbers-20-100-final.jpg"},
+  "future-mission-23": {base:"images/home-missions/approved-cards/m23-under-construction-final.jpg", grade6:"images/home-missions/approved-cards/m23-under-construction-final.jpg"},
+  "future-mission-24": {base:"images/home-missions/approved-cards/m24-under-construction-final.jpg", grade6:"images/home-missions/approved-cards/m24-under-construction-final.jpg"},
+  "future-mission-25": {base:"images/home-missions/approved-cards/m25-under-construction-final.jpg", grade6:"images/home-missions/approved-cards/m25-under-construction-final.jpg"},
 };
 
 const GRADE6_EXTRA_QUESTIONS = {
@@ -2723,8 +2826,8 @@ const GRADE6_EXTRA_QUESTIONS = {
     {id:"objg6q2",topic:"Classroom objects production",review:"classroom objects",points:1,text:"Choose the best sentence for 📘. <span class=\"small\">(Elegí la mejor oración para 📘.)</span>",options:["It is a book.","It is glue.","It is a ruler."],correct:"It is a book."}
   ],
   "parts-face-g6-v1":[
-    {id:"faceg6q1",topic:"Face OR",review:"parts of the face",points:1,text:"Are these eyes or ears? 👀 <span class=\"small\">(¿Son ojos u orejas?)</span>",options:["They are eyes.","They are ears."],correct:"They are eyes."},
-    {id:"faceg6q2",topic:"Face transfer",review:"parts of the face",points:1,text:"Choose the word you can connect with seeing. <span class=\"small\">(Elegí la palabra que relacionás con ver.)</span>",options:["eyes","nose","hair"],correct:"eyes"}
+    {id:"faceg6q1",type:"face-image",image:"tooth",topic:"Tooth",review:"tooth and teeth",points:1,text:"What is it? <span class=\"small\">(¿Qué es?)</span>",options:["tooth","teeth","mouth"],correct:"tooth"},
+    {id:"faceg6q2",type:"face-image",image:"face",topic:"Face",review:"head and face",points:1,text:"Choose the correct word. <span class=\"small\">(Elegí la palabra correcta.)</span>",options:["face","head","hair"],correct:"face"}
   ],
   "parts-body-g6-v1":[
     {id:"bodyg6q1",topic:"Body OR",review:"parts of the body",points:1,text:"Is this a hand or a foot? ✋ <span class=\"small\">(¿Es una mano o un pie?)</span>",options:["It is a hand.","It is a foot."],correct:"It is a hand."},
@@ -2863,6 +2966,7 @@ function missionPermissionCourseForStudent_() {
 }
 
 function missionEnabledForStudent(mission) {
+  if (mission?.underConstruction || mission?.temporarilyDisabled) return false;
   // Home permissions come from the dedicated Dashboard/Home endpoint.
   // Fail closed until that small request has completed successfully.
   if (isHomeTester_()) return true;
@@ -3039,6 +3143,11 @@ function missionSceneHtml_(mission, grade6=false, locked=false) {
   else if(sceneClass==="months") visual=`<div class="scene-calendar-pro months"><div class="calendar-rings">● ●</div><strong>YEAR</strong><div class="month-grid-mini"><i>JAN</i><i>APR</i><i>JUL</i><i>OCT</i></div><small>12 months</small></div>`;
   else if(sceneClass==="face") visual=`<img src="parts-head-face-card.jpg" alt="Mission English character showing parts of the head and face">`;
   else if(sceneClass==="body") visual=`<img src="parts-body-card.jpg" alt="Mission English character showing parts of the body">`;
+  else if(sceneClass==="numbers100") visual=`<div class="scene-m22-world"><img src="images/home-missions/mw-girl-green.png" alt="Mission World student"><div class="scene-m22-copy"><strong>MISSION 22</strong><b>Numbers 20–100</b><span>20 · 30 · 40 · 50</span><span>60 · 70 · 80 · 90 · 100</span></div></div>`;
+  else if(sceneClass==="construction") {
+    const cimg=number===23?"images/home-missions/mw-boy.png":number===24?"images/home-missions/mw-girl-glasses.png":"images/home-missions/mw-girl-green.png";
+    visual=`<div class="scene-construction"><img src="${cimg}" alt="Mission World student"><div class="construction-mission-label">MISSION ${number}</div><div class="construction-sign"><strong>UNDER CONSTRUCTION</strong><span>EN CONSTRUCCIÓN</span></div></div>`;
+  }
   else if(sceneClass==="objects") visual=`<div class="scene-objects-pro"><span>✏️</span><span>🖊️</span><span>📏</span><span>📘</span><span>🎒</span><span>🖍️</span></div>`;
   else {
     const old={date:`<div class="scene-calendar"><b>TODAY</b><strong>29</strong><span>MONDAY · JUNE</span></div>`,colors:`<div class="scene-color-chips"><i></i><i></i><i></i><i></i><i></i><i></i></div>`,numbers10:`<div class="scene-number-line">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<span>${n}</span>`).join("")}</div>`,numbers20:`<div class="scene-number-cards">${[11,12,13,14,15,16,17,18,19,20].map(n=>`<span>${n}</span>`).join("")}</div>`,"it-be":`<div class="scene-it-be"><span>✏️</span><b>It is …</b></div>`,"size-colors":`<div class="scene-size-colors"><span class="big-pencil">✏️</span><span class="small-pencil">✏️</span><i></i><i></i><i></i></div>`,"this-that":`<div class="scene-this-that"><span class="near">📘<b>THIS</b></span><span class="far">✏️<b>THAT</b></span></div>`,"to-be":`<div class="scene-to-be"><span>I</span><span>YOU</span><span>HE</span><span>SHE</span><span>IT</span></div>`};
@@ -3060,21 +3169,24 @@ function mapView() {
     const mm=missionForStudent_(m);
     const p=progress[m.id], enabled=missionEnabledForStudent(m), draft=missionDraft_(m.id);
     const isOptional=Number(m.number)===4 && enabled && !p && !draft;
-    const status=enabled
-      ? (p ? missionsText_("↻ Practice again","↻ Practicar otra vez")
-          : (draft ? missionsText_("▶ Continue","▶ Continuar")
-          : (isOptional ? missionsText_("◇ Optional","◇ Opcional") : missionsText_("▷ Start","▷ Comenzar"))))
-      : missionsText_("🔒 Locked","🔒 Bloqueada");
-    const statusClass=enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked";
+    const underConstruction=!!m.underConstruction;
+    const status=underConstruction
+      ? missionsText_("🚧 Coming soon","🚧 Próximamente")
+      : enabled
+        ? (p ? missionsText_("✓ Completed / Practice again","✓ Hecha / Practicar otra vez")
+            : (draft ? missionsText_("▶ Continue","▶ Continuar")
+            : (isOptional ? missionsText_("◇ Optional","◇ Opcional") : missionsText_("▷ Start","▷ Comenzar"))))
+        : missionsText_("🔒 Locked","🔒 Bloqueada");
+    const statusClass=underConstruction?"status-locked":(enabled ? (p?"status-repeat":(draft?"status-continue":"status-start")) : "status-locked");
     const title=m.title.replace(/^MISIÓN\s*\d+\s*[–-]\s*/i,"");
-    const renewedCard=Number(m.number)>=1 && Number(m.number)<=21;
+    const renewedCard=Number(m.number)>=1 && Number(m.number)<=25;
     return `<article class="dashboard-mission-card ${enabled?"available":"future-card"} ${renewedCard?"renewed-mission-card":""}">
       ${renewedCard?"":`<div class="mission-card-heading"><div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div><h3>${escapeHtml(title)}</h3></div>`}
       <div class="mission-card-image">
-        ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", !enabled)}
+        ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", !enabled && !underConstruction && !m.temporarilyDisabled)}
       </div>
       <div class="mission-status-strip ${statusClass}">${status}</div>
-      ${enabled?`<button class="mission-card-hit" data-action="open-mission" data-index="${i}" aria-label="Abrir ${escapeHtml(title)}"></button>`:""}
+      ${(enabled||m.temporarilyDisabled)?`<button class="mission-card-hit" data-action="open-mission" data-index="${i}" aria-label="Abrir ${escapeHtml(title)}"></button>`:""}
     </article>`;
   }).join("");
 
@@ -3158,7 +3270,7 @@ function mapView() {
             <div class="expansion-coming-card"><div class="coming-soon-stack"><span class="coming-soon-pill">¡COMING SOON!</span><span class="coming-soon-pill coming-soon-es">¡PRÓXIMAMENTE!</span></div><span>Verb To Be · Have · Auxiliary Do · examples + useful vocabulary<br>Verb To Be · Have · Auxiliar Do · ejemplos + vocabulario útil</span></div>
           </section>
         </div>
-        <div class="review-colors-content review-colors-page" id="reviewColorsContent" ${reviewColorsOpen_?"":"hidden"}><button type="button" class="review-colors-back" data-action="close-review-colors">← ${missionsText_("Back","Volver")}</button><h2>🎨 Colors · Colores</h2><div class="review-phone-landscape-note">📱 ${missionsText_("On a phone, turn it sideways for a better view.","En el celular, giralo de costado para verlo mejor.")}</div><img class="review-colors-approved-image" src="images/review-expansion-colors-approved.png" alt="Review & Expansion — Colors"></div>
+        <div class="review-colors-content review-colors-page" id="reviewColorsContent" ${reviewColorsOpen_?"":"hidden"}><button type="button" class="review-colors-back" data-action="close-review-colors">← ${missionsText_("Back","Volver")}</button><h2>🎨 Colors · Colores</h2><div class="review-phone-landscape-note">📱 En un celular, giralo de costado para verlo mejor.</div><img class="review-colors-approved-image" src="images/review-expansion-colors-approved.png" alt="Review & Expansion — Colors"></div>
       </div>
     </div>
 
@@ -3238,14 +3350,14 @@ function missionIntroView() {
     <p class="mission-intro-copy">${m.intro}</p>
     ${m.sections.map(s => `<section class="section-block"><h3 class="section-title">${s.title}</h3>${s.html}</section>`).join("")}
     <div class="learning-goal-note">🎯 <strong>La meta es aprender.</strong> Antes de buscar una respuesta afuera, volvé a mirar lo que acabás de leer.</div>
-    <div class="read-confirm-box">
+    ${m.temporarilyDisabled ? `<div class="read-confirm-box"><h3>👀 Vista previa / Preview</h3><p>Esta Mission todavía está deshabilitada para los alumnos. Podés revisar su contenido, pero no comenzar la actividad.</p><div class="button-row"><button class="secondary-button" data-action="back-map">← Volver al mapa de misiones</button></div></div>` : `<div class="read-confirm-box">
       <h3>¿Terminaste de leer?</h3>
       <div class="button-row">
         <button class="secondary-button" data-action="read-again">↩ Quiero leerlo otra vez</button>
         <button class="primary-button" data-action="confirm-read">✓ Ya lo leí — Continuar</button>
         <button class="secondary-button" data-action="back-map">← Volver al mapa de misiones</button>
       </div>
-    </div>
+    </div>`}
   </section>`;
 }
 
@@ -3316,6 +3428,35 @@ function questionHtml(q, idx) {
   const value = state.answers[q.id] ?? "";
   const questionText = q.promptWord ? `${q.text} <strong>${escapeHtml(q.promptWord)}</strong>` : q.text;
   const imageHtml = ""; // v1.6.0: exercise images temporarily disabled; Mission/Observe visuals remain.
+
+  if (q.type === "face-dragdrop") {
+    const placed = (state.faceDragPlaced && state.faceDragPlaced[q.id]) || {};
+    const items=q.items||[];
+    const left=["head","hair","eye","ear","mouth"], right=["face","eyebrow","nose","teeth"];
+    const slot=(part)=>`<button type="button" class="face-drop-slot ${placed[part]?"filled":""}" data-face-slot="${part}" aria-label="Casillero para ${part}">${placed[part]?escapeHtml(part):""}</button>`;
+    const words=items.filter(part=>!placed[part]).map(part=>`<button type="button" draggable="true" class="face-drag-word ${state.faceDragSelected===part?"selected":""}" data-face-word="${part}">${part}</button>`).join("");
+    return `<fieldset class="question face-drag-question"><legend>${questionText} <span class="small">(${q.points} puntos)</span></legend><input type="hidden" name="${q.id}" value="${Object.keys(placed).length===items.length?"complete":""}" required>
+      <div class="face-drag-stage">
+        <div class="face-slots left">${left.map(slot).join("")}</div>
+        <div class="face-practice-image"><img src="images/mission18-v1702/practice.jpg" alt="Head and face practice"></div>
+        <div class="face-slots right">${right.map(slot).join("")}</div>
+        <svg class="face-connectors" viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="225" y1="55"  x2="500" y2="55"/>
+          <line x1="225" y1="155" x2="505" y2="110"/>
+          <line x1="225" y1="255" x2="468" y2="235"/>
+          <line x1="225" y1="355" x2="414" y2="245"/>
+          <line x1="225" y1="455" x2="505" y2="360"/>
+          <line x1="775" y1="70"  x2="555" y2="175"/>
+          <line x1="775" y1="200" x2="550" y2="210"/>
+          <line x1="775" y1="330" x2="515" y2="292"/>
+          <line x1="775" y1="455" x2="520" y2="342"/>
+        </svg>
+      </div><div class="face-word-bank">${words||'<strong>✓ Complete</strong>'}</div><div class="face-drag-feedback" aria-live="polite"></div></fieldset>`;
+  }
+  if (q.type === "face-image") {
+    const options=optionsForQuestion(q);
+    return `<fieldset class="question"><legend>${questionText} <span class="small">(${q.points} punto)</span></legend><div class="face-question-image"><img src="images/mission18-v1702/${q.image}.jpg" alt="${q.image}"></div><div class="option-grid">${options.map(opt=>`<label class="option"><input type="radio" name="${q.id}" value="${escapeHtml(opt)}" ${value===opt?"checked":""} required><span>${opt}</span></label>`).join("")}</div></fieldset>`;
+  }
 
   if (q.type === "truefalse") {
     const tfOptions=["True","False"];
@@ -3462,9 +3603,9 @@ function missionResultView() {
     syncTitle = "Guardado en esta computadora.";
     syncText = "No se pudo enviar todavía. Se intentará nuevamente cuando haya conexión.";
   } else if (queued) {
-    syncTitle = navigator.onLine ? "Guardando…" : "Guardado en esta computadora.";
+    syncTitle = "Guardado en este dispositivo.";
     syncText = navigator.onLine
-      ? "Puedes continuar. El envío se completa automáticamente."
+      ? "Se enviará automáticamente. Podés continuar usando Home."
       : "Se enviará automáticamente cuando vuelva Internet.";
   }
   const completionCelebration=state.homeworkCompletionCelebration?`<div class="favorite-complete-overlay homework-face-overlay mission-result-homework-celebration" id="missionResultHomeworkCelebration" role="status" aria-label="Homework complete"><div class="homework-finish-wrap"><div class="mission-face homework-finish-face" aria-hidden="true"><i></i><i></i><b></b></div><strong>¡Tarea completa!</strong><span>Terminaste toda la tarea asignada.</span><small>Homework complete! You finished the whole assigned task.</small></div></div>`:"";
@@ -3485,7 +3626,6 @@ function missionResultView() {
     <div class="sync-box">
       <strong id="syncHeading">${syncTitle}</strong>
       <p id="syncCopy" class="small">${syncText}</p>
-      <button class="secondary-button" data-action="sync-now">Comprobar envío</button>
     </div>
 
     <div class="button-row">
@@ -3749,7 +3889,8 @@ function bindEvents() {
       // Quick Vote state must be isolated per tester. Otherwise a vote loaded for a previous
       // tester can leave myChoice set and prevent Tester 2/3 from sending their own vote.
       quickVoteStats = { total: 0, choices: {}, myChoice: "" };
-      state.identityError=""; state.currentMission=0; state.route="map"; saveState(); render(); await loadBootstrap(true,true); await loadHomeTask(true);
+      state.identityError=""; state.currentMission=0; state.route="map"; saveState(); render();
+      await Promise.all([loadHomeTask(true), loadBootstrap(true,true)]);
       await refreshQuickVoteResults();
       return;
     }
@@ -3763,8 +3904,9 @@ function bindEvents() {
       state.sessionNotice = "";
       saveState();
       render();
-      await loadBootstrap(true,true);
-      await loadHomeTask(true);
+      // Start the student task request immediately instead of waiting for the
+      // larger bootstrap request. This keeps Tarea from appearing several seconds late.
+      await Promise.all([loadHomeTask(true), loadBootstrap(true,true)]);
       if (state.route === "map") refreshQuickVoteResults();
     }
     if (action === "confirm-student") {
@@ -3802,13 +3944,14 @@ function bindEvents() {
       clearCurrentMissionAnswers(); prepareMissionQuestionSet();
       if(completed){ clearMissionDraft_(mission.id); }
       else { restoreMissionDraft_(mission); }
-      state.reviewConfirmed=false; state.missionExitCount=0; state.inactivityLogged=false; state.sessionNotice="";
+      state.reviewConfirmed=false; state.missionExitCount=0; state.inactivityLogged=false; state.sessionNotice=""; state.faceDragPlaced={}; state.faceDragSelected="";
       state.route="mission-intro"; saveState(); render();
     }
     if (action === "read-again") document.getElementById("missionReviewTop")?.scrollIntoView({behavior:"smooth",block:"start"});
     if (action === "confirm-read") {
       state.reviewConfirmed=true; state.missionStartedAt=new Date().toISOString(); state.route="mission"; saveState(); render(); startMissionAttentionTracking();
     }
+    if (action === "m18-speak") { const word=String(event.currentTarget.dataset.word||"").trim(); if(word)speakPracticeWord_(word); return; }
     if (action === "speak-useful") {
       playUsefulEnglishAudio();
       sendActivityEvent("listening_played",{detail:`Listening reproducido a ${homeAudioRate}x`});
@@ -4097,6 +4240,7 @@ function bindEvents() {
     };
     missionForm.addEventListener("input", handleMissionProgress);
     missionForm.addEventListener("change", handleMissionProgress);
+    setupFaceDrag_();
     missionForm.addEventListener("submit", event => {
       event.preventDefault();
       captureMissionAnswers();
@@ -4135,6 +4279,29 @@ function clearCurrentMissionAnswers() {
   state.missionStartedAt = "";
   state.reviewConfirmed=false; state.missionExitCount=0; state.inactivityLogged=false; state.sessionNotice="";
 }
+
+function setupFaceDrag_(){
+  const form=document.getElementById("missionForm"); if(!form)return;
+  let dragged=""; const qid="faceDrag";
+  state.faceDragPlaced=state.faceDragPlaced||{}; state.faceDragPlaced[qid]=state.faceDragPlaced[qid]||{};
+  form.querySelectorAll("[data-face-word]").forEach(el=>{
+    el.addEventListener("dragstart",e=>{dragged=el.dataset.faceWord||""; try{e.dataTransfer.setData("text/plain",dragged)}catch{}});
+    el.addEventListener("click",()=>{state.faceDragSelected=el.dataset.faceWord||""; form.querySelectorAll("[data-face-word]").forEach(x=>x.classList.toggle("selected",x.dataset.faceWord===state.faceDragSelected));});
+  });
+  const place=(slot,word)=>{
+    if(!slot||!word)return; const expected=slot.dataset.faceSlot||""; const fb=form.querySelector(".face-drag-feedback");
+    if(word!==expected){if(fb)fb.textContent="↻ Try again / Intentá otra vez"; return;}
+    state.faceDragPlaced[qid][expected]=true; state.faceDragSelected=""; dragged="";
+    slot.textContent=expected; slot.classList.add("filled");
+    const wordEl=form.querySelector(`[data-face-word="${expected}"]`); if(wordEl)wordEl.remove();
+    form.querySelectorAll("[data-face-word]").forEach(x=>x.classList.remove("selected")); if(fb)fb.textContent="✓ Correct / Correcto";
+    const mission=missionForStudent_(studentMissionCatalog_()[state.currentMission]); const q=mission.questions.find(x=>x.id===qid); const hidden=form.querySelector(`input[name="${qid}"]`);
+    if(q && Object.keys(state.faceDragPlaced[qid]).length===(q.items||[]).length){state.answers[qid]="complete"; if(hidden)hidden.value="complete"; if(fb)fb.textContent="✓ Complete / Completo";}
+    saveState();
+  };
+  form.querySelectorAll("[data-face-slot]").forEach(slot=>{slot.addEventListener("dragover",e=>e.preventDefault()); slot.addEventListener("drop",e=>{e.preventDefault(); place(slot,(e.dataTransfer&&e.dataTransfer.getData("text/plain"))||dragged);}); slot.addEventListener("click",()=>place(slot,state.faceDragSelected||dragged));});
+}
+
 function captureMissionAnswers() {
   const form = document.getElementById("missionForm");
   if (!form) return;
@@ -4152,42 +4319,67 @@ function getQueue() {
   try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }
   catch { return []; }
 }
+async function confirmResultRecorded_(item, tries=4) {
+  if (!item?.id || !item?.student?.id || !navigator.onLine) return false;
+  const waits=[350,700,1200,1800];
+  for(let i=0;i<Math.min(tries,waits.length);i++){
+    if(i) await new Promise(resolve=>setTimeout(resolve,waits[i]));
+    try{
+      const data=await jsonpRequestHome("resultStatus",{recordId:item.id,studentId:item.student.id});
+      if(data?.ok && data?.recorded===true && String(data.recordedStudentId||item.student.id)===String(item.student.id)) return true;
+    }catch{}
+  }
+  return false;
+}
 async function syncQueue(manual) {
-  const queue = getQueue();
+  let queue = getQueue();
   if (!queue.length) {
-    return showSyncMessage("✓ Envío confirmado.", "Tu misión ya está registrada.");
+    if(manual) showSyncMessage("✓ Envío confirmado.", "Tus Missions registradas ya están guardadas.");
+    return true;
   }
   if (!navigator.onLine) {
-    return showSyncMessage("Sin conexión.", "La misión quedó guardada y se enviará automáticamente.");
+    showSyncMessage("Guardado en este dispositivo.", "Se enviará automáticamente cuando vuelva Internet.");
+    return false;
   }
-  try {
-    for (const item of queue) {
+
+  // v1.6.90: never make the student wait for server verification.
+  // POST immediately, keep the local queue as safety, and verify/remove records in background.
+  showSyncMessage("Guardado en este dispositivo.", "Se enviará automáticamente. Podés continuar usando Home.");
+  for (const item of queue) {
+    try {
       await fetch(SYNC_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(item)
       });
-    }
-    localStorage.setItem(QUEUE_KEY, "[]");
-    if (state.lastMissionResult) {
-      state.lastMissionResult.syncStatus = "sent";
-      saveState();
-    }
-    showSyncMessage("✓ Guardado.", "La misión fue enviada correctamente.");
-  } catch {
-    if (state.lastMissionResult) {
-      state.lastMissionResult.syncStatus = "failed";
-      saveState();
-    }
-    showSyncMessage("Guardado en esta computadora.", "No se pudo enviar todavía. Se intentará nuevamente cuando haya conexión.");
+    } catch {}
   }
+
+  setTimeout(async()=>{
+    const current=getQueue();
+    const pending=[];
+    for(const item of current){
+      const confirmed=await confirmResultRecorded_(item,2);
+      if(!confirmed) pending.push(item);
+    }
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(pending));
+    if(!pending.length){
+      if (state.lastMissionResult) { state.lastMissionResult.syncStatus = "confirmed"; saveState(); }
+      showSyncMessage("✓ Envío confirmado.", "La Mission está registrada correctamente.");
+      // Refresh progress quietly; do not block or visibly repopulate Home.
+      try { loadHomeTask(true); } catch {}
+    }
+  },900);
+  return true;
 }
 function showSyncMessage(title, copy) {
   const heading = document.getElementById("syncHeading");
   const text = document.getElementById("syncCopy");
   if (heading) heading.textContent = title;
   if (text) text.textContent = copy;
+  const btn=document.getElementById("syncNowButton");
+  if(btn && String(title||"").includes("confirmado")) btn.hidden=true;
 }
 function loadBootstrap(force=false, silent=false) {
   if (bootstrapData.loaded && !force) {
@@ -4229,6 +4421,8 @@ function loadBootstrap(force=false, silent=false) {
         loaded: true,
         error: ""
       };
+      if(state.student?.id) savePracticeCache_(state.student.id);
+      refreshPracticeForYouDom_();
       // Mission permissions may arrive after the Missions map has already rendered.
       // Even during a silent refresh, re-render the map so Dashboard lock/unlock
       // changes become visible immediately after the fresh Home bootstrap arrives.

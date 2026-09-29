@@ -2970,3 +2970,78 @@ body.review-modal-open{overflow:hidden}
 .practice-recommend-intro{margin:.25rem 0 .4rem!important;color:#334b68}
 .coming-soon-stack{display:flex;flex-direction:column;align-items:flex-start;gap:.22rem}
 .coming-soon-es{margin-left:0!important}
+
+
+/* v1.6.87 — web/mobile polish */
+/* Optical centering for the curved Review & Expansion arrow without changing the outer icon. */
+.review-expansion-nav-icon{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:0 0 .08em 0!important;text-align:center!important}
+/* Quick Survey cards keep exactly the same geometry selected or not. */
+.quick-survey-assigned-row .quick-vote-poll-button{box-sizing:border-box!important;border:2px solid #b8cff8!important;outline:0!important;border-radius:14px!important;min-height:86px!important;max-width:min(260px,78vw)!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.quick-survey-assigned-row .quick-vote-poll-button.selected{border-color:#1f5fae!important;box-shadow:inset 0 0 0 1px #1f5fae!important;outline:0!important}
+.quick-survey-assigned-row .quick-vote-poll-button strong{white-space:normal!important;line-height:1.15!important}
+@media(max-width:760px){.quick-survey-assigned-row .quick-vote-poll-button{min-width:180px!important;max-width:76vw!important}}
+
+
+/* v1.6.88 — identical Quick Survey borders in every state */
+.quick-survey-assigned-row .quick-vote-poll-button,
+.quick-survey-assigned-row .quick-vote-poll-button.selected{
+  box-sizing:border-box!important;
+  border:1px solid #b8cff8!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+
+/* v1.6.92 Numbers 20–100 */
+.number-tens-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;margin:.8rem 0}
+.number-tens-grid span{padding:.65rem .7rem;border:1px solid #d8e2f1;border-radius:12px;background:#f8fbff;text-align:center}
+.number-tens-grid b{display:block;font-size:1.15rem;margin-bottom:.15rem}
+@media(max-width:520px){.number-tens-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* v1.6.93 future Mission construction cards */
+.scene-construction{position:relative;display:flex;align-items:center;justify-content:center;min-height:150px;overflow:hidden;background:linear-gradient(135deg,#eef6ff,#fff8d8)}
+.scene-construction img{width:100%;height:100%;object-fit:cover;object-position:center}
+.scene-construction strong,.scene-construction span{position:absolute;right:7px;background:#ffd22e;color:#182238;border:2px solid #182238;padding:4px 7px;font-weight:900;transform:rotate(-2deg)}
+.scene-construction strong{bottom:34px;font-size:11px}.scene-construction span{bottom:9px;font-size:10px}
+
+
+/* v1.6.94 final visual alignment: Mission World character family */
+.scene-m22-world{position:relative;width:100%;height:100%;min-height:150px;overflow:hidden;background:linear-gradient(120deg,#eaf5ff 0%,#fff7cf 100%)}
+.scene-m22-world>img{position:absolute;left:0;bottom:0;width:46%;height:100%;object-fit:cover;object-position:center 18%;filter:saturate(1.03)}
+.scene-m22-copy{position:absolute;inset:0 0 0 42%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:8px 8px 8px 4px;text-align:center;color:#0c2c67}
+.scene-m22-copy strong{font-size:1.05rem;font-weight:1000;color:#fff;background:#126bd6;border-radius:9px;padding:4px 8px;box-shadow:0 2px 0 #084b9f}
+.scene-m22-copy b{font-size:1rem;margin:7px 0 5px;color:#142b55}
+.scene-m22-copy span{font-weight:900;font-size:.77rem;line-height:1.35;color:#d74630}
+.scene-m22-copy span:last-child{color:#126bd6}
+.scene-construction{position:relative;width:100%;height:100%;min-height:150px;overflow:hidden;background:linear-gradient(135deg,#eef6ff,#fff8d8)}
+.scene-construction>img{position:absolute;left:0;bottom:0;width:48%;height:100%;object-fit:cover;object-position:center top}
+.construction-mission-label{position:absolute;top:8px;left:8px;padding:4px 8px;border-radius:8px;background:#126bd6;color:white;font-size:.72rem;font-weight:1000;box-shadow:0 2px 0 #084b9f}
+.scene-construction .construction-sign{position:absolute;right:5%;top:22%;width:48%;min-height:58%;display:flex;flex-direction:column;justify-content:center;align-items:center;box-sizing:border-box;padding:9px 6px;background:#ffd12a;border:4px solid #202b3e;border-radius:6px;transform:rotate(-2deg);box-shadow:0 5px 10px #0003;text-align:center}
+.scene-construction .construction-sign:before,.scene-construction .construction-sign:after{content:"";position:absolute;left:0;right:0;height:8px;background:repeating-linear-gradient(135deg,#202b3e 0 10px,#ffd12a 10px 20px)}
+.scene-construction .construction-sign:before{top:0}.scene-construction .construction-sign:after{bottom:0}
+.scene-construction .construction-sign strong,.scene-construction .construction-sign span{position:static!important;background:none!important;border:0!important;padding:0!important;transform:none!important;color:#17213a!important;font-weight:1000!important;line-height:1.05}
+.scene-construction .construction-sign strong{font-size:.78rem!important;margin-bottom:5px}.scene-construction .construction-sign span{font-size:.68rem!important}
+/* v1.6.94 M22 final card: preserve approved artwork without crop or distortion */
+.dashboard-mission-card[data-mission-id="22"] .mission-card-image img,
+.mission-card[data-mission-id="22"] .mission-card-image img,
+[data-mission="22"] .mission-card-image img{
+  object-fit:contain!important;
+  object-position:center!important;
+  background:#eef5fb;
+}
+
+/* v1.7.01 M18 + M22 */
+.mission-bilingual-instruction{color:#173f72}.m18-vocab-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.m18-vocab-card{position:relative;border:1px solid #d4e4f3;border-radius:14px;overflow:hidden;background:#fff;text-align:center;padding-bottom:8px}.m18-vocab-card img{width:100%;height:115px;object-fit:contain;background:#f7fbff;display:block}.m18-vocab-card b,.m18-vocab-card small{display:block}.m18-vocab-card b{color:#063c7d}.m18-vocab-card small{color:#667}.word-audio,.m22-num button,.m22-hundred button{border:0;border-radius:999px;background:#dff1ff;padding:6px 8px;cursor:pointer}.m18-vocab-card .word-audio{position:absolute;right:6px;bottom:5px}.m18-newword{display:grid;grid-template-columns:minmax(140px,240px) 1fr auto;gap:14px;align-items:center;padding:12px;border:1px solid #efbfe3;background:#fff2fb;border-radius:16px}.m18-newword img{width:100%;max-height:130px;object-fit:contain;border-radius:12px}.m18-newword small{display:block;color:#666}.face-question-image{max-width:340px;margin:8px auto}.face-question-image img{width:100%;max-height:220px;object-fit:contain;border-radius:14px}.face-drag-layout{display:grid;grid-template-columns:minmax(100px,1fr) minmax(180px,320px) minmax(100px,1fr);gap:10px;align-items:center}.face-practice-image img{width:100%;border-radius:16px;display:block}.face-slots{display:grid;gap:10px}.face-drop-slot{min-height:44px;border:2px dashed #1685df;background:#fff;border-radius:10px;font-weight:800;color:#064d8d}.face-drop-slot.filled{border-style:solid;background:#eaf7ff}.face-word-bank{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:12px;background:#eef8ff;border-radius:14px;margin-top:10px}.face-drag-word{border:1px solid #acd8f5;background:#fff;border-radius:9px;padding:9px 12px;font-weight:800;color:#083c78;touch-action:manipulation}.face-drag-word.selected{outline:3px solid #ffc928}.face-drag-feedback{text-align:center;min-height:1.4em;color:#b04a00;font-weight:700}.m22-tens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.m22-num{text-align:center;border:1px solid #dce8f3;border-radius:14px;padding:10px;background:#fff}.m22-num b{display:block;font-size:2.4rem;line-height:1;font-weight:950}.m22-num strong,.m22-num small{display:block}.m22-num strong{color:#063c7d}.m22-num small{color:#667}.m22-num.n0 b{color:#147bd1}.m22-num.n1 b{color:#ff5a19}.m22-num.n2 b{color:#12a544}.m22-num.n3 b{color:#8b2ac9}.m22-num.n4 b{color:#f32636}.m22-num.n5 b{color:#f0a300}.m22-num.n6 b{color:#1389b6}.m22-num.n7 b{color:#db1472}.m22-rule,.m22-hundred{margin:12px 0;border-radius:14px;padding:12px;background:#eef8ff;border:1px solid #cde6f8}.m22-hundred{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:#fff8d9;border-color:#eed36c}.m22-hundred>b{font-size:2.5rem;color:#39902e}.m22-hundred small{display:block}.m22-hundred p{margin:.3rem 0 0}.m22-girl-tip{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;background:#eef8ff;border:1px solid #cde6f8;border-radius:16px;padding:10px}.m22-girl-tip img{width:150px;border-radius:12px}.m22-listen{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.m22-listen button{padding:10px;border:1px solid #cde0f0;border-radius:10px;background:#fff;color:#07447f;font-weight:700}
+@media(max-width:650px){.m18-vocab-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.m18-newword{grid-template-columns:110px 1fr auto}.face-drag-layout{grid-template-columns:1fr 1.6fr 1fr;gap:5px}.face-drop-slot{min-height:42px;font-size:.78rem}.m22-tens{grid-template-columns:repeat(2,minmax(0,1fr))}.m22-girl-tip{grid-template-columns:100px 1fr}.m22-girl-tip img{width:100px}.m22-listen{grid-template-columns:1fr}}
+/* v1.7.02 Mission 18 final layout */
+.m18-number-note,.m18-tooth-note{margin:10px 0;padding:11px 13px;border:1px solid #cfe5f7;border-radius:14px;background:#eef8ff;color:#173f72}.m18-number-note>div{display:flex;gap:22px;flex-wrap:wrap;margin-top:6px}.m18-number-note span{display:inline-block}.m18-number-note p,.m18-tooth-note p{margin:.35rem 0 0}.m18-tooth-note{background:#fff9df;border-color:#f0dd8b}.face-drag-stage{position:relative;display:grid;grid-template-columns:minmax(125px,1fr) minmax(280px,420px) minmax(125px,1fr);gap:28px;align-items:center;max-width:1000px;margin:12px auto}.face-drag-stage .face-slots{z-index:3}.face-drag-stage .face-practice-image{z-index:1}.face-drag-stage .face-practice-image img{width:100%;aspect-ratio:1.46/1;object-fit:cover;object-position:center;border-radius:18px;display:block}.face-connectors{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}.face-connectors line{stroke:#1685df;stroke-width:3;vector-effect:non-scaling-stroke}.face-connectors line:nth-child(2n){stroke:#6b3ee7}.face-connectors line:nth-child(3n){stroke:#ef4f30}.face-drop-slot{background:rgba(255,255,255,.97)}
+.m22-girl-tip img{object-fit:cover;object-position:center top;aspect-ratio:1/1;border-radius:14px}
+@media(max-width:650px){.face-drag-stage{grid-template-columns:minmax(78px,.85fr) minmax(170px,1.7fr) minmax(78px,.85fr);gap:8px}.face-drop-slot{min-height:44px;font-size:.72rem}.face-connectors line{stroke-width:2}.m18-number-note>div{gap:10px}}
+
+/* v1.7.03 approval corrections */
+.m22-girl-tip img{width:118px;max-height:175px;object-fit:contain;object-position:center bottom;background:transparent}.face-drop-slot.filled{color:#063c7d;font-weight:900}@media(max-width:650px){.m22-girl-tip img{width:82px;max-height:130px}}
+
+/* v1.7.05 final M18 fixes */
+.face-question-image[alt="tooth"]{
+  object-fit:cover;
+  object-position:center;
+}

@@ -4494,7 +4494,10 @@ function showSyncMessage(title, copy) {
   const btn=document.getElementById("syncNowButton");
   if(btn && String(title||"").includes("confirmado")) btn.hidden=true;
 }
+// Share a single bootstrap request across startup, login, and resume events.
+let bootstrapInFlight_=null;
 function loadBootstrap(force=false, silent=false) {
+  if (bootstrapInFlight_) return bootstrapInFlight_;
   if (bootstrapData.loaded && !force) {
     if (!silent) render();
     return Promise.resolve(bootstrapData);
@@ -4517,19 +4520,24 @@ function loadBootstrap(force=false, silent=false) {
     return Promise.resolve(bootstrapData);
   }
 
-  return jsonpBootstrap()
+  const request = jsonpBootstrap()
     .then(data => {
       if (!data || data.ok === false) {
         throw new Error(data?.error || "Respuesta inválida");
       }
+      // Keep progress delivered by the faster student-specific homeStudent call.
+      // The general bootstrap can arrive later with older or incomplete progress.
+      const previousProgress=bootstrapData.progress||{};
+      const previousClassroom=bootstrapData.classroomProgress||{};
+      const previousHome=bootstrapData.homeProgress||{};
       bootstrapData = {
         students: Array.isArray(data.students) && data.students.length
           ? [...new Map([...LOCAL_STUDENTS, ...data.students].map(student => [student.id, student])).values()]
           : LOCAL_STUDENTS,
-        progress: data.progress && typeof data.progress === "object" ? data.progress : {},
+        progress: {...(data.progress && typeof data.progress === "object" ? data.progress : {}),...previousProgress},
         missionPermissions: data.missionPermissions && typeof data.missionPermissions === "object" ? data.missionPermissions : {},
-        classroomProgress: data.classroomProgress && typeof data.classroomProgress === "object" ? data.classroomProgress : {},
-        homeProgress: data.homeProgress && typeof data.homeProgress === "object" ? data.homeProgress : {},
+        classroomProgress: {...(data.classroomProgress && typeof data.classroomProgress === "object" ? data.classroomProgress : {}),...previousClassroom},
+        homeProgress: {...(data.homeProgress && typeof data.homeProgress === "object" ? data.homeProgress : {}),...previousHome},
         homeVideos: Array.isArray(data.homeVideos) ? data.homeVideos : [],
         loaded: true,
         error: ""
@@ -4557,6 +4565,8 @@ function loadBootstrap(force=false, silent=false) {
       if (!silent) render();
       return bootstrapData;
     });
+  bootstrapInFlight_=request.finally(()=>{ bootstrapInFlight_=null; });
+  return bootstrapInFlight_;
 }
 
 function jsonpBootstrap() {
@@ -4640,17 +4650,15 @@ syncQueue(false);
 
 // If Home was left open while the teacher changed permissions, refresh the
 // lightweight permissions endpoint when the student returns.
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && navigator.onLine) {
-    loadHomeMissionPermissions(true);
-    loadHomeTask(true);
-    loadBootstrap(true, true);
-  }
-});
-window.addEventListener("focus", () => {
-  if (navigator.onLine) {
-    loadHomeMissionPermissions(true);
-    loadHomeTask(true);
-    loadBootstrap(true, true);
-  }
-});
+let lastResumeRefresh_=0;
+function refreshOnResume_(){
+  if (!navigator.onLine || document.hidden) return;
+  const now=Date.now();
+  if (now-lastResumeRefresh_<12000) return;
+  lastResumeRefresh_=now;
+  loadHomeMissionPermissions(true);
+  loadHomeTask(true);
+  loadBootstrap(true, true);
+}
+document.addEventListener("visibilitychange", refreshOnResume_);
+window.addEventListener("focus", refreshOnResume_);

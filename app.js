@@ -2189,46 +2189,27 @@ function identifyView() {
   const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
   const schoolValue = state.student.institution || savedHomeSchool();
 
+  const studentOptions = rosterStudents()
+    .filter(s => String(s.grade||"").trim() === String(state.student.grade||"").trim())
+    .sort((a,b)=>String(a.officialName||"").localeCompare(String(b.officialName||""),"es"))
+    .map(s=>`<option value="${escapeHtml(s.id)}" ${String(state.student.id||"")===String(s.id)?"selected":""}>${escapeHtml(s.officialName||s.nickname||s.id)}</option>`).join("");
   return `<section class="card identity-entry-card">
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
-    <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
+    <p>Seleccioná tu grado y después elegí tu nombre de la lista.</p>
     <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso depende de la configuración de cada curso.</strong></div>
 
     ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
 
     <form id="studentForm" class="identity-form-grid">
-      <div class="field">
-        <label for="firstName">Nombre</label>
-        <input id="firstName" name="firstName" autocomplete="given-name"
-          value="${escapeHtml(state.student.firstName || "")}" placeholder="Por ejemplo: Maria">
-      </div>
-
-      <div class="field">
-        <label for="nickname">Apodo</label>
-        <input id="nickname" name="nickname"
-          value="${escapeHtml(state.student.nickname || "")}" placeholder="Por ejemplo: Pia">
-      </div>
-
-      <div class="field">
-        <label for="lastName">Apellido <span class="small">(si hace falta)</span></label>
-        <input id="lastName" name="lastName"
-          value="${escapeHtml(state.student.lastName || "")}" placeholder="Para distinguir nombres iguales">
-      </div>
-
-      <div class="field">
-        <label for="institution">Colegio / Institución</label>
-        <input id="institution" name="institution"
-          value="${escapeHtml(schoolValue)}" placeholder="Por ejemplo: Yapeyú">
-      </div>
-
       <div class="field identity-grade-field">
         <label for="grade">Grado</label>
-        <select id="grade" name="grade" required>
-          <option value="">Seleccioná</option>${gradeOptions}
-        </select>
+        <select id="grade" name="grade" required><option value="">Seleccioná tu grado</option>${gradeOptions}</select>
       </div>
-
+      <div class="field">
+        <label for="studentId">Tu nombre / Your name</label>
+        <select id="studentId" name="studentId" required><option value="">Seleccioná tu nombre</option>${studentOptions}</select>
+      </div>
       <div class="field full identity-main-actions">
         <div class="button-row">
           <button type="button" class="secondary-button" data-action="go-home">Volver</button>
@@ -4275,69 +4256,31 @@ function bindEvents() {
     state.route = "home"; saveState(); render();
   });
 
+  const gradeSelect = document.getElementById("grade");
+  if (gradeSelect && document.getElementById("studentForm")) {
+    gradeSelect.addEventListener("change", () => {
+      state.student.grade = gradeSelect.value;
+      state.student.id = "";
+      state.identityError = "";
+      render();
+    });
+  }
   const studentForm = document.getElementById("studentForm");
   if (studentForm) studentForm.addEventListener("submit", event => {
     event.preventDefault();
 
     const form = new FormData(studentForm);
-    const firstName = String(form.get("firstName") || "").trim();
-    const nickname = String(form.get("nickname") || "").trim();
-    const lastName = String(form.get("lastName") || "").trim();
-    const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
     const grade = String(form.get("grade") || "").trim();
-
-    if (!["4","5","6"].includes(grade)) {
-      state.identityError = "Seleccioná un curso disponible de tu escuela.";
+    const studentId = String(form.get("studentId") || "").trim();
+    const matched = rosterStudents().find(s => String(s.id||"") === studentId && String(s.grade||"").trim() === grade);
+    if (!matched) {
+      state.identityError = "Elegí tu grado y tu nombre de la lista.";
       saveState(); render(); return;
     }
-
-    if (!firstName && !nickname) {
-      state.identityError = "Escribí tu nombre o tu apodo.";
-      saveState();
-      render();
-      return;
-    }
-
-    let match = nickname ? findHomeStudentSimple(nickname, lastName, grade) : {student:null,ambiguous:false};
-    if (!match.student && firstName) {
-      const byName = findHomeStudentSimple(firstName, lastName, grade);
-      match = byName.student ? byName : {student:null, ambiguous: match.ambiguous || byName.ambiguous};
-    }
-
-    if (!match.student) {
-      state.student = {
-        ...state.student,
-        firstName,
-        nickname,
-        lastName,
-        institution,
-        grade
-      };
-
-      state.identityError = match.ambiguous
-        ? "Hay más de un alumno con esos datos en tu grado. Escribí también tu apellido para distinguirte."
-        : "No encontramos ese nombre o apodo en el grado seleccionado. Revisalo y volvé a intentar.";
-
-      saveState();
-      render();
-      return;
-    }
-
-    const matched = match.student;
     const official = splitOfficialName(matched);
-
+    const institution = matched.institution || savedHomeSchool();
     state.identityError = "";
-    state.student = {
-      ...matched,
-      firstName: official.first.split(" ")[0] || firstNameOrNickname(matched) || firstName || nickname,
-      lastName: official.last || lastName,
-      institution,
-      level: "Primaria",
-      mode:"individual",
-      partnerId:"",
-      partner:""
-    };
-
+    state.student = {...matched, firstName: official.first.split(" ")[0] || firstNameOrNickname(matched), lastName: official.last || "", institution, level:"Primaria", mode:"individual", partnerId:"", partner:""};
     saveHomeSchool(institution);
     state.route = "confirm";
     saveState();

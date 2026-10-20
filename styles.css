@@ -3045,3 +3045,10 @@ body.review-modal-open{overflow:hidden}
   object-fit:cover;
   object-position:center;
 }
+
+/* Homework priority remains visible alongside mission status. */
+.mission-homework-badge{font-weight:800;text-align:center;padding:7px 9px;font-size:13px;background:#fff4d5;color:#6a4200;border-top:1px solid #e5c97b}.mission-homework-badge.recommended{background:#e7f3ff;color:#174b80;border-top-color:#b7d5f3}
+
+/* Grade 4/5 original mission-number visuals: never reuse Mission 18/19 artwork for 13/14 */
+.g45-correct-mission-scene{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;min-height:160px;background:linear-gradient(135deg,#e7f3ff,#f8f2df);color:#073a70;text-align:center;padding:12px;box-sizing:border-box;overflow:hidden}
+.g45-scene-heading{font-size:19px;font-weight:900;letter-spacing:.04em}.g45-scene-symbol{font-size:46px;line-height:1.1}.g45-scene-label{font-size:14px;font-weight:750}

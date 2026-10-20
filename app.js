@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.6.42";
+const HOME_RELEASE_VERSION = "v1.7.11k";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.7.08";
+const APP_VERSION = "Home v1.7.11k";
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -1239,9 +1239,19 @@ const FUTURE_CONSTRUCTION_MISSIONS = [23,24,25].map(number=>({
 function studentMissionCatalog_(){
   const grade=String(state.student?.grade||"").trim();
   const grade6=grade==="6";
-  const extended=grade6?GRADE6_EXTENDED_MISSIONS:GRADE45_EXTENDED_MISSIONS;
+  const extended=grade6?GRADE6_EXTENDED_MISSIONS:[...GRADE6_EXTENDED_MISSIONS.filter(m=>[13,14,15].includes(Number(m.number))),...(grade==="5"?GRADE6_EXTENDED_MISSIONS.filter(m=>[18,19].includes(Number(m.number))):[])];
   const future=["5","6"].includes(grade)?[NUMBERS_20_100_MISSION,...FUTURE_CONSTRUCTION_MISSIONS]:[];
-  return [...missions,...extended,...future];
+  // One card per mission number, always in numerical order. Prefer the class-specific
+  // content over the shared catalog, and never replace a real mission with a placeholder.
+  const byNumber=new Map();
+  for(const m of [...missions,...extended,...future]){
+    const n=Number(m.number);
+    if(!Number.isInteger(n)||n<1)continue;
+    const prior=byNumber.get(n);
+    if(!prior || (prior.underConstruction && !m.underConstruction) ||
+       (!m.underConstruction && extended.includes(m)))byNumber.set(n,m);
+  }
+  return Array.from(byNumber.values()).sort((a,b)=>Number(a.number)-Number(b.number));
 }
 
 
@@ -1661,13 +1671,8 @@ function loadHomeTask(force=false){
     homeTaskState={task:null,loaded:true,loading:false,error:"",generatedAt:""};
     return Promise.resolve(homeTaskState);
   }
-  if(isHomeTester_()){
-    // Tester-only assignment: lets us verify the homework-complete popup locally
-    // without writing student data to the backend. Complete Mission 1 to trigger it.
-    homeTaskRequestSeq++; homeTaskInFlight=null; homeTaskInFlightStudentId="";
-    homeTaskState={task:{title:"Tester completion check",missions:[1],recommendedMissions:[],exploreItems:[],createdAt:"2026-09-18T00:00:00",updatedAt:"tester-v1681"},loaded:true,loading:false,error:"",generatedAt:new Date().toISOString()};
-    return Promise.resolve(homeTaskState);
-  }
+  // Testers read the actual grade homework, just like students.
+  // They remain identified as testers for vote/grade statistics.
 
   // A forced refresh must not start a second request while the same student's
   // homework is already loading. Reuse the active request instead.
@@ -1706,29 +1711,46 @@ function loadHomeTask(force=false){
     if(!isCurrentRequest_()) return;
     if(data.classroomProgress && typeof data.classroomProgress === "object") bootstrapData.classroomProgress[sid]=data.classroomProgress;
     if(data.homeProgress && typeof data.homeProgress === "object") bootstrapData.homeProgress[sid]=data.homeProgress;
+    // Build a student-specific central progress view even when the large
+    // bootstrap is slow on a phone. This is what Mission cards read.
+    bootstrapData.progress[sid]={
+      ...(bootstrapData.progress?.[sid]||{}),
+      ...(data.classroomProgress||{}),
+      ...(data.homeProgress||{})
+    };
     savePracticeCache_(sid);
     refreshPracticeForYouDom_();
     if(Array.isArray(data.explorePracticeCatalog)){
-      const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
+      const retained=(explorePracticeCatalog||[]).filter(a=>a?.category!=="Quick Vote");
+      const byId=new Map(retained.map(a=>[String(a.id||a.pollId||a.title),a]));
       data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
       explorePracticeCatalog=[...byId.values()].filter(a=>a&&a.active!==false);
     }
-    quickVotePolls=explorePracticeCatalog.filter(a=>a.category==="Quick Vote");
+    // Trust grade-filtered server catalog on v6.20+; older servers use the grade homework selection.
+    const serverPolls=Array.isArray(data.explorePracticeCatalog)?data.explorePracticeCatalog.filter(a=>a?.category==="Quick Vote"&&a.active!==false):[];
+    const backendNumber=Number(String(data.backendVersion||"").match(/^v6\.(\d+)/)?.[1]||0);
+    if(backendNumber>=20){
+      quickVotePolls=serverPolls;
+    }else{
+      const selected=new Set((data.task?.explorePractice||[]).map(String));
+      quickVotePolls=serverPolls.filter(p=>selected.has(String(p.id))||selected.has(String(p.pollId)));
+    }
     setTimeout(()=>refreshExplorePracticeCatalog_().then(()=>{
       const list=document.getElementById("shortVideoList");
       if(list){list.innerHTML=shortVideosHtml();bindEvents();}
       refreshQuickVotePanelDom_();
-      if(state.route==="map"||state.route==="home") render();
+      if((state.route==="map"||state.route==="home") && !document.querySelector('#quickVotePanel:not([hidden])')) render();
     }),350);
     if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
-      selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
+      selectedQuickVotePollId=displayedQuickVotePolls_().length?displayedQuickVotePolls_()[0].pollId:"";
     }
+    preferConfiguredQuickVote_();
     activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
     quickVoteStats=quickVoteStatsByPoll[quickVoteCacheKey_(selectedQuickVotePollId)]||{total:0,choices:{},myChoice:"",myChoices:[],maxSelections:Number(activeQuickVote?.maxSelections||1)};
   };
 
   const attempt=(remainingRetries)=>
-    jsonpRequestHome("homeStudent",{studentId:sid})
+    jsonpRequestHome("homeStudent",{studentId:sid,grade:state.student?.grade||""})
       .then(data=>{
         if(!data || data.ok===false) throw new Error(data?.error||"Respuesta de tarea inválida.");
         if(!isCurrentRequest_()) return homeTaskState;
@@ -1749,7 +1771,7 @@ function loadHomeTask(force=false){
           error:"",
           generatedAt:String(data.generatedAt||"")
         };
-        if(state.route==="map"||state.route==="home") render();
+        if((state.route==="map"||state.route==="home") && !document.querySelector('#quickVotePanel:not([hidden])')) render();
         return homeTaskState;
       })
       .catch(error=>{
@@ -1767,7 +1789,7 @@ function loadHomeTask(force=false){
           error:homeTaskState.task?"":String(error?.message||error||"No se pudo cargar la tarea.")
         };
         console.error("Mission English Home task error:",String(error?.message||error||"No se pudo cargar la tarea."));
-        if(state.route==="map"||state.route==="home") render();
+        if((state.route==="map"||state.route==="home") && !document.querySelector('#quickVotePanel:not([hidden])')) render();
         return homeTaskState;
       });
 
@@ -1985,7 +2007,21 @@ function setupView() {
 }
 
 let __lastRenderedRoute = null;
+let homeClassGate_={key:'',allowed:true,checking:false,checkedAt:0};
+function homeClassAccessGuard_(){
+  const student=state.student;
+  if(!student?.id || state.route==='identify' || state.route==='home')return;
+  const key=String(student.id)+'|'+String(student.grade||'');
+  if(homeClassGate_.key!==key){homeClassGate_={key,allowed:true,checking:false,checkedAt:0};}
+  if(!homeClassGate_.checking && Date.now()-homeClassGate_.checkedAt>30000){
+    homeClassGate_.checking=true;
+    jsonpRequestHome('homeAccessCheck',{studentId:student.id,grade:student.grade||''}).then(r=>{homeClassGate_.allowed=(r?.ok===true && typeof r.allowed==='boolean')?r.allowed:true;homeClassGate_.checkedAt=Date.now();}).catch(()=>{homeClassGate_.allowed=true;homeClassGate_.checkedAt=Date.now();}).finally(()=>{homeClassGate_.checking=false;homeClassAccessGuard_();});
+  }
+  let blocker=document.getElementById('mew-class-access-blocker');
+  if(!homeClassGate_.allowed){if(!blocker){blocker=document.createElement('div');blocker.id='mew-class-access-blocker';blocker.style.cssText='position:fixed;inset:0;z-index:999999;background:#f4f7fb;color:#163355;display:flex;align-items:center;justify-content:center;padding:25px;text-align:center;font:20px Arial';document.body.appendChild(blocker);}blocker.textContent=homeClassGate_.checking?'Checking class access / Comprobando acceso…':'Home is not enabled for this class. / Home no está habilitado para este curso.';}else if(blocker)blocker.remove();
+}
 function render() {
+  setTimeout(homeClassAccessGuard_,0);
   const previousRoute=__lastRenderedRoute;
   const currentRoute=state.route;
   const preserveY=(previousRoute===currentRoute)?window.scrollY:null;
@@ -2148,7 +2184,7 @@ function studentsForSelectedCourse() {
 }
 
 function identifyView() {
-  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="5"||g==="6"))]
+  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="4"||g==="5"||g==="6"))]
     .sort((a,b) => a.localeCompare(b, "es", { numeric:true }));
   const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
   const schoolValue = state.student.institution || savedHomeSchool();
@@ -2157,7 +2193,7 @@ function identifyView() {
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
     <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
-    <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso de alumnos está habilitado para 5.º y 6.º grado.</strong></div>
+    <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso depende de la configuración de cada curso.</strong></div>
 
     ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
 
@@ -2253,14 +2289,28 @@ function saveLocalMissionProgress(result) {
   }
   localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(all));
 }
+function normalizedProgressForCards_(source){
+  const out={...(source||{})};
+  const catalog=studentMissionCatalog_();
+  Object.values(source||{}).forEach(rec=>{
+    const n=Number(rec?.missionNumber||rec?.number||0);
+    if(!n)return;
+    const mission=catalog.find(m=>Number(m.number)===n);
+    if(mission?.id && !out[mission.id])out[mission.id]=rec;
+  });
+  return out;
+}
 function studentProgress() {
   const sid=state.student?.id;
-  const server = bootstrapData.progress?.[sid] || {};
-  const homeServer = bootstrapData.homeProgress?.[sid] || {};
+  const server = normalizedProgressForCards_(bootstrapData.progress?.[sid] || {});
+  const classroomServer = normalizedProgressForCards_(bootstrapData.classroomProgress?.[sid] || {});
+  const homeServer = normalizedProgressForCards_(bootstrapData.homeProgress?.[sid] || {});
   const local = getLocalProgress()?.[sid] || {};
-  // v1.6.89: Home's confirmed server progress is an explicit source of truth.
-  // Local progress still makes a just-finished Mission visible immediately.
-  return { ...server, ...homeServer, ...local };
+  // v1.7.10: a phone must not depend on progress stored in another browser.
+  // Merge every central progress source returned for this student, normalized
+  // by Mission number, then let same-device local progress provide only the
+  // immediate just-finished state.
+  return { ...server, ...classroomServer, ...homeServer, ...local };
 }
 function getMissionDrafts() {
   try { return JSON.parse(localStorage.getItem(MISSION_DRAFTS_KEY)) || {}; }
@@ -2504,20 +2554,22 @@ function preferenceSurveyValues_(){
   }catch{return [];}
 }
 function normalizePreferenceAnswer_(value){
-  return String(value||"").replace(/[^\p{L}\p{N} .&'’-]/gu,"").replace(/\s+/g," ").trim().slice(0,30);
+  return String(value||"").replace(/[^\p{L}\p{N} .&'’-]/gu,"").replace(/\s+/g," ").trim().slice(0,15);
 }
+document.addEventListener('input', function(e){
+  if(!e.target?.matches?.('[data-preference-answer]'))return;
+  const inputs=[...document.querySelectorAll('[data-preference-answer]')];
+  localStorage.setItem(preferenceSurveyKey_(),JSON.stringify(inputs.map(el=>el.value.slice(0,15))));
+},true);
 function preferenceSurveyHtml_(){
-  const values=preferenceSurveyValues_();
-  return `<div class="preference-survey-box">
-    <strong>⭐ Pick your favorite / Elegí tus favoritos</strong>
-    <p class="favorite-question"><strong>Write 3 favorites: singers, actors, football players or teams, cartoon characters, or any characters you like.</strong><br><span>Escribí 3 favoritos: cantantes, actores, jugadores o equipos de fútbol, personajes de dibujos animados o cualquier personaje que te guste.</span></p>
-    <p class="small">${missionsText_("Up to 30 characters per answer.","Hasta 30 caracteres por respuesta.")}</p>
-    <div class="preference-survey-fields">
-      ${[0,1,2].map(i=>`<input type="text" inputmode="text" maxlength="30" data-preference-answer="${i}" value="${escapeHtml(values[i]||"")}" placeholder="${i+1}. ${missionsText_("Your answer","Tu respuesta")}" aria-label="${missionsText_("Preference","Preferencia")} ${i+1}">`).join("")}
-    </div>
-    <button type="button" class="secondary-button preference-survey-save" data-action="save-preference-survey">${missionsText_("Send","Enviar")}</button>
-    <span class="preference-survey-status small" id="preferenceSurveyStatus"></span>
-  </div>`;
+ const poll=displayedQuickVotePolls_().find(p=>p.pollId===selectedQuickVotePollId)||displayedQuickVotePolls_().find(p=>customVoteConfig_(p))||activeQuickVote||{};
+ const config=customVoteConfig_(poll),count=config?.fieldCount||3;
+ const labels=Array.from({length:count},(_,i)=>String(config?.labels?.[i]||`Favorite ${i+1}`));
+ const values=preferenceSurveyValues_();
+ return `<div class="preference-survey-box"><strong>⭐ ${escapeHtml(poll.title||"Pick Your Favorite")}</strong>
+ <p class="small">${missionsText_("Maximum 15 characters per answer. Use respectful language.","Máximo 15 caracteres por respuesta. No escribas palabras ofensivas.")}</p>
+ <div class="preference-survey-fields">${labels.map((label,i)=>`<label style="display:block;flex:1;min-width:180px"><span class="small">${escapeHtml(label)}</span><input type="text" maxlength="15" data-preference-answer="${i}" value="${escapeHtml(values[i]||"")}" placeholder="" aria-label="${escapeHtml(label)}"></label>`).join("")}</div>
+ <button type="button" class="secondary-button preference-survey-save" data-action="save-preference-survey">${missionsText_("Send","Enviar")}</button><span class="preference-survey-status small" id="preferenceSurveyStatus"></span></div>`;
 }
 function quickVoteDisplayOptions_(poll){
   const opts=Array.isArray(poll?.options)?[...poll.options]:[];
@@ -2532,17 +2584,26 @@ function quickVoteDisplayOptions_(poll){
   }
   return opts;
 }
+function customVoteConfig_(poll){
+ try { const c=JSON.parse(String(poll?.instructions||""));if(c?.kind==="customQuickVote")return {fieldCount:Math.max(1,Math.min(3,Number(c.fieldCount)||3)),labels:Array.isArray(c.labels)?c.labels:[],grouping:c.grouping||"together"}; }catch(_){} return null;
+}
+function isFavoriteTextPoll_(poll){return !!poll&&(poll.pollId==="pick-your-favorite-v1"||!!customVoteConfig_(poll));}
+function displayedQuickVotePolls_(){const all=quickVotePolls.filter(p=>p&&p.active!==false);const custom=all.find(p=>customVoteConfig_(p));return custom?all.filter(p=>p===custom||p.pollId!=="pick-your-favorite-v1"):all;}
+function preferConfiguredQuickVote_(){const custom=displayedQuickVotePolls_().find(p=>customVoteConfig_(p));if(custom && selectedQuickVotePollId==="pick-your-favorite-v1")selectedQuickVotePollId=custom.pollId;}
 function quickVotePanelInnerHtml_(){
+  // Each student can submit only one vote per survey.
+
   return `
     <div class="explore-detail-head"><strong>📣 Quick Survey</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
     <div class="quick-survey-heading-option"><strong>Quick Vote</strong><small>${missionsText_("Pick your vote","Elegí tu voto")}</small></div>
+    ${displayedQuickVotePolls_().length?"":`<p class="small" role="status">No hay encuestas asignadas para tu grado. / No surveys assigned for your grade.</p>`}
     <div class="quick-vote-poll-selector quick-survey-assigned-row">
-      ${[...quickVotePolls].sort((a,b)=>String(a.visibleFrom||a.displayFrom||a.createdAt||"").localeCompare(String(b.visibleFrom||b.displayFrom||b.createdAt||""))).map(p=>`<button type="button" class="secondary-button quick-vote-poll-button ${p.pollId===selectedQuickVotePollId?"selected":""}" data-action="select-quick-vote" data-poll-id="${escapeHtml(p.pollId)}"><strong>${escapeHtml(p.title||p.question||"Quick Vote")}</strong><small>${escapeHtml(quickVoteDateLabel_(p))}</small></button>`).join("")}
-      <button type="button" class="secondary-button quick-vote-poll-button" data-action="show-quick-survey-favorite"><strong>⭐ Pick your favorite</strong><small>${missionsText_("Write 3 favorites","Escribí 3 favoritos")}</small></button>
+      ${[...displayedQuickVotePolls_()].sort((a,b)=>String(a.visibleFrom||a.displayFrom||a.createdAt||"").localeCompare(String(b.visibleFrom||b.displayFrom||b.createdAt||""))).map(p=>`<button type="button" class="secondary-button quick-vote-poll-button ${p.pollId===selectedQuickVotePollId?"selected":""}" data-action="${isFavoriteTextPoll_(p)?'show-quick-survey-favorite':'select-quick-vote'}" data-poll-id="${escapeHtml(p.pollId)}"><strong>${escapeHtml(p.title||p.question||"Quick Vote")}</strong><small>${escapeHtml(quickVoteDateLabel_(p))}</small></button>`).join("")}
+
     </div>
     <div id="quickSurveyFavorite" hidden>${preferenceSurveyHtml_()}</div>
     <div id="quickSurveyVote">
-    ${activeQuickVote?`
+    ${activeQuickVote && !isFavoriteTextPoll_(activeQuickVote)?`
       <div class="quick-vote-meta"><span>● ${escapeHtml(quickVoteDateLabel_(activeQuickVote))}</span></div>
       <p><strong>${escapeHtml(activeQuickVote.question||activeQuickVote.title||"Quick Vote")}</strong>${activeQuickVote.instructions?`<br><span class="small">${escapeHtml(activeQuickVote.instructions)}</span>`:""}</p>
       <div class="quick-vote-rule"><strong>${Number(activeQuickVote.maxSelections||1)>1?`Podés elegir hasta ${Number(activeQuickVote.maxSelections||1)} Missions. Marcá las que quieras repasar y después presioná Votar.`:"Cada persona puede votar una sola vez."}</strong></div>
@@ -2554,7 +2615,7 @@ function quickVotePanelInnerHtml_(){
       }).join("")}</div>
       ${Number(activeQuickVote.maxSelections||1)>1 && !((quickVoteStats.myChoices||[]).length||quickVoteStats.myChoice)?`<button type="button" class="primary-button quick-vote-submit" data-action="poll-submit" ${pendingQuickVoteChoices.length?"":"disabled"}>Votar${pendingQuickVoteChoices.length?` (${pendingQuickVoteChoices.length})`:""}</button>`:""}
       <div id="quickVoteResults">${quickVoteResultsHtml()}</div>`
-      :`<p class="small">No hay una encuesta activa en este momento.</p>`}
+      :`<p class="small">${isFavoriteTextPoll_(activeQuickVote)?"Seleccioná Pick Your Favorite para escribir tus tres favoritos.":"No hay una encuesta activa en este momento."}</p>`}
     </div>
   `;
 }
@@ -2563,9 +2624,21 @@ function refreshQuickVotePanelDom_(){
   if(!panel)return;
   const wasHidden=panel.hidden;
   const favoriteWasOpen=!!document.getElementById("quickSurveyFavorite")&&!document.getElementById("quickSurveyFavorite").hidden;
+  const existingInputs=[...panel.querySelectorAll('[data-preference-answer]')];
+  if(favoriteWasOpen && existingInputs.length){
+    // Do not replace focused form fields during background synchronization.
+    return;
+  }
   panel.innerHTML=quickVotePanelInnerHtml_();
+  if(!panel.querySelector('.mew-once-notice')) {
+    const notice=document.createElement('div');
+    notice.className='mew-once-notice';
+    notice.style.cssText='font-size:12px;color:#51627c;padding:5px 0';
+    notice.textContent='Solo podés votar una vez. / You can vote only once.';
+    panel.appendChild(notice);
+  }
   panel.hidden=wasHidden;
-  if(favoriteWasOpen){
+  if(favoriteWasOpen && isFavoriteTextPoll_(activeQuickVote)){
     const vote=document.getElementById("quickSurveyVote"),favorite=document.getElementById("quickSurveyFavorite");
     if(vote)vote.hidden=true; if(favorite)favorite.hidden=false;
   }
@@ -2627,20 +2700,21 @@ function submitQuickVote(choiceOrChoices) {
   if (!state.student?.id || !activeQuickVote) return;
   let choices=Array.isArray(choiceOrChoices)?choiceOrChoices:[choiceOrChoices];
   choices=[...new Set(choices.map(x=>String(x||"").trim()).filter(Boolean))];
-  const max=Math.max(1,Number(activeQuickVote.maxSelections||1)||1);
+  const custom=customVoteConfig_(activeQuickVote);
+  const max=custom?custom.fieldCount:Math.max(1,Number(activeQuickVote.maxSelections||1)||1);
   choices=choices.slice(0,max);
   if(!choices.length)return;
 
   const already=Array.isArray(quickVoteStats.myChoices)&&quickVoteStats.myChoices.length ? quickVoteStats.myChoices : (quickVoteStats.myChoice?[quickVoteStats.myChoice]:[]);
   if(already.length){
-    alert("Cada persona puede votar una sola vez en esta encuesta. Tu voto ya fue registrado.");
+    alert("Solo podés votar una vez. / You can vote only once.");
     return;
   }
 
   if (isHomeTester_() && !testerBackendTrackingEnabled_()) {
     quickVoteStats.myChoices=choices; quickVoteStats.myChoice=choices[0]||"";
     quickVoteStatsByPoll[quickVoteCacheKey_(activeQuickVote.pollId)]=quickVoteStats;
-    refreshQuickVotePanelDom_(); showQuickSurveyComplete_(); return;
+    refreshQuickVotePanelDom_(); const status=document.getElementById("preferenceSurveyStatus"); if(status)status.textContent="Tester 1: prueba local; no se registra en Sheets. Usá Tester 2 o 3."; return;
   }
 
   const payload={
@@ -2967,9 +3041,11 @@ function missionPermissionCourseForStudent_() {
 
 function missionEnabledForStudent(mission) {
   if (mission?.underConstruction || mission?.temporarilyDisabled) return false;
-  // Home permissions come from the dedicated Dashboard/Home endpoint.
-  // Fail closed until that small request has completed successfully.
-  if (isHomeTester_()) return true;
+  const grade=String(state.student?.grade||"").replace(/\.0$/,"").trim();
+  const missionNo=Number(mission?.number||0);
+  // Teacher permissions, not a hard-coded Grade 6 cutoff, determine release.
+  // The old >15 and Mission 22 exceptions incorrectly locked published missions.
+  // Tester uses the same grade permissions as a real student.
   if (!homePermissionState.loaded) return false;
   const course=missionPermissionCourseForStudent_();
   if(!course) return false;
@@ -3064,17 +3140,21 @@ function exploreActivityDateHtml_(a){
 }
 function refreshExplorePracticeCatalog_(){
   if(!state.student?.id)return Promise.resolve(explorePracticeCatalog);
-  return jsonpRequestHome("explorePracticeCatalog",{studentId:state.student.id}).then(data=>{
+  return jsonpRequestHome("explorePracticeCatalog",{studentId:state.student.id,grade:state.student?.grade||""}).then(data=>{
     if(data?.ok&&Array.isArray(data.explorePracticeCatalog)){
       // Never let a transient/partial response erase activities already received.
-      const byId=new Map((explorePracticeCatalog||[]).map(a=>[String(a.id||a.pollId||a.title),a]));
+      const retained=(explorePracticeCatalog||[]).filter(a=>a?.category!=="Quick Vote");
+      const byId=new Map(retained.map(a=>[String(a.id||a.pollId||a.title),a]));
       data.explorePracticeCatalog.forEach(a=>byId.set(String(a.id||a.pollId||a.title),a));
       explorePracticeCatalog=[...byId.values()].filter(a=>a&&a.active!==false);
-      quickVotePolls=explorePracticeCatalog.filter(a=>a.category==="Quick Vote");
+      // Home Student endpoint v6.20 filters Quick Votes by teacher assignment.
+      // Do not replace that trusted selection with an unfiltered catalog refresh.
+      quickVotePolls=quickVotePolls.map(p=>explorePracticeCatalog.find(a=>a.pollId===p.pollId)||p).filter(p=>p.active!==false);
       if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)){
-        selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[0].pollId:"";
+        selectedQuickVotePollId=displayedQuickVotePolls_().length?displayedQuickVotePolls_()[0].pollId:"";
       }
-      activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
+      preferConfiguredQuickVote_();
+    activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
     }
     return explorePracticeCatalog;
   }).catch(()=>explorePracticeCatalog);
@@ -3085,12 +3165,33 @@ function exploreListeningHtml_(){
  return items.map((a,index)=>`<div class="listening-upload-item"><div><strong>${escapeHtml(a.title||"Listening")}</strong><span class="small">${a.mission?`Mission ${escapeHtml(a.mission)} · `:""}${escapeHtml(a.instructions||"")}</span>${exploreActivityDateHtml_(a)}</div><audio id="exploreListeningAudio${index}" controls preload="metadata" src="${escapeHtml(a.url)}"></audio></div>`).join("");
 }
 
+function teacherKahootsHtml_(){
+  const assigned=new Set(homeTaskExploreItems_().map(x=>String(x).trim().toLowerCase()));
+  const items=explorePracticeCatalog.filter(a=>a&&a.active!==false&&a.category==="Kahoots"&&a.url);
+  const safeUrl=u=>{try{const x=new URL(u);return x.protocol==="https:"?x.href:"";}catch(_){return "";}};
+  const shown=items.filter(a=>assigned.has(String(a.id||"").trim().toLowerCase())||assigned.has(String(a.title||"").trim().toLowerCase()));
+  return shown.map(a=>{
+    const url=safeUrl(a.url);if(!url)return "";
+    return `<a class="kahoot-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="kahoot-k">K!</span><span><strong>${escapeHtml(a.title||"Kahoot")}</strong><small>${a.mission?`Mission ${escapeHtml(a.mission)} · `:""}${escapeHtml(a.instructions||"")}</small></span></a>`;
+  }).join("")||`<p class="small">${missionsText_("No Kahoots assigned for your grade.","No hay Kahoots asignados para tu grado.")}</p>`;
+}
+
 function shortVideosHtml() {
-  const exploreVideos=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
-  const dynamic=exploreVideos.map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong><span class="small">${v.mission?`Mission ${escapeHtml(v.mission)} · `:""}${escapeHtml(v.instructions||"")}</span>${exploreActivityDateHtml_(v)}<button class="primary-button" data-action="open-explore-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
-  const teacherVideos=homeVideosForStudent().map((v,index)=>`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong>${v.translation?`<span class="small">(${escapeHtml(v.translation)})</span>`:""}${v.note?`<span class="small">${escapeHtml(v.note)}</span>`:""}<span class="explore-activity-dates">Activa · Desde — · Hasta Sin fecha límite</span><button class="primary-button" data-action="open-teacher-video" data-video-index="${index}">▶ Ver video</button></div>`).join("");
-  const empty=(!dynamic&&!teacherVideos)?`<div class="short-video-empty"><strong>No hay videos activos para este alumno.</strong></div>`:"";
-  return dynamic+teacherVideos+empty;
+  const assigned=new Set(homeTaskExploreItems_().map(x=>String(x).trim().toLowerCase()));
+  const catalog=explorePracticeCatalog.filter(a=>a.active!==false&&a.category==="Short Videos"&&a.url);
+  const teachers=homeVideosForStudent();
+  const matches=v=>assigned.has(String(v.id||"").trim().toLowerCase())||assigned.has(String(v.title||"").trim().toLowerCase());
+  const seen=new Set();
+  const cards=[];
+  const add=(v,kind,index)=>{
+    const key=String(v.url||v.embedUrl||v.id||v.title||"").trim().toLowerCase();
+    if(!key||seen.has(key))return;
+    seen.add(key);
+    cards.push(`<div class="short-video-item"><strong>${escapeHtml(v.title||"Short video")}</strong><button class="primary-button" data-action="${kind==='teacher'?'open-teacher-video':'open-explore-video'}" data-video-index="${index}">▶ Ver video</button></div>`);
+  };
+  catalog.forEach((v,i)=>{if(matches(v))add(v,'catalog',i);});
+  teachers.forEach((v,i)=>{if(matches(v))add(v,'teacher',i);});
+  return cards.join('')||'<div class="short-video-empty"><strong>No hay videos asignados para este alumno.</strong></div>';
 }
 
 function openTeacherVideo(index) {
@@ -3123,6 +3224,18 @@ const CLASSROOM_OBJECTS_GRADE6_HOME = {
 function missionSceneHtml_(mission, grade6=false, locked=false) {
   const id=String(mission?.id||"");
   const number=Number(mission?.number||0);
+  // Grade 4/5 Missions 13 and 14 must not show artwork labeled Mission 18/19.
+  // Render an accurate, purpose-built HTML/CSS visual until their own approved artwork exists.
+  if(id==="parts-face-g45-v1" || id==="parts-body-g45-v1") {
+    const isFace=id==="parts-face-g45-v1";
+    const label=isFace?"Parts of the Head and Face":"Parts of the Body";
+    return `<div class="g45-correct-mission-scene" role="img" aria-label="Mission ${number}: ${label}">
+      <div class="g45-scene-heading">MISSION ${number}</div>
+      <div class="g45-scene-symbol" aria-hidden="true">${isFace?"🙂":"🧍"}</div>
+      <div class="g45-scene-label">${label}</div>
+      ${locked?`<div class="scene-lock">🔒</div>`:""}
+    </div>`;
+  }
   const mapped=HOME_MISSION_VISUALS[id];
   if(mapped){const src=grade6?(mapped.grade6||mapped.base):mapped.base; if(src) return `<img src="${src}" alt="${escapeHtml(mission?.title||'Mission')}">${locked?`<div class="scene-lock">🔒</div>`:""}`;}
   const sceneClass={
@@ -3169,9 +3282,15 @@ function mapView() {
     const mm=missionForStudent_(m);
     const p=progress[m.id], enabled=missionEnabledForStudent(m), draft=missionDraft_(m.id);
     const isOptional=Number(m.number)===4 && enabled && !p && !draft;
+    const assignedTask=currentHomeTask_();
+    const assignedNumbers=Array.isArray(assignedTask?.missions)?assignedTask.missions:[];
+    const recommendedNumbers=Array.isArray(assignedTask?.recommendedMissions)?assignedTask.recommendedMissions:[];
+    const isAssigned=assignedNumbers.some(n=>Number(n)===Number(m.number));
+    const isRecommended=!isAssigned&&recommendedNumbers.some(n=>Number(n)===Number(m.number));
+    const homeworkBadge=isAssigned?missionsText_("Assigned homework","Tarea asignada"):(isRecommended?missionsText_("Recommended practice","Práctica recomendada"):"");
     const underConstruction=!!m.underConstruction;
     const status=underConstruction
-      ? missionsText_("🚧 Coming soon","🚧 Próximamente")
+      ? missionsText_("🔒 Coming soon","🔒 Próximamente")
       : enabled
         ? (p ? missionsText_("✓ Completed / Practice again","✓ Hecha / Practicar otra vez")
             : (draft ? missionsText_("▶ Continue","▶ Continuar")
@@ -3183,10 +3302,11 @@ function mapView() {
     return `<article class="dashboard-mission-card ${enabled?"available":"future-card"} ${renewedCard?"renewed-mission-card":""}">
       ${renewedCard?"":`<div class="mission-card-heading"><div class="mission-number-badge ${badgeClasses[i%badgeClasses.length]}">${escapeHtml(String(m.number || i+1))}</div><h3>${escapeHtml(title)}</h3></div>`}
       <div class="mission-card-image">
-        ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", !enabled && !underConstruction && !m.temporarilyDisabled)}
+        ${missionSceneHtml_(m, String(state.student?.grade||"").trim()==="6", underConstruction || (!enabled && !m.temporarilyDisabled))}
       </div>
+      ${homeworkBadge?`<div class="mission-homework-badge ${isAssigned?"assigned":"recommended"}">${homeworkBadge}</div>`:""}
       <div class="mission-status-strip ${statusClass}">${status}</div>
-      ${(enabled||m.temporarilyDisabled)?`<button class="mission-card-hit" data-action="open-mission" data-index="${i}" aria-label="Abrir ${escapeHtml(title)}"></button>`:""}
+      ${(!underConstruction&&(enabled||m.temporarilyDisabled))?`<button class="mission-card-hit" data-action="open-mission" data-index="${i}" aria-label="Abrir ${escapeHtml(title)}"></button>`:""}
     </article>`;
   }).join("");
 
@@ -3322,12 +3442,7 @@ function mapView() {
 
       <div class="explore-detail" id="kahootPanel" hidden>
         <div class="explore-detail-head"><strong>Kahoots</strong><button class="secondary-button" data-action="close-explore-panels">${missionsText_("Close","Cerrar")}</button></div>
-        <div class="kahoot-list">
-          <a class="kahoot-card" href="https://kahoot.it/challenge/04563251?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787587917893" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Colors</strong><small>Mission 6 · Colores</small></span></a>
-          <a class="kahoot-card" href="https://kahoot.it/challenge/02412575?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787588019194" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Spelling Colors</strong><small>Mission 6 · Deletreando colores</small></span></a>
-          <a class="kahoot-card" href="https://kahoot.it/challenge/06972109?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787588188996" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>What's the weather like?</strong><small>Mission 8 · ¿Cómo está el clima?</small></span></a>
-          <a class="kahoot-card" href="https://kahoot.it/challenge/02854007?challenge-id=888d47f0-5a2c-45d1-90e2-eeaafa0fd751_1787602483812" target="_blank" rel="noopener"><span class="kahoot-k">K!</span><span><strong>Months of the Year</strong><small>Mission 12 · Meses del año</small></span></a>
-        </div><p class="kahoot-deadline">⏰ Estos juegos vencen el sábado 5 de septiembre al mediodía.</p>
+        <div class="kahoot-list">${teacherKahootsHtml_()}</div>
       </div>
     </section>
 
@@ -3787,8 +3902,9 @@ function bindEvents() {
             if(id==="shortVideosPanel"){const list=document.getElementById("shortVideoList");if(list){list.innerHTML=shortVideosHtml();bindEvents();}}
             else if(id==="listeningPanel"){const list=panel.querySelector(".dynamic-listening-catalog");if(list)list.innerHTML=exploreListeningHtml_();}
             else if(id==="quickVotePanel"){
-              if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)) selectedQuickVotePollId=quickVotePolls.length?quickVotePolls[quickVotePolls.length-1].pollId:"";
-              activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
+              if(!selectedQuickVotePollId || !quickVotePolls.some(a=>a.pollId===selectedQuickVotePollId)) selectedQuickVotePollId=displayedQuickVotePolls_().length?displayedQuickVotePolls_()[0].pollId:"";
+              preferConfiguredQuickVote_();
+    activeQuickVote=quickVotePolls.find(a=>a.pollId===selectedQuickVotePollId)||quickVotePolls[0]||null;
               refreshQuickVotePanelDom_();
             }
           });
@@ -3797,6 +3913,9 @@ function bindEvents() {
       return;
     }
     if (action === "show-quick-survey-favorite") {
+      const chosen=quickVotePolls.find(p=>p.pollId===event.currentTarget.dataset.pollId);
+      if(!chosen)return;
+      selectedQuickVotePollId=chosen.pollId;activeQuickVote=chosen;
       const vote=document.getElementById("quickSurveyVote");
       const favorite=document.getElementById("quickSurveyFavorite");
       if(vote)vote.hidden=true;
@@ -3812,17 +3931,11 @@ function bindEvents() {
     }
     if (action === "save-preference-survey") {
       const inputs=[...document.querySelectorAll("[data-preference-answer]")];
-      const answers=inputs.map(el=>normalizePreferenceAnswer_(el.value)).filter(Boolean).slice(0,3);
-      inputs.forEach(el=>{el.value=normalizePreferenceAnswer_(el.value);});
+      const answers=inputs.map(el=>normalizePreferenceAnswer_(el.value));
+      inputs.forEach((el,i)=>{el.value=answers[i];});
+      if(answers.some(x=>!x)){const status=document.getElementById("preferenceSurveyStatus");if(status)status.textContent="Completá todas las respuestas. / Complete every answer.";return;}
       localStorage.setItem(preferenceSurveyKey_(),JSON.stringify(answers));
-      const status=document.getElementById("preferenceSurveyStatus");
-      if(status)status.textContent=missionsText_("Sent.","Enviado.");
-      showQuickSurveyComplete_();
-      // Best-effort submission. Existing backend remains untouched in this local test.
-      if(state.student?.id && !(isHomeTester_()&&!testerBackendTrackingEnabled_())){
-        const payload={type:"preferenceSurvey",id:crypto.randomUUID?crypto.randomUUID():`pref-${Date.now()}`,createdAt:new Date().toISOString(),origin:"Home",answers,avatar:savedAvatar_(state.student)||"",student:state.student,device:{computerName:"Home",location:"Fuera del aula"}};
-        try{fetch(SYNC_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload),keepalive:true});}catch{}
-      }
+      submitQuickVote(answers);
       return;
     }
     if (action === "select-quick-vote") {
@@ -4173,8 +4286,8 @@ function bindEvents() {
     const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
     const grade = String(form.get("grade") || "").trim();
 
-    if (grade !== "5" && grade !== "6") {
-      state.identityError = "Mission English Home está habilitado para 5.º y 6.º grado.";
+    if (!["4","5","6"].includes(grade)) {
+      state.identityError = "Seleccioná un curso disponible de tu escuela.";
       saveState(); render(); return;
     }
 

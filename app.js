@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.7.14";
+const HOME_RELEASE_VERSION = "v1.7.15";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.7.14";
+const CONTENT_VERSION = "Mission English Home v1.7.15";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1956,58 +1956,6 @@ function firstNameOrNickname(student) {
   const parts = splitOfficialName(student);
   return (parts.first.split(/\s+/)[0] || student.officialName || "").trim();
 }
-function findHomeStudentSimple(identifier, lastName, grade) {
-  const wanted = normalizeText(identifier);
-  const surname = normalizeText(lastName);
-  const ng = normalizeText(grade).replace(/[^0-9a-z]/g, "");
-  if (!wanted || !ng) return { student:null, ambiguous:false };
-
-  const wantedTokens = wanted.split(" ").filter(Boolean).sort();
-  const sameTokens = value => {
-    const tokens = normalizeText(value).split(" ").filter(Boolean).sort();
-    return tokens.length === wantedTokens.length && tokens.every((v,i)=>v===wantedTokens[i]);
-  };
-
-  let matches = rosterStudents().filter(student => {
-    const sg = normalizeText(student.grade).replace(/[^0-9a-z]/g, "");
-    if (sg !== ng) return false;
-
-    const parts = splitOfficialName(student);
-    const firstFull = normalizeText(parts.first);
-    const firstToken = firstFull.split(" ")[0] || "";
-    const nick = normalizeText(student.nickname || "");
-    const official = normalizeText(student.officialName || "");
-
-    return wanted === firstFull ||
-      wanted === firstToken ||
-      (nick && wanted === nick) ||
-      wanted === official ||
-      sameTokens(student.officialName || "");
-  });
-
-  // "Apellido (si hace falta)" must truly remain optional.
-  // If the first name/nickname already identifies exactly one student, a misspelled
-  // optional surname must not lock that student out of Home.
-  if (matches.length === 1) {
-    return { student:matches[0], ambiguous:false };
-  }
-
-  if (surname && matches.length > 1) {
-    const narrowed = matches.filter(student => {
-      const parts = splitOfficialName(student);
-      const fullLast = normalizeText(parts.last);
-      const lastTokens = fullLast.split(" ").filter(Boolean);
-      return fullLast === surname || lastTokens.includes(surname);
-    });
-    if (narrowed.length === 1) return { student:narrowed[0], ambiguous:false };
-    if (narrowed.length > 1) return { student:null, ambiguous:true };
-  }
-
-  return {
-    student: matches.length === 1 ? matches[0] : null,
-    ambiguous: matches.length > 1
-  };
-}
 function resetState() {
   localStorage.removeItem(STORAGE_KEY);
   state = freshState();
@@ -2020,7 +1968,7 @@ function normalizeText(value) {
 }
 
 function rosterStudents() {
-  return bootstrapData.students && bootstrapData.students.length ? bootstrapData.students : LOCAL_STUDENTS;
+  return bootstrapData.rosterLoaded ? bootstrapData.students : LOCAL_STUDENTS;
 }
 
 function splitOfficialName(student) {
@@ -2290,50 +2238,69 @@ function studentsForSelectedCourse() {
     .sort((a,b) => a.officialName.localeCompare(b.officialName, "es"));
 }
 
+function homeStudentChoices_(grade) {
+  const students = rosterStudents()
+    .filter(student => grade && String(student.grade) === grade && student.id && student.officialName && !student.isTester)
+    .map(student => {
+      const {first,last} = splitOfficialName(student);
+      const firstName = first.split(/\s+/)[0] || student.nickname;
+      const initial = last[0] ? ` ${last[0].toUpperCase()}.` : "";
+      return {student, label: firstName + initial, first, last};
+    });
+  const counts = new Map();
+  students.forEach(({label}) => counts.set(normalizeText(label), (counts.get(normalizeText(label)) || 0) + 1));
+  return students.map(entry => ({
+    student:entry.student,
+    label:counts.get(normalizeText(entry.label)) > 1
+      ? [entry.first, entry.last, entry.student.division].filter(Boolean).join(" · ")
+      : entry.label
+  })).sort((a,b) => a.label.localeCompare(b.label,"es"));
+}
+
+function refreshHomeStudentChoices_() {
+  const grade = document.getElementById("grade");
+  const select = document.getElementById("homeStudentSelect");
+  if (!grade || !select) return;
+  const choices = homeStudentChoices_(grade.value);
+  const previous = select.value;
+  const placeholder = !grade.value ? "Primero elegí tu grado"
+    : choices.length ? "Seleccioná tu nombre" : "No hay alumnos disponibles";
+  select.replaceChildren(new Option(placeholder,""));
+  choices.forEach(({student,label}) => select.add(new Option(label,student.id)));
+  if (choices.some(({student}) => student.id === previous)) select.value = previous;
+  select.disabled = !choices.length;
+  select.form.querySelector('button[type="submit"]').disabled = !select.value;
+}
+
 function identifyView() {
-  const grades = [...new Set(rosterStudents().map(s => String(s.grade || "").trim()).filter(g=>g==="4"||g==="5"||g==="6"))]
-    .sort((a,b) => a.localeCompare(b, "es", { numeric:true }));
-  const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
-  const schoolValue = state.student.institution || savedHomeSchool();
+  const gradeOptions = ["4","5","6"].map(grade =>
+    `<option value="${grade}" ${String(state.student.grade)===grade?"selected":""}>${gradeLabel(grade)}</option>`).join("");
 
   return `<section class="card identity-entry-card">
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
-    <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
+    <p>Elegí tu grado y buscá tu nombre en la lista.</p>
     <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso depende de la configuración de cada curso.</strong></div>
-
-    ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
+    ${state.identityError ? `<div class="notice" role="alert">${escapeHtml(state.identityError)}</div>` : ""}
 
     <form id="studentForm" class="identity-form-grid">
-      <div class="field">
-        <label for="firstName">Nombre</label>
-        <input id="firstName" name="firstName" autocomplete="given-name"
-          value="${escapeHtml(state.student.firstName || "")}" placeholder="Por ejemplo: Maria">
-      </div>
-
-      <div class="field">
-        <label for="nickname">Apodo</label>
-        <input id="nickname" name="nickname"
-          value="${escapeHtml(state.student.nickname || "")}" placeholder="Por ejemplo: Pia">
-      </div>
-
-      <div class="field">
-        <label for="lastName">Apellido <span class="small">(si hace falta)</span></label>
-        <input id="lastName" name="lastName"
-          value="${escapeHtml(state.student.lastName || "")}" placeholder="Para distinguir nombres iguales">
-      </div>
-
-      <div class="field">
-        <label for="institution">Colegio / Institución</label>
-        <input id="institution" name="institution"
-          value="${escapeHtml(schoolValue)}" placeholder="Por ejemplo: Yapeyú">
-      </div>
-
       <div class="field identity-grade-field">
         <label for="grade">Grado</label>
         <select id="grade" name="grade" required>
           <option value="">Seleccioná</option>${gradeOptions}
         </select>
+      </div>
+      <div class="field">
+        <label for="homeStudentSelect">Tu nombre</label>
+        <select id="homeStudentSelect" name="studentId" required disabled></select>
+      </div>
+      <div class="field full">
+        <details>
+          <summary>No encuentro mi nombre</summary>
+          <p>Revisá tu grado. Si tu nombre sigue sin aparecer, actualizá la lista o avisale a tu docente.</p>
+          <button type="button" class="secondary-button" data-action="reload-roster">Actualizar lista</button>
+          <span id="homeRosterStatus" role="status"></span>
+        </details>
       </div>
 
       <div class="field full identity-main-actions">
@@ -4049,7 +4016,13 @@ function bindEvents() {
     if (action === "first-time-home") { state.forceHomeIntro=true; state.route = "about-home"; saveState(); render(); }
     if (action === "about-home-continue") { state.forceHomeIntro=true; state.route = "identify"; saveState(); render(); }
     if (action === "go-home") { state.route = "home"; saveState(); render(); }
-    if (action === "reload-roster") { await loadBootstrap(true); }
+    if (action === "reload-roster") {
+      const status = document.getElementById("homeRosterStatus");
+      status.textContent = "Actualizando…";
+      const roster = await loadBootstrap(true,true);
+      status.textContent = roster.error ? "No pudimos actualizar la lista." : "Lista actualizada.";
+      return;
+    }
     if (action === "dashboard-home") { state.route="home"; saveState(); render(); return; }
     if (action === "close-homework-reminder") {
       closeHomeworkReminder_();
@@ -4519,73 +4492,38 @@ function bindEvents() {
   });
 
   const studentForm = document.getElementById("studentForm");
-  if (studentForm) studentForm.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const form = new FormData(studentForm);
-    const firstName = String(form.get("firstName") || "").trim();
-    const nickname = String(form.get("nickname") || "").trim();
-    const lastName = String(form.get("lastName") || "").trim();
-    const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
-    const grade = String(form.get("grade") || "").trim();
-
-    if (!["4","5","6"].includes(grade)) {
-      state.identityError = "Seleccioná un curso disponible de tu escuela.";
-      saveState(); render(); return;
-    }
-
-    if (!firstName && !nickname) {
-      state.identityError = "Escribí tu nombre o tu apodo.";
-      saveState();
-      render();
-      return;
-    }
-
-    let match = nickname ? findHomeStudentSimple(nickname, lastName, grade) : {student:null,ambiguous:false};
-    if (!match.student && firstName) {
-      const byName = findHomeStudentSimple(firstName, lastName, grade);
-      match = byName.student ? byName : {student:null, ambiguous: match.ambiguous || byName.ambiguous};
-    }
-
-    if (!match.student) {
+  if (studentForm) {
+    const grade = studentForm.elements.grade;
+    const select = studentForm.elements.studentId;
+    refreshHomeStudentChoices_();
+    grade.addEventListener("change",refreshHomeStudentChoices_);
+    select.addEventListener("change",() => {
+      studentForm.querySelector('button[type="submit"]').disabled = !select.value;
+    });
+    studentForm.addEventListener("submit",event => {
+      event.preventDefault();
+      const matched = homeStudentChoices_(grade.value).find(({student}) => student.id === select.value)?.student;
+      if (!matched) {
+        refreshHomeStudentChoices_();
+        return;
+      }
+      const official = splitOfficialName(matched);
+      state.identityError = "";
       state.student = {
-        ...state.student,
-        firstName,
-        nickname,
-        lastName,
-        institution,
-        grade
+        ...matched,
+        firstName:official.first.split(/\s+/)[0] || firstNameOrNickname(matched),
+        lastName:official.last,
+        institution:matched.institution || savedHomeSchool() || "Yapeyú",
+        level:"Primaria",
+        mode:"individual",
+        partnerId:"",
+        partner:""
       };
-
-      state.identityError = match.ambiguous
-        ? "Hay más de un alumno con esos datos en tu grado. Escribí también tu apellido para distinguirte."
-        : "No encontramos ese nombre o apodo en el grado seleccionado. Revisalo y volvé a intentar.";
-
+      state.route = "confirm";
       saveState();
       render();
-      return;
-    }
-
-    const matched = match.student;
-    const official = splitOfficialName(matched);
-
-    state.identityError = "";
-    state.student = {
-      ...matched,
-      firstName: official.first.split(" ")[0] || firstNameOrNickname(matched) || firstName || nickname,
-      lastName: official.last || lastName,
-      institution,
-      level: "Primaria",
-      mode:"individual",
-      partnerId:"",
-      partner:""
-    };
-
-    saveHomeSchool(institution);
-    state.route = "confirm";
-    saveState();
-    render();
-  });
+    });
+  }
 
   const missionForm = document.getElementById("missionForm");
   if (missionForm) {
@@ -4780,7 +4718,8 @@ function loadBootstrap(force=false, silent=false) {
   }
 
   bootstrapData = {
-    students: LOCAL_STUDENTS,
+    students: rosterStudents(),
+    rosterLoaded: bootstrapData.rosterLoaded,
     progress: bootstrapData.progress || {},
     classroomProgress: bootstrapData.classroomProgress || {},
     homeProgress: bootstrapData.homeProgress || {},
@@ -4807,9 +4746,10 @@ function loadBootstrap(force=false, silent=false) {
       const previousClassroom=bootstrapData.classroomProgress||{};
       const previousHome=bootstrapData.homeProgress||{};
       bootstrapData = {
-        students: Array.isArray(data.students) && data.students.length
-          ? [...new Map([...LOCAL_STUDENTS, ...data.students].map(student => [student.id, student])).values()]
-          : LOCAL_STUDENTS,
+        students: Array.isArray(data.students)
+          ? [...new Map(data.students.map(student => [student.id, student])).values()]
+          : rosterStudents(),
+        rosterLoaded: Array.isArray(data.students) || bootstrapData.rosterLoaded,
         progress: {...(data.progress && typeof data.progress === "object" ? data.progress : {}),...previousProgress},
         missionPermissions: data.missionPermissions && typeof data.missionPermissions === "object" ? data.missionPermissions : {},
         classroomProgress: {...(data.classroomProgress && typeof data.classroomProgress === "object" ? data.classroomProgress : {}),...previousClassroom},
@@ -4823,13 +4763,15 @@ function loadBootstrap(force=false, silent=false) {
       // Mission permissions may arrive after the Missions map has already rendered.
       // Even during a silent refresh, re-render the map so Dashboard lock/unlock
       // changes become visible immediately after the fresh Home bootstrap arrives.
-      if (!silent || state.route === "map") render();
+      if (state.route === "identify") refreshHomeStudentChoices_();
+      else if (!silent || state.route === "map") render();
       return bootstrapData;
     })
     .catch(error => {
       console.error("Mission English Home bootstrap error:", error);
       bootstrapData = {
-        students: LOCAL_STUDENTS,
+        students: rosterStudents(),
+        rosterLoaded: bootstrapData.rosterLoaded,
         progress: bootstrapData.progress || {},
         classroomProgress: bootstrapData.classroomProgress || {},
         homeProgress: bootstrapData.homeProgress || {},

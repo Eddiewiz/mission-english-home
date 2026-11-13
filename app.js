@@ -1,5 +1,5 @@
 
-const HOME_RELEASE_VERSION = "v1.7.11k";
+const HOME_RELEASE_VERSION = "v1.7.14";
 
 function homeworkReminderKey_(){
   const sid=String(state?.student?.id||state?.student?.officialName||state?.student?.nickname||"student").trim()||"student";
@@ -26,7 +26,7 @@ function closeHomeworkReminder_(){
 })();
 
 
-const APP_VERSION = "Home v1.7.11k";
+const APP_VERSION = "Home " + HOME_RELEASE_VERSION;
 
 /* Home v1.6.0 — first take-home rollout.
    Fill requiredMissionIds and deadlineLabel once the teacher selects the two compulsory Missions. */
@@ -83,7 +83,7 @@ function homeworkPanelHtml_(){
   </section>`;
 }
 
-const CONTENT_VERSION = "Mission English Home v1.7.08 — deployment/cache + homework popup + Quick Survey fixes";
+const CONTENT_VERSION = "Mission English Home v1.7.14";
 const STORAGE_KEY = "mission_english_home_state_v13__v1.6.8";
 const QUEUE_KEY = "mission_english_home_results_queue_v11__v1.6.0";
 const CONFIG_KEY = "mission_english_home_config_v11__v1.6.0";
@@ -1168,6 +1168,67 @@ const GRADE45_EXTENDED_MISSIONS = [
   cloneMissionBase_(PARTS_BODY_BASE,{id:"parts-body-g45-v1",number:14,title:"MISIÓN 14 – Parts of the Body",visual:"body",defaultLocked:false}),
   {id:"review-11-14-g45-v1",number:15,title:"MISIÓN 15 – Review Missions 11–14",contentKey:"review-11-14",revision:2,icon:"✅",visual:"review-11-14",defaultLocked:true,intro:"Vamos a repasar Days of the Week, Months of the Year, Parts of the Head and Face y Parts of the Body.",sections:[{title:"🧠 Recordemos",html:'<div class="review-topics-grid"><span>📅 <strong>Days of the Week</strong></span><span>🗓️ <strong>Months of the Year</strong></span><span>🙂 <strong>Head and Face</strong></span><span>🧍 <strong>Body</strong></span></div><p>Leé cada pregunta con calma. Si algo no sale, podés volver a la Mission correspondiente y practicar otra vez.</p>'}],questions:[{id:"r151",topic:"Days review",review:"Days of the Week",points:1,text:'Which word is a day of the week? <span class="small">(¿Cuál palabra es un día de la semana?)</span>',options:["Wednesday","January","shoulder"],correct:"Wednesday"},{id:"r152",topic:"Months review",review:"Months of the Year",points:1,text:'Which word is a month? <span class="small">(¿Cuál palabra es un mes?)</span>',options:["October","Friday","ankle"],correct:"October"},{id:"r153",topic:"Face review",review:"Parts of the Head and Face",points:1,text:'Which part is on your face? <span class="small">(¿Qué parte está en tu cara?)</span>',options:["nose","knee","shoulder"],correct:"nose"},{id:"r154",topic:"Body review",review:"Parts of the Body",points:1,text:'Which part bends in the middle of your leg? <span class="small">(¿Qué parte se dobla en el medio de la pierna?)</span>',options:["knee","ear","mouth"],correct:"knee"},{id:"r155",topic:"Integrated review",review:"Missions 11–14",points:1,text:'Choose the group with one day, one month and one body part. <span class="small">(Elegí el grupo con un día, un mes y una parte del cuerpo.)</span>',options:["Monday · March · hand","January · April · June","nose · ear · foot"],correct:"Monday · March · hand"}],closing:"🎉 ¡Review completado! Podés volver a practicar cualquiera de las Missions 11–14 cuando quieras."}
 ];
+
+const HOME_THIS_THAT_LEARN = [
+  {title:"📖 Learn / Aprendé", html:`
+    <p>Usamos <strong>this</strong> y <strong>that</strong> para señalar <strong>una sola persona o cosa</strong>. Primero mirá dónde está en relación con vos.</p>
+    <div class="lesson-compare">
+      <div><strong>This · near / cerca</strong><p>Esto, este o esta. Lo usás cuando lo que señalás está cerca de vos.</p></div>
+      <div><strong>That · far / lejos</strong><p>Eso, ese o esa. Lo usás cuando lo que señalás está más lejos.</p></div>
+    </div>
+    <figure class="lesson-figure"><img src="images/m17-near-far.webp" alt="Un estudiante señala un lápiz cerca y una mochila lejos.">
+      <figcaption class="lesson-compare"><span><strong>This is a pencil.</strong><br>Este es un lápiz.</span><span><strong>That is a backpack.</strong><br>Esa es una mochila.</span></figcaption>
+    </figure>`},
+  {title:"❓ Ask and answer / Preguntá y respondé", html:`
+    <p>Si querés saber qué es algo, podés preguntar si es un objeto determinado. Para armar esa pregunta, poné <strong>is</strong> al comienzo.</p>
+    <div class="lesson-table-wrap"><table class="lesson-table"><thead><tr><th>Afirmación</th><th>Pregunta</th></tr></thead><tbody>
+      <tr><td><strong>This is</strong> a ruler.</td><td><strong>Is this</strong> a ruler? · ¿Es esta una regla?</td></tr>
+      <tr><td><strong>That is</strong> a pencil.</td><td><strong>Is that</strong> a pencil? · ¿Es ese un lápiz?</td></tr>
+    </tbody></table></div>
+    <p>En la respuesta corta usamos <strong>it</strong> para referirnos al objeto. Si la respuesta es sí, decí <strong>Yes, it is.</strong> Si es no, decí <strong>No, it isn't.</strong></p>`}
+];
+
+const HOME_BE_SINGULAR_LEARN = [
+  {title:"📖 Learn / Aprendé", html:`
+    <p>El verbo <strong>to be</strong> significa <strong>ser</strong> o <strong>estar</strong>. Lo usamos para decir quién es una persona, de dónde es, cuántos años tiene o cómo está.</p>
+    <p>En esta misión practicamos el <strong>singular</strong>. Hablamos de una persona o cosa a la vez. Acá <strong>you</strong> significa <strong>vos</strong>. En la Misión 24 veremos las formas del plural.</p>
+    <h3>Affirmative / Afirmativo</h3>
+    <div class="lesson-table-wrap"><table class="lesson-table"><thead><tr><th>Persona</th><th>Pronombre</th><th>Forma completa</th><th>Forma corta</th></tr></thead><tbody>
+      <tr><th scope="row">1.ª singular · quien habla</th><td>I · yo</td><td>I am</td><td>I'm</td></tr>
+      <tr><th scope="row">2.ª singular · a quien le hablás</th><td>you · vos</td><td>You are</td><td>You're</td></tr>
+      <tr><th scope="rowgroup" rowspan="3">3.ª singular · de quien hablás</th><td>he · él</td><td>He is</td><td>He's</td></tr>
+      <tr><td>she · ella</td><td>She is</td><td>She's</td></tr>
+      <tr><td>it · una cosa o animal</td><td>It is</td><td>It's</td></tr>
+    </tbody></table></div>
+    <p>La forma corta dice lo mismo que la completa. El apóstrofo marca letras que dejamos afuera.</p>`},
+  {title:"💬 Examples / Ejemplos", html:`
+    <ul class="lesson-examples">
+      <li><strong>I'm a student.</strong> · Soy estudiante.</li><li><strong>You're a teacher.</strong> · Sos docente.</li>
+      <li><strong>He's a man.</strong> · Él es un hombre.</li><li><strong>She's a woman.</strong> · Ella es una mujer.</li>
+      <li><strong>He's a boy.</strong> · Él es un chico.</li><li><strong>She's a girl.</strong> · Ella es una chica.</li>
+      <li><strong>I'm American.</strong> · Soy estadounidense.</li><li><strong>She's Argentine.</strong> · Ella es argentina.</li>
+      <li><strong>I'm 11.</strong> · Tengo 11 años.</li><li><strong>It's a backpack.</strong> · Es una mochila.</li>
+    </ul>
+    <p>En inglés, las nacionalidades empiezan con mayúscula. Para decir la edad, usamos <strong>I'm 11</strong>.</p>`},
+  {title:"➖ Negative / Negativo", html:`
+    <p>Ahora vamos a ver las formas negativas. Para negar, agregamos <strong>not</strong> después de <strong>am</strong>, <strong>are</strong> o <strong>is</strong>.</p>
+    <div class="lesson-table-wrap"><table class="lesson-table"><thead><tr><th>Pronombre</th><th>Forma completa</th><th>Forma corta</th></tr></thead><tbody>
+      <tr><th scope="row">I</th><td>I am not</td><td>I'm not</td></tr>
+      <tr><th scope="row">You</th><td>You are not</td><td>You aren't</td></tr>
+      <tr><th scope="row">He</th><td>He is not</td><td>He isn't</td></tr>
+      <tr><th scope="row">She</th><td>She is not</td><td>She isn't</td></tr>
+      <tr><th scope="row">It</th><td>It is not</td><td>It isn't</td></tr>
+    </tbody></table></div>
+    <p><strong>I'm a student.</strong> · Soy estudiante. <strong>I'm not a teacher.</strong> · No soy docente.</p>
+    <p><strong>He's 11.</strong> · Tiene 11 años. <strong>He isn't 12.</strong> · No tiene 12 años.</p>`},
+  {title:"▶️ Watch and practice / Mirá y practicá", html:`
+    <p>Mirá primero la explicación. En el segundo video, pausá después de cada oración y completala en voz alta antes de seguir.</p>
+    <div class="lesson-video-grid">
+      <figure><figcaption><strong>1. Verb To Be · Ser o estar</strong><br>Inglés Fácil · ALEMA</figcaption><video controls playsinline preload="none" src="videos/verb-to-be-leccion-alema.mp4"></video></figure>
+      <figure><figcaption><strong>2. Practicá el afirmativo</strong><br>Inglés 3.0</figcaption><video controls playsinline preload="none" src="videos/verb-to-be-afirmativo-ingles30.mp4"></video></figure>
+    </div>`}
+];
+
 const GRADE6_EXTENDED_MISSIONS = [
   {
  id:"classroom-objects-g6-v1",number:13,grades:["5","6"],
@@ -1201,11 +1262,31 @@ const GRADE6_EXTENDED_MISSIONS = [
   {id:"verb-it-g6-v1",number:14,title:"MISIÓN 14 – Verb To Be · It",visual:"it-be",defaultLocked:true,intro:"Usamos It is / It’s para hablar de una cosa, un objeto, un animal o una situación.",sections:[{title:"✏️ It is / It’s",html:'<p><strong>It is</strong> = Es / Está. <strong>It\'s</strong> es la forma corta.</p><p><strong>It is a pencil.</strong> · Es un lápiz.<br><strong>It\'s blue.</strong> · Es azul.</p><p>Para preguntar: <strong>Is it...?</strong> · ¿Es...?</p>'}],questions:[{id:"m14q1",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It is a book.","It am a book.","It are a book."],correct:"It is a book."},{id:"m14q2",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the short form of <strong>It is</strong>. <span class="small">(Elegí la forma corta.)</span>',options:["It’s","Its are","I’m"],correct:"It’s"},{id:"m14q3",topic:"Verb To Be – It",review:"Is it...?",points:1,text:'Complete: ___ it a pencil? <span class="small">(Completá la pregunta.)</span>',options:["Is","Am","Are"],correct:"Is"},{id:"m14q4",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'A ruler is green. Choose the correct sentence. <span class="small">(Una regla es verde. Elegí la oración correcta.)</span>',options:["It is green.","He is green.","I am green."],correct:"It is green."},{id:"m14q5",topic:"Verb To Be – It",review:"Is it...?",points:1,text:'Is it an eraser? <span class="small">(¿Es una goma?)</span>',options:["Yes, it is.","Yes, I am.","Yes, she is."],correct:"Yes, it is."},{id:"m14q6",topic:"Verb To Be – It",review:"It is / It’s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It’s a blue notebook.","It are a blue notebook.","It am a blue notebook."],correct:"It’s a blue notebook."}],closing:"🎉 ¡Muy bien! Practicaste It is, It’s e Is it...?"},
   {id:"review-11-14-g6-v1",number:15,title:"MISIÓN 15 – Review Missions 11–14",contentKey:"review-11-14-g6",revision:2,icon:"✅",visual:"review-11-14",defaultLocked:true,intro:"Repaso de Days of the Week, Months of the Year, Classroom Objects y Verb To Be · It.",sections:[{title:"🧠 Review",html:'<div class="review-topics-grid"><span>📅 <strong>Days</strong></span><span>🗓️ <strong>Months</strong></span><span>🎒 <strong>Classroom Objects</strong></span><span>✏️ <strong>It is / It\'s</strong></span></div><p>Usá lo que aprendiste en Missions 11–14. Esta Mission tiene más práctica para 6.º.</p>'}],questions:[{id:"r15g61",topic:"Days",review:"Days of the Week",points:1,text:'Is Wednesday a day or a month? <span class="small">(¿Wednesday es un día o un mes?)</span>',options:["A day","A month"],correct:"A day"},{id:"r15g62",topic:"Months",review:"Months of the Year",points:1,text:'Which one is a month? <span class="small">(¿Cuál es un mes?)</span>',options:["September","Saturday","pencil"],correct:"September"},{id:"r15g63",topic:"Classroom Objects",review:"Classroom Objects",points:1,text:'Which object is used to erase? <span class="small">(¿Qué objeto se usa para borrar?)</span>',options:["eraser","ruler","book"],correct:"eraser"},{id:"r15g64",topic:"Verb To Be It",review:"It is / It\'s",points:1,text:'Choose the correct sentence. <span class="small">(Elegí la oración correcta.)</span>',options:["It is a pen.","It am a pen.","It are a pen."],correct:"It is a pen."},{id:"r15g65",topic:"OR question",review:"Classroom Objects + It",points:1,text:'Is it a pencil or a ruler? ✏️ <span class="small">(¿Es un lápiz o una regla?)</span>',options:["It is a pencil.","It is a ruler."],correct:"It is a pencil."},{id:"r15g66",topic:"Transfer",review:"Missions 11–14",points:1,text:'Choose the sentence that describes a classroom object. <span class="small">(Elegí la oración que describe un objeto del aula.)</span>',options:["It\'s a blue book.","Tuesday is a month.","January is a ruler."],correct:"It\'s a blue book."}],closing:"🎉 ¡Review completado! Seguí practicando lo que necesites de Missions 11–14."},
   {id:"size-colors-g6-v1",number:16,title:"MISIÓN 16 – Adjectives: Size + Colors",visual:"size-colors",defaultLocked:true,sections:[],questions:[]},
-  {id:"this-that-g6-v1",number:17,title:"MISIÓN 17 – This and That",visual:"this-that",defaultLocked:true,sections:[],questions:[]},
+  {id:"this-that-g6-v1",number:17,title:"MISIÓN 17 – This and That",visual:"this-that",defaultLocked:true,icon:'👉',intro:"This and That: near and far. / This y That: cerca y lejos.",sections:HOME_THIS_THAT_LEARN,questions:[
+      {id:"homeg617q1",topic:"this",points:1,text:"Which word means near you? / ¿Qué palabra indica algo cerca de vos?",options:["this","that","those"],correct:"this"},
+      {id:"homeg617q2",topic:"that",points:1,text:"Which word means far from you? / ¿Qué palabra indica algo lejos de vos?",options:["that","this","these"],correct:"that"},
+      {id:"homeg617q3",topic:"this",points:1,text:"Look at the picture on the left. ___ is my pencil. / Mirá la imagen de la izquierda. ___ es mi lápiz.",options:["This","That","They"],correct:"This"},
+      {id:"homeg617q4",topic:"that",points:1,text:"Look at the picture on the right. ___ is the backpack. / Mirá la imagen de la derecha. ___ es la mochila.",options:["That","This","These"],correct:"That"},
+      {id:"homeg617q5",topic:"question",points:1,text:"How do you ask about this ruler? / ¿Cómo preguntás por esta regla?",options:["Is this a ruler?","This a ruler?","Are this a ruler?"],correct:"Is this a ruler?"},
+      {id:"homeg617q6",topic:"answer",points:1,text:"Answer yes: Is this a book? / Respondé que sí: ¿Es este un libro?",options:["Yes, it is.","Yes, it are.","Yes, this."],correct:"Yes, it is."},
+      {id:"homeg617q7",topic:"answer",points:1,text:"Answer no: Is that a pencil? / Respondé que no: ¿Es ese un lápiz?",options:["No, it isn't.","No, it aren't.","No, that not."],correct:"No, it isn't."},
+      {id:"homeg617q8",topic:"this",points:1,text:"Complete: ___ is my eraser. (near) / Completá: ___ es mi goma. (cerca)",options:["This","That","Those"],correct:"This"}
+    ],closing:"🎉 Well done! / ¡Muy bien!"},
   cloneMissionBase_(PARTS_FACE_BASE,{id:"parts-face-g6-v1",number:18,title:"MISIÓN 18 – Parts of the Head and Face",visual:"face",defaultLocked:false}),
   cloneMissionBase_(PARTS_BODY_BASE,{id:"parts-body-g6-v1",number:19,title:"MISIÓN 19 – Parts of the Body",visual:"body",defaultLocked:false}),
   {id:"review-16-19-g6-v1",number:20,title:"MISIÓN 20 – Review Missions 16–19",visual:"review-16-19",defaultLocked:true,sections:[],questions:[]},
-  {id:"verb-to-be-g6-v1",number:21,title:"MISIÓN 21 – Verb To Be",visual:"to-be",defaultLocked:true,sections:[],questions:[]}
+  {id:"verb-to-be-g6-v1",number:21,title:"MISIÓN 21 – Verb To Be",visual:"to-be",defaultLocked:true,icon:'BE',intro:"Verb To Be: I am, you are, he/she/it is. / Verbo To Be: I am, you are, he/she/it is.",sections:HOME_BE_SINGULAR_LEARN,questions:[
+      {id:"homeg621q1",topic:"am",points:1,text:"Complete: I ___ a student. / Completá: Yo soy estudiante.",options:["am","is","are"],correct:"am"},
+      {id:"homeg621q2",topic:"are",points:1,text:"Complete: You ___ happy. / Completá: Vos estás feliz.",options:["are","am","is"],correct:"are"},
+      {id:"homeg621q3",topic:"is",points:1,text:"Complete: He ___ a teacher. / Completá: Él es docente.",options:["is","are","am"],correct:"is"},
+      {id:"homeg621q4",topic:"is",points:1,text:"Complete: She ___ here. / Completá: Ella está aquí.",options:["is","am","are"],correct:"is"},
+      {id:"homeg621q5",topic:"is",points:1,text:"Complete: It ___ a backpack. / Completá: Es una mochila.",options:["is","are","am"],correct:"is"},
+      {id:"homeg621q6",topic:"contractions",points:1,text:"Choose the short form of I am. / Elegí la contracción de I am.",options:["I'm","I's","I're"],correct:"I'm"},
+      {id:"homeg621q7",topic:"contractions",points:1,text:"Choose the short form of She is. / Elegí la contracción de She is.",options:["She's","She're","She'm"],correct:"She's"},
+      {id:"homeg621q8",topic:"negative",points:1,text:"Complete: He ___ tired. (negative) / Completá: Él no está cansado. (negativo)",options:["isn't","aren't","am not"],correct:"isn't"},
+      {id:"homeg621q9",topic:"negative",points:1,text:"Complete: You ___ late. (negative) / Completá: Vos no llegás tarde. (negativo)",options:["aren't","isn't","am not"],correct:"aren't"},
+      {id:"homeg621q10",topic:"writing",points:1,type:"text",text:"Write the short form of It is. / Escribí la contracción de It is.",correct:"It's",accepted:["It's","Its"],displayCorrect:"It's"}
+    ],closing:"🎉 Mission completed! / ¡Misión completada!"}
 ];
 const NUMBERS_20_100_MISSION = {
   id:"numbers-20-100-g56-v1", number:22, grades:["5","6"],
@@ -1233,7 +1314,7 @@ const NUMBERS_20_100_MISSION = {
 };
 const FUTURE_CONSTRUCTION_MISSIONS = [23,24,25].map(number=>({
   id:`future-mission-${number}`, number, grades:["5","6"],
-  title:`MISIÓN ${number} – Under construction / En construcción`,
+  title:`MISIÓN ${number} – ${({23:"Feelings",24:"Verb To Be · Plural"})[number] || "Under construction / En construcción"}`,
   visual:"construction", underConstruction:true, defaultLocked:true, sections:[], questions:[]
 }));
 function studentMissionCatalog_(){
@@ -1561,24 +1642,38 @@ function homeTaskEvidenceStart_(task=currentHomeTask_()){
   return isNaN(d)?null:d;
 }
 
-function homeTaskMissionEvidence_(missionNumber){
-  const sid=String(state.student?.id||"").trim();
-  if(!sid)return {completed:false,completedAt:""};
-  const records=Object.values(bootstrapData.homeProgress?.[sid]||{});
-  let record=records.find(x=>Number(x?.missionNumber||x?.number||0)===Number(missionNumber));
-  // A Mission just completed in Home is available locally before the next server refresh.
-  // Include it so assignment completion feedback can appear immediately.
-  if(!record){
-    const mission=studentMissionCatalog_().find(x=>Number(x.number)===Number(missionNumber));
-    const local=mission ? getLocalProgress()?.[sid]?.[mission.id] : null;
-    if(local) record={missionNumber:Number(missionNumber),lastCompletedAt:local.completedAt||""};
+function homeResultDate_(value) {
+  const raw = String(value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}$/.test(raw)) {
+    return Date.parse(raw.replace(" ", "T") + "-03:00");
   }
-  if(!record)return {completed:false,completedAt:""};
-  const raw=record.lastCompletedAt||record.firstCompletedAt||record.completedAt||"";
-  const done=raw?new Date(raw):null;
-  const start=homeTaskEvidenceStart_();
-  const completed=!!done && !isNaN(done) && (!start || done>=start);
-  return {completed,completedAt:completed?raw:""};
+  return Date.parse(raw);
+}
+
+function homeTaskMissionEvidence_(missionNumber) {
+  const sid = String(state.student?.id || "").trim();
+  if (!sid) return {completed:false, completedAt:""};
+  const number = Number(missionNumber);
+  const suspect = number === 17 || number === 21;
+  const candidates = [];
+  for (const record of Object.values(bootstrapData.homeProgress?.[sid] || {})) {
+    if (Number(record?.missionNumber || record?.number || 0) !== number) continue;
+    if (record.completed === false || String(record.status || "").toLowerCase() === "incomplete") continue;
+    if (Array.isArray(record.validCompletionTimes)) {
+      candidates.push(...record.validCompletionTimes);
+      continue;
+    }
+    if (hasEmptyHomeScore_(record)) continue;
+    if (!suspect || Number(record.firstPossible) > 0) candidates.push(record.firstCompletedAt);
+    if (!suspect || Number(record.lastPossible) > 0) candidates.push(record.lastCompletedAt);
+    if (!suspect) candidates.push(record.completedAt);
+  }
+  const mission = studentMissionCatalog_().find(item => Number(item.number) === number);
+  const local = mission ? getLocalProgress()?.[sid]?.[mission.id] : null;
+  if (local && !hasEmptyHomeScore_(local)) candidates.push(local.completedAt);
+  const start = homeTaskEvidenceStart_();
+  const dates = candidates.map(homeResultDate_).filter(time => Number.isFinite(time) && (!start || time >= start));
+  return dates.length ? {completed:true, completedAt:new Date(Math.max(...dates)).toISOString()} : {completed:false, completedAt:""};
 }
 
 function homeTaskMissionLine_(m,kind){
@@ -2027,6 +2122,10 @@ function render() {
   const preserveY=(previousRoute===currentRoute)?window.scrollY:null;
   const preserveMissionsScroll=(previousRoute===currentRoute)?(document.getElementById("missionsPanel")?.scrollTop||0):0;
   const openExplore=document.querySelector(".explore-detail:not([hidden])")?.id||"";
+  const expansion = document.getElementById("reviewBeContent");
+  const expansionScroll = expansion?.scrollTop || 0;
+  const expansionAnswersOpen = expansion?.querySelector("details")?.open;
+  const expansionModalScroll = document.querySelector(".review-expansion-modal")?.scrollTop || 0;
   const app = document.getElementById("app");
   if (state.route === "home") app.innerHTML = homeView();
   else if (state.route === "about-home") app.innerHTML = aboutHomeView();
@@ -2049,6 +2148,14 @@ function render() {
   // Background sync may rerender the same page. Keep the open Explore panel and
   // the exact viewport instead of throwing the student back to the top.
   if(previousRoute===currentRoute){
+    const nextExpansion = document.getElementById("reviewBeContent");
+    if(nextExpansion && reviewBeOpen_){
+      nextExpansion.scrollTop = expansionScroll;
+      const answers = nextExpansion.querySelector("details");
+      if(answers) answers.open = !!expansionAnswersOpen;
+      const modal = document.querySelector(".review-expansion-modal");
+      if(modal) modal.scrollTop = expansionModalScroll;
+    }
     if(openExplore){
       const panel=document.getElementById(openExplore);
       if(panel)panel.hidden=false;
@@ -2189,27 +2296,46 @@ function identifyView() {
   const gradeOptions = grades.map(g => `<option value="${escapeHtml(g)}" ${String(state.student.grade)===g?"selected":""}>${escapeHtml(g)}</option>`).join("");
   const schoolValue = state.student.institution || savedHomeSchool();
 
-  const studentOptions = rosterStudents()
-    .filter(s => String(s.grade||"").trim() === String(state.student.grade||"").trim())
-    .sort((a,b)=>String(a.officialName||"").localeCompare(String(b.officialName||""),"es"))
-    .map(s=>`<option value="${escapeHtml(s.id)}" ${String(state.student.id||"")===String(s.id)?"selected":""}>${escapeHtml(s.officialName||s.nickname||s.id)}</option>`).join("");
   return `<section class="card identity-entry-card">
     <div class="eyebrow">Home</div>
     <h2>¿Quién va a practicar?</h2>
-    <p>Seleccioná tu grado y después elegí tu nombre de la lista.</p>
+    <p>Podés escribir <strong>tu primer nombre</strong> y, si tenés uno registrado, también tu <strong>apodo</strong>.</p>
     <div class="identity-home-note">👤 Home es individual. Elegí siempre tus propios datos.<br><strong>El acceso depende de la configuración de cada curso.</strong></div>
 
     ${state.identityError ? `<div class="notice" style="border-color:var(--danger);margin-bottom:1rem"><strong>No pudimos identificarte.</strong><br>${escapeHtml(state.identityError)}</div>` : ""}
 
     <form id="studentForm" class="identity-form-grid">
+      <div class="field">
+        <label for="firstName">Nombre</label>
+        <input id="firstName" name="firstName" autocomplete="given-name"
+          value="${escapeHtml(state.student.firstName || "")}" placeholder="Por ejemplo: Maria">
+      </div>
+
+      <div class="field">
+        <label for="nickname">Apodo</label>
+        <input id="nickname" name="nickname"
+          value="${escapeHtml(state.student.nickname || "")}" placeholder="Por ejemplo: Pia">
+      </div>
+
+      <div class="field">
+        <label for="lastName">Apellido <span class="small">(si hace falta)</span></label>
+        <input id="lastName" name="lastName"
+          value="${escapeHtml(state.student.lastName || "")}" placeholder="Para distinguir nombres iguales">
+      </div>
+
+      <div class="field">
+        <label for="institution">Colegio / Institución</label>
+        <input id="institution" name="institution"
+          value="${escapeHtml(schoolValue)}" placeholder="Por ejemplo: Yapeyú">
+      </div>
+
       <div class="field identity-grade-field">
         <label for="grade">Grado</label>
-        <select id="grade" name="grade" required><option value="">Seleccioná tu grado</option>${gradeOptions}</select>
+        <select id="grade" name="grade" required>
+          <option value="">Seleccioná</option>${gradeOptions}
+        </select>
       </div>
-      <div class="field">
-        <label for="studentId">Tu nombre / Your name</label>
-        <select id="studentId" name="studentId" required><option value="">Seleccioná tu nombre</option>${studentOptions}</select>
-      </div>
+
       <div class="field full identity-main-actions">
         <div class="button-row">
           <button type="button" class="secondary-button" data-action="go-home">Volver</button>
@@ -2267,6 +2393,8 @@ function saveLocalMissionProgress(result) {
     all[studentId][result.mission.id] = {
       bestEarned: result.earned, possible: result.possible, completedAt: result.completedAt, local: true
     };
+  } else {
+    all[studentId][result.mission.id] = {...previous, completedAt:result.completedAt};
   }
   localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(all));
 }
@@ -2291,7 +2419,13 @@ function studentProgress() {
   // Merge every central progress source returned for this student, normalized
   // by Mission number, then let same-device local progress provide only the
   // immediate just-finished state.
-  return { ...server, ...classroomServer, ...homeServer, ...local };
+  const progress = {};
+  for (const source of [server, classroomServer, homeServer, local]) {
+    for (const [key, record] of Object.entries(source)) {
+      if (!hasEmptyHomeScore_(record)) progress[key] = record;
+    }
+  }
+  return progress;
 }
 function getMissionDrafts() {
   try { return JSON.parse(localStorage.getItem(MISSION_DRAFTS_KEY)) || {}; }
@@ -2524,6 +2658,7 @@ function homePracticeForYouHtml() {
 
 let reviewExpansionOpen_ = false;
 let reviewColorsOpen_ = false;
+let reviewBeOpen_ = false;
 
 function preferenceSurveyKey_(){
   return `mewPreferenceSurvey:${state.student?.id||"anonymous"}`;
@@ -2724,7 +2859,7 @@ function submitQuickVote(choiceOrChoices) {
   setTimeout(()=>refreshQuickVoteResults().then(()=>refreshQuickVotePanelDom_()),700);
 }
 
-function jsonpRequestHome(action, params={}) {
+function jsonpRequestHome(action, params={}, timeoutMs=30000) {
   return new Promise((resolve,reject) => {
     const callbackName = `mewHome_${Date.now()}_${Math.floor(Math.random()*100000)}`;
     const script = document.createElement("script");
@@ -2743,7 +2878,7 @@ function jsonpRequestHome(action, params={}) {
     const search = new URLSearchParams({ action, callback:callbackName, t:String(Date.now()), ...params });
     script.onerror = () => finish(new Error("No se pudo consultar Mission English World."));
     script.src = `${SYNC_ENDPOINT}?${search.toString()}`;
-    const timer = setTimeout(() => finish(new Error("La consulta tardó demasiado.")), 30000);
+    const timer = setTimeout(() => finish(new Error("La consulta tardó demasiado.")), timeoutMs);
     document.head.appendChild(script);
   });
 }
@@ -2953,6 +3088,11 @@ function missionForStudent_(mission){
   const grade6=String(state.student?.grade||"").trim()==="6";
   const visual=HOME_MISSION_VISUALS[mission.id]||{};
   let copy={...mission, homeImage: grade6?(visual.grade6||visual.base):visual.base, questions:[...(mission.questions||[])]};
+  if (mission.id === "parts-body-g6-v1") {
+    copy.sections = mission.sections.map(section => section.title.includes("Observa")
+      ? {...section, html: '<figure class="m19-full-observe"><img src="parts-body-card.jpg" alt="Personaje de Mission English para Parts of the Body"></figure>'}
+      : section);
+  }
   if(grade6){
     const extras=mission.id==="classroom-objects-g6-v1"?[]:(GRADE6_EXTRA_QUESTIONS[mission.id]||[]);
     const core=[...(copy.questions||[])];
@@ -2968,6 +3108,16 @@ function missionForStudent_(mission){
     const more=mission.id==="classroom-objects-g6-v1"?[]:(HOME_MORE_PRACTICE[mission.id]||[]);
     const existing=new Set((copy.questions||[]).map(q=>q.id));
     copy.questions=[...(copy.questions||[]),...more.filter(q=>!existing.has(q.id))];
+  }
+  if (mission.id === "parts-body-g6-v1") {
+    copy.questions = copy.questions.map(question => question.id === "parts-body-g6-v1-bodyq3"
+      ? {...question, text:"Look at the picture on the right. Which part is bent? / Mirá la imagen de la derecha. ¿Qué parte está doblada?"}
+      : question);
+    copy.questions.push({
+      id:"parts-body-g6-v1-visual-elbow", topic:"Elbow", review:"parts of the body", points:1,
+      text:"Look at the picture on the left. Which part is bent? / Mirá la imagen de la izquierda. ¿Qué parte está doblada?",
+      options:["elbow","ankle","shoulder"], correct:"elbow"
+    });
   }
   return copy;
 }
@@ -3021,7 +3171,7 @@ function missionPermissionCourseForStudent_() {
 }
 
 function missionEnabledForStudent(mission) {
-  if (mission?.underConstruction || mission?.temporarilyDisabled) return false;
+  if (!canCompleteHomeMission_(mission)) return false;
   const grade=String(state.student?.grade||"").replace(/\.0$/,"").trim();
   const missionNo=Number(mission?.number||0);
   // Teacher permissions, not a hard-coded Grade 6 cutoff, determine release.
@@ -3270,8 +3420,9 @@ function mapView() {
     const isRecommended=!isAssigned&&recommendedNumbers.some(n=>Number(n)===Number(m.number));
     const homeworkBadge=isAssigned?missionsText_("Assigned homework","Tarea asignada"):(isRecommended?missionsText_("Recommended practice","Práctica recomendada"):"");
     const underConstruction=!!m.underConstruction;
+    const plannedTopic = {23:"Feelings",24:"Verb To Be · Plural"}[m.number];
     const status=underConstruction
-      ? missionsText_("🔒 Coming soon","🔒 Próximamente")
+      ? [plannedTopic, missionsText_("🔒 Coming soon","🔒 Próximamente")].filter(Boolean).join(" · ")
       : enabled
         ? (p ? missionsText_("✓ Completed / Practice again","✓ Hecha / Practicar otra vez")
             : (draft ? missionsText_("▶ Continue","▶ Continuar")
@@ -3365,11 +3516,12 @@ function mapView() {
           <section class="review-expansion-section">
             <div class="review-expansion-section-head"><strong>↻ Review &amp; Expansion · Repaso y Expansión</strong><small>Review what you learned and add a little more. · Repasá lo aprendido y agregá un poco más.</small></div>
             <button type="button" class="review-topic-card" data-action="open-review-colors"><strong>🎨 Colors</strong><span>${missionsText_("Review colors + light and dark","Repaso de colores + light y dark")}</span></button>
+            <button type="button" class="review-topic-card" data-action="open-review-be"><strong>Verb To Be · Ser y estar</strong><span>Review the singular forms + everyday vocabulary · Repaso del singular + vocabulario cotidiano</span></button>
           </section>
-          <section class="review-expansion-section expansion-coming-section">
-            <div class="review-expansion-section-head"><strong>＋ ${missionsText_("Expansion","Expansión")}</strong><small>${missionsText_("Only for students who want to learn a little more.","Solo para quienes quieran aprender un poco más.")}</small></div>
-            <div class="expansion-coming-card"><div class="coming-soon-stack"><span class="coming-soon-pill">¡COMING SOON!</span><span class="coming-soon-pill coming-soon-es">¡PRÓXIMAMENTE!</span></div><span>Verb To Be · Have · Auxiliary Do · examples + useful vocabulary<br>Verb To Be · Have · Auxiliar Do · ejemplos + vocabulario útil</span></div>
-          </section>
+        </div>
+        <div class="review-colors-page be-review-page" id="reviewBeContent" ${reviewBeOpen_?"":"hidden"}>
+          <button type="button" class="review-colors-back" data-action="close-review-be">← ${missionsText_("Back","Volver")}</button>
+          ${homeBeExpansionHtml_()}
         </div>
         <div class="review-colors-content review-colors-page" id="reviewColorsContent" ${reviewColorsOpen_?"":"hidden"}><button type="button" class="review-colors-back" data-action="close-review-colors">← ${missionsText_("Back","Volver")}</button><h2>🎨 Colors · Colores</h2><div class="review-phone-landscape-note">📱 En un celular, giralo de costado para verlo mejor.</div><img class="review-colors-approved-image" src="images/review-expansion-colors-approved.png" alt="Review & Expansion — Colors"></div>
       </div>
@@ -3434,8 +3586,17 @@ function mapView() {
   </section>`;
 }
 
+function canCompleteHomeMission_(mission) {
+  return !!mission && !mission.underConstruction && !mission.temporarilyDisabled
+    && Array.isArray(mission.questions) && mission.questions.length > 0
+    && mission.questions.every(question => Number.isFinite(question.points) && question.points > 0);
+}
+function unavailableHomeMission_() {
+  return '<section class="card"><p>Esta misión todavía no tiene actividades disponibles.</p><button class="secondary-button" data-action="back-map">← Volver al mapa de misiones</button></section>';
+}
 function missionIntroView() {
   const m = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
+  if (!m || (!m.temporarilyDisabled && !canCompleteHomeMission_(m))) return unavailableHomeMission_();
   return `<section class="card" id="missionReviewTop">
     <div class="read-first-banner">
       <div class="read-first-icon">📖</div>
@@ -3496,6 +3657,7 @@ function optionsForQuestion(q) {
 
 function missionView() {
   const m = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
+  if (!canCompleteHomeMission_(m)) return unavailableHomeMission_();
   if (!state.reviewConfirmed) {
     state.route = "mission-intro"; saveState(); return missionIntroView();
   }
@@ -3511,6 +3673,7 @@ function missionView() {
       <h3 class="section-title">✏️ ¡Es tu turno!</h3>
       <form id="missionForm">
         ${m.questions.map((q, idx) => questionHtml(resolvedQuestion(q), idx)).join("")}
+        <p id="home-mission-save-feedback" role="status"></p>
         <div class="button-row">
           <button type="button" class="secondary-button" data-action="leave-mission">Salir de la misión</button>
           <button type="submit" class="primary-button">Finalizar y guardar misión</button>
@@ -3520,10 +3683,96 @@ function missionView() {
   </section>`;
 }
 
+function homeBeExpansionHtml_() {
+  const forms = [
+    ["1.ª", "I am", "I'm", "I am not", "I'm not"],
+    ["2.ª", "You are", "You're", "You are not", "You aren't"],
+    ["3.ª", "He is", "He's", "He is not", "He isn't"],
+    ["3.ª", "She is", "She's", "She is not", "She isn't"],
+    ["3.ª", "It is", "It's", "It is not", "It isn't"]
+  ];
+  const groups = [
+    ["Describe someone · Describí a alguien", [["tall","alto/a",0],["short","bajo/a",1],["young","joven"],["kind","amable"],["friendly","simpático/a"]]],
+    ["How are you? · ¿Cómo estás?", [["happy","contento/a",2],["sad","triste",3],["tired","cansado/a",4],["hungry","con hambre",5],["thirsty","con sed",6],["cold","con frío"],["hot","con calor"]]],
+    ["At school · En la escuela", [["ready","listo/a",7],["late","tarde"],["here","acá"],["at school","en la escuela"],["busy","ocupado/a"]]]
+  ];
+  const examples = [
+    ["She's tall.", "Ella es alta.", 0],
+    ["I'm hungry.", "Tengo hambre.", 5],
+    ["He isn't tired.", "Él no está cansado.", 4],
+    ["You're ready.", "Estás listo/a.", 7],
+    ["I'm a student.", "Soy estudiante."],
+    ["I'm eleven.", "Tengo once años."]
+  ];
+  const cards = items => `<ul class="be-cards">${items.map(([en, es, image]) => `
+    <li>${Number.isInteger(image) ? `<img src="images/be-vocabulary-${image}.webp" width="200" height="200" alt="" loading="lazy">` : ""}
+      <div><strong>${en}</strong><small>${es}</small></div>
+      <button class="be-audio" type="button" data-action="m18-speak" data-word="${escapeHtml(en)}" aria-label="Escuchar ${escapeHtml(en)}">🔊</button>
+    </li>`).join("")}</ul>`;
+  const table = (caption, headers, rows) => `<table><caption>${caption}</caption><thead><tr>
+    ${headers.map(label => `<th scope="col">${label}</th>`).join("")}
+    </tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  return `<article class="be-review" aria-labelledby="be-review-title">
+    <header class="be-banner">
+      <img src="mission-english-home-logo.png" alt="Mission English Home">
+      <div><p>Review &amp; Expansion · Repaso y Expansión</p><h2 id="be-review-title">Verb To Be · Ser y estar</h2><p>Repasá <strong>am, are, is</strong> y usalos con palabras de todos los días.</p></div>
+    </header>
+    <div class="be-grid">
+      <section class="be-panel">
+        <h3><span>1</span> Review · Repaso</h3>
+        <div class="be-content">
+          <p><strong>To be</strong> puede significar <strong>ser</strong> o <strong>estar</strong>. Repasamos las formas del singular.</p>
+          <div class="be-tables">
+            ${table("Affirmative · Afirmativo", ["Persona","Completa","Corta"], forms.map(row => row.slice(0,3)))}
+            ${table("Negative · Negativo", ["Completa","Corta"], forms.map(row => row.slice(3)))}
+          </div>
+        </div>
+      </section>
+      <section class="be-panel">
+        <h3><span>2</span> Expansion · Vocabulario nuevo</h3>
+        <div class="be-content">
+          <p>Look, listen and repeat. · Mirá, escuchá y repetí.</p>
+          ${groups.map(([title, words]) => `<h4>${title}</h4>${cards(words)}`).join("")}
+        </div>
+      </section>
+      <section class="be-panel">
+        <h3><span>3</span> Examples in sentences · Ejemplos en oraciones</h3>
+        <div class="be-content">${cards(examples)}</div>
+      </section>
+      <section class="be-panel">
+        <h3><span>★</span> Remember! · ¡Recordá!</h3>
+        <div class="be-content">
+          <ul>
+            <li>Usá <strong>am</strong> con <strong>I</strong>, <strong>are</strong> con <strong>you</strong> e <strong>is</strong> con <strong>he, she, it</strong>.</li>
+            <li>Para decir que no, agregá <strong>not</strong> después de <strong>am, are</strong> o <strong>is</strong>.</li>
+            <li>En inglés usamos <strong>to be</strong> para decir la edad, el hambre o la sed. <strong>I'm eleven.</strong> Tengo once años. <strong>I'm thirsty.</strong> Tengo sed.</li>
+          </ul>
+          <h4>Try it · Probá</h4><p>Decí «Estoy listo/a», «Ella es alta» y «Él no está cansado».</p>
+          <details><summary>Check · Ver respuestas</summary><p>I'm ready. She's tall. He isn't tired.</p></details>
+        </div>
+      </section>
+    </div>
+  </article>`;
+}
+
+function homeLessonQuestionPicture_(missionId, questionId) {
+  const pictures = {
+    homeg617q3:{src:"images/m17-near-far.webp",alt:"Un estudiante señala un objeto en su mesa."},
+    homeg617q4:{src:"images/m17-near-far.webp",alt:"Un estudiante señala un objeto al otro lado del aula."},
+    "parts-body-g6-v1-bodyq3":{src:"images/m19-arm-knee.webp",alt:"Detalle de la articulación entre el muslo y la parte inferior de la pierna."},
+    "parts-body-g6-v1-visual-elbow":{src:"images/m19-arm-knee.webp",alt:"Detalle de la articulación entre el brazo y el antebrazo."}
+  };
+  return ["this-that-g6-v1","parts-body-g6-v1"].includes(missionId) ? pictures[questionId] : null;
+}
+
 function questionHtml(q, idx) {
   const value = state.answers[q.id] ?? "";
   const questionText = q.promptWord ? `${q.text} <strong>${escapeHtml(q.promptWord)}</strong>` : q.text;
-  const imageHtml = ""; // v1.6.0: exercise images temporarily disabled; Mission/Observe visuals remain.
+  const mission = studentMissionCatalog_()[state.currentMission];
+  const picture = homeLessonQuestionPicture_(mission?.id, q.id);
+  const imageHtml = picture ? `<figure class="lesson-question-picture">
+    <img src="${picture.src}" alt="${escapeHtml(picture.alt)}" loading="lazy">
+  </figure>` : "";
 
   if (q.type === "face-dragdrop") {
     const placed = (state.faceDragPlaced && state.faceDragPlaced[q.id]) || {};
@@ -3847,9 +4096,21 @@ function bindEvents() {
     }
     if (action === "close-review-expansion") {
       const modal=document.getElementById("reviewExpansionModal");
-      reviewExpansionOpen_=false; reviewColorsOpen_=false;
+      reviewExpansionOpen_=false; reviewColorsOpen_=false; reviewBeOpen_=false;
       if(modal)modal.hidden=true;
       document.body.classList.remove("review-modal-open");
+      return;
+    }
+    if (action === "open-review-be" || action === "close-review-be") {
+      const page = document.getElementById("reviewBeContent");
+      reviewBeOpen_ = action === "open-review-be";
+      page.hidden = !reviewBeOpen_;
+      if (reviewBeOpen_) {
+        page.scrollTop = 0;
+        page.querySelector(".review-colors-back").focus();
+      } else {
+        document.querySelector('[data-action="open-review-be"]').focus();
+      }
       return;
     }
     if (action === "open-review-colors") {
@@ -4043,6 +4304,7 @@ function bindEvents() {
     }
     if (action === "read-again") document.getElementById("missionReviewTop")?.scrollIntoView({behavior:"smooth",block:"start"});
     if (action === "confirm-read") {
+      if (!canCompleteHomeMission_(missionForStudent_(studentMissionCatalog_()[state.currentMission]))) return;
       state.reviewConfirmed=true; state.missionStartedAt=new Date().toISOString(); state.route="mission"; saveState(); render(); startMissionAttentionTracking();
     }
     if (action === "m18-speak") { const word=String(event.currentTarget.dataset.word||"").trim(); if(word)speakPracticeWord_(word); return; }
@@ -4256,31 +4518,69 @@ function bindEvents() {
     state.route = "home"; saveState(); render();
   });
 
-  const gradeSelect = document.getElementById("grade");
-  if (gradeSelect && document.getElementById("studentForm")) {
-    gradeSelect.addEventListener("change", () => {
-      state.student.grade = gradeSelect.value;
-      state.student.id = "";
-      state.identityError = "";
-      render();
-    });
-  }
   const studentForm = document.getElementById("studentForm");
   if (studentForm) studentForm.addEventListener("submit", event => {
     event.preventDefault();
 
     const form = new FormData(studentForm);
+    const firstName = String(form.get("firstName") || "").trim();
+    const nickname = String(form.get("nickname") || "").trim();
+    const lastName = String(form.get("lastName") || "").trim();
+    const institution = String(form.get("institution") || "").trim() || savedHomeSchool();
     const grade = String(form.get("grade") || "").trim();
-    const studentId = String(form.get("studentId") || "").trim();
-    const matched = rosterStudents().find(s => String(s.id||"") === studentId && String(s.grade||"").trim() === grade);
-    if (!matched) {
-      state.identityError = "Elegí tu grado y tu nombre de la lista.";
+
+    if (!["4","5","6"].includes(grade)) {
+      state.identityError = "Seleccioná un curso disponible de tu escuela.";
       saveState(); render(); return;
     }
+
+    if (!firstName && !nickname) {
+      state.identityError = "Escribí tu nombre o tu apodo.";
+      saveState();
+      render();
+      return;
+    }
+
+    let match = nickname ? findHomeStudentSimple(nickname, lastName, grade) : {student:null,ambiguous:false};
+    if (!match.student && firstName) {
+      const byName = findHomeStudentSimple(firstName, lastName, grade);
+      match = byName.student ? byName : {student:null, ambiguous: match.ambiguous || byName.ambiguous};
+    }
+
+    if (!match.student) {
+      state.student = {
+        ...state.student,
+        firstName,
+        nickname,
+        lastName,
+        institution,
+        grade
+      };
+
+      state.identityError = match.ambiguous
+        ? "Hay más de un alumno con esos datos en tu grado. Escribí también tu apellido para distinguirte."
+        : "No encontramos ese nombre o apodo en el grado seleccionado. Revisalo y volvé a intentar.";
+
+      saveState();
+      render();
+      return;
+    }
+
+    const matched = match.student;
     const official = splitOfficialName(matched);
-    const institution = matched.institution || savedHomeSchool();
+
     state.identityError = "";
-    state.student = {...matched, firstName: official.first.split(" ")[0] || firstNameOrNickname(matched), lastName: official.last || "", institution, level:"Primaria", mode:"individual", partnerId:"", partner:""};
+    state.student = {
+      ...matched,
+      firstName: official.first.split(" ")[0] || firstNameOrNickname(matched) || firstName || nickname,
+      lastName: official.last || lastName,
+      institution,
+      level: "Primaria",
+      mode:"individual",
+      partnerId:"",
+      partner:""
+    };
+
     saveHomeSchool(institution);
     state.route = "confirm";
     saveState();
@@ -4300,7 +4600,14 @@ function bindEvents() {
     missionForm.addEventListener("submit", event => {
       event.preventDefault();
       captureMissionAnswers();
+      const mission = missionForStudent_(studentMissionCatalog_()[state.currentMission]);
+      if (!canCompleteHomeMission_(mission)) return;
       const result = calculateMissionResult();
+      if (!isHomeResultScored_(result)) {
+        const feedback = missionForm.querySelector("#home-mission-save-feedback");
+        feedback.textContent = "Respondé al menos una actividad antes de finalizar.";
+        return;
+      }
       state.lastMissionResult = result;
       saveLocalMissionProgress(result);
       clearMissionDraft_(result.mission.id);
@@ -4365,8 +4672,16 @@ function captureMissionAnswers() {
   for (const [key, value] of data.entries()) state.answers[key] = value;
   saveMissionDraft_(missionForStudent_(studentMissionCatalog_()[state.currentMission]));
 }
+function hasEmptyHomeScore_(record) {
+  return record?.possible !== undefined && record.possible !== null
+    && record.possible !== "" && Number(record.possible) === 0;
+}
+function isHomeResultScored_(result) {
+  return Number.isFinite(Number(result?.possible)) && Number(result.possible) > 0
+    && Array.isArray(result.details) && result.details.some(detail => String(detail?.response ?? "").trim());
+}
 function enqueueResult(result) {
-  if (!testerBackendTrackingEnabled_()) return;
+  if (!testerBackendTrackingEnabled_() || !isHomeResultScored_(result)) return;
   const queue = getQueue();
   if (!queue.some(x => x.id === result.id)) queue.push(result);
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
@@ -4375,58 +4690,76 @@ function getQueue() {
   try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }
   catch { return []; }
 }
-async function confirmResultRecorded_(item, tries=4) {
+async function confirmResultRecorded_(item) {
   if (!item?.id || !item?.student?.id || !navigator.onLine) return false;
-  const waits=[350,700,1200,1800];
-  for(let i=0;i<Math.min(tries,waits.length);i++){
-    if(i) await new Promise(resolve=>setTimeout(resolve,waits[i]));
-    try{
-      const data=await jsonpRequestHome("resultStatus",{recordId:item.id,studentId:item.student.id});
-      if(data?.ok && data?.recorded===true && String(data.recordedStudentId||item.student.id)===String(item.student.id)) return true;
-    }catch{}
-  }
-  return false;
-}
-async function syncQueue(manual) {
-  let queue = getQueue();
-  if (!queue.length) {
-    if(manual) showSyncMessage("✓ Envío confirmado.", "Tus Missions registradas ya están guardadas.");
-    return true;
-  }
-  if (!navigator.onLine) {
-    showSyncMessage("Guardado en este dispositivo.", "Se enviará automáticamente cuando vuelva Internet.");
+  try {
+    const data = await jsonpRequestHome("resultStatus", {recordId:item.id, studentId:item.student.id}, 8000);
+    return data?.ok === true && data.recorded === true
+      && String(data.recordedStudentId || "") === String(item.student.id);
+  } catch {
     return false;
   }
-
-  // v1.6.90: never make the student wait for server verification.
-  // POST immediately, keep the local queue as safety, and verify/remove records in background.
-  showSyncMessage("Guardado en este dispositivo.", "Se enviará automáticamente. Podés continuar usando Home.");
-  for (const item of queue) {
-    try {
-      await fetch(SYNC_ENDPOINT, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(item)
-      });
-    } catch {}
+}
+const homeSyncJobs_ = new Map();
+function syncQueue(manual) {
+  const queue = getQueue();
+  const pending = queue.filter(isHomeResultScored_);
+  if (!pending.length) {
+    if (manual) showSyncMessage(
+      queue.length ? "Sin envíos válidos pendientes." : "✓ Envío confirmado.",
+      queue.length ? "Los intentos sin actividades se conservan en este dispositivo." : "Tus Missions registradas ya están guardadas."
+    );
+    return Promise.resolve(!queue.length);
   }
+  showSyncMessage("Guardado en este dispositivo.", "Podés continuar usando Home. El envío se confirma en segundo plano.");
+  if (!navigator.onLine) return Promise.resolve(false);
 
-  setTimeout(async()=>{
-    const current=getQueue();
-    const pending=[];
-    for(const item of current){
-      const confirmed=await confirmResultRecorded_(item,2);
-      if(!confirmed) pending.push(item);
-    }
-    localStorage.setItem(QUEUE_KEY, JSON.stringify(pending));
-    if(!pending.length){
-      if (state.lastMissionResult) { state.lastMissionResult.syncStatus = "confirmed"; saveState(); }
-      showSyncMessage("✓ Envío confirmado.", "La Mission está registrada correctamente.");
-      // Refresh progress quietly; do not block or visibly repopulate Home.
-      try { loadHomeTask(true); } catch {}
-    }
-  },900);
+  return Promise.all(pending.map(scheduleHomeResult_)).then(results => results.every(Boolean));
+}
+const homeSyncWaiting_ = [];
+let homeSyncActive_ = 0;
+function scheduleHomeResult_(item) {
+  if (homeSyncJobs_.has(item.id)) return homeSyncJobs_.get(item.id);
+  const job = new Promise(resolve => homeSyncWaiting_.push({item, resolve}));
+  homeSyncJobs_.set(item.id, job);
+  runHomeSyncJobs_();
+  return job;
+}
+function runHomeSyncJobs_() {
+  while (homeSyncActive_ < 2 && homeSyncWaiting_.length) {
+    const {item, resolve} = homeSyncWaiting_.shift();
+    homeSyncActive_++;
+    syncHomeResult_(item).then(resolve, () => resolve(false)).finally(() => {
+      homeSyncJobs_.delete(item.id);
+      homeSyncActive_--;
+      runHomeSyncJobs_();
+    });
+  }
+}
+async function syncHomeResult_(item) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    await fetch(SYNC_ENDPOINT, {
+      method:"POST", mode:"no-cors", signal:controller.signal,
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(item)
+    });
+  } catch {
+    // A timed-out request may still have reached the sheet. Verify its ID.
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!(await confirmResultRecorded_(item))) return false;
+
+  // Read the queue again so a completion added during this request is preserved.
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(getQueue().filter(record => record.id !== item.id)));
+  if (state.lastMissionResult?.id === item.id) {
+    state.lastMissionResult.syncStatus = "confirmed";
+    saveState();
+    showSyncMessage("✓ Envío confirmado.", "La Mission está registrada correctamente.");
+  }
+  if (String(state.student?.id) === String(item.student.id)) loadHomeTask(true);
   return true;
 }
 function showSyncMessage(title, copy) {
